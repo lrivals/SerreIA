@@ -83,6 +83,15 @@ En phase 1 (classifieur seul), `detections` contient un seul élément avec `bbo
 ```
 `action` ∈ `on | off | pwm` (avec `"valeur": 0-100`). `duree_s` est **obligatoire** pour les pompes : l'ESP32 coupe d'office à l'échéance.
 
+**Alerte**, **état d'actionneur**, **status**
+```json
+{ "ts": "...", "niveau": "warning", "message": "pH hors plage", "source": "controller" }
+{ "ts": "...", "action": "pwm", "valeur": 60 }
+```
+`niveau` ∈ `info | warning | critique`. Le payload de `status` est la chaîne brute `online` ou `offline`.
+
+Implémentation de référence : [`common/mqtt/`](../common/mqtt/) (`parse_topic`, `encode`, `decode`), testée par `tests/test_mqtt_contract.py`.
+
 ## 3. Organisation du dépôt
 
 ```
@@ -92,6 +101,8 @@ SerreIA/
 ├── data/                      # datasets bruts (non versionné)
 │   └── index.parquet          # généré par build_index
 ├── configs/                   # YAML d'entraînement / d'export
+├── common/
+│   └── mqtt/                  # contrat MQTT partagé : topics.py, schemas.py (pydantic)
 ├── vision/
 │   ├── datasets/              # taxonomy.yaml, build_index.py, dataset.py, augment.py
 │   ├── models/                # multihead.py
@@ -107,7 +118,7 @@ SerreIA/
 ├── backend/                   # FastAPI, schéma DB, ingestion MQTT → DB
 ├── firmware/                  # ESP32 (PlatformIO)
 ├── sim/                       # simulateur de capteurs / serre
-├── tests/
+├── tests/                     # test_mqtt_contract.py, …
 └── pyproject.toml
 ```
 

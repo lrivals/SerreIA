@@ -34,7 +34,8 @@ Choix structurants :
   - `data/PlantDoc Dataset/plantvillage dataset/` contient en réalité **PlantVillage** ;
   - **le vrai PlantDoc n'est pas encore téléchargé.**
 - ⚠️ GPU NVIDIA RTX 1000 Ada (6 Go) présent, mais le driver ne répond pas (`nvidia-smi`) → voir [08-environnement](docs/08-environnement.md).
-- ⏳ Aucun code pour l'instant.
+- ✅ Squelette du dépôt, `pyproject.toml` et **contrat MQTT** (`common/mqtt/`, testé) en place — cf. [01-architecture](docs/01-architecture.md).
+- ⏳ Vision, edge, backend, simulateur et firmware : à écrire.
 
 ## Démarrage rapide (une fois le code écrit)
 
