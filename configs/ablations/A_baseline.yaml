@@ -1,0 +1,8 @@
+# A : référence, augmentations légères, PlantVillage seul, sans remplacement de fond.
+_base_: ../clf_effnet_b0.yaml
+data:
+  sources: [plantvillage]
+augment:
+  level: light
+  background:
+    enabled: false

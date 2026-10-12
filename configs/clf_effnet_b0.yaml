@@ -1,0 +1,50 @@
+# Classifieur multi-têtes, configuration principale (docs/03-classifieur.md §2).
+# Chemins relatifs à la racine du dépôt. Correspond à l'ablation D (PV + CCMT, augmentations
+# fortes, remplacement de fond).
+seed: 42
+
+data:
+  index: data/index.parquet
+  data_dir: data
+  sources: [plantvillage, ccmt]   # sources d'entraînement / val / test in-domain
+  size: 224
+  num_workers: 8
+
+augment:
+  level: strong                   # eval | light | strong
+  background:
+    enabled: true
+    dir: data/backgrounds
+    p: 0.5                        # probabilité de coller la feuille sur un fond
+    p_multi: 0.3                  # parmi les collages, part en variante « multi-feuilles »
+    extra_leaves: [1, 3]          # feuilles ajoutées autour de la principale (2 à 4 au total)
+    feather: 7                    # flou des bords du masque (px, impair)
+    harmonize: 0.5                # force de l'harmonisation couleur (0 = aucune)
+
+model:
+  backbone: efficientnet_b0
+  pretrained: true
+  drop: 0.2
+
+loss:
+  w_classe: 1.0
+  w_espece: 0.5
+  w_sante: 1.0
+  label_smoothing: 0.1
+
+optim:
+  lr_head: 1.0e-3
+  lr_backbone: 3.0e-4
+  weight_decay: 0.05
+
+train:
+  epochs: 28
+  freeze_epochs: 2                # backbone gelé, seules les têtes apprennent
+  warmup_epochs: 1
+  batch_size: 64
+  amp: true                       # fp16 sur CUDA, ignoré sur CPU
+  select_metric: sante/f1_macro   # sélection du meilleur checkpoint (val)
+
+mlflow:
+  tracking_uri: mlruns/mlflow.db   # SQLite local, artefacts dans mlruns/artifacts/
+  experiment: phase1-classifieur

@@ -16,10 +16,10 @@
 1. ✅ `pyproject.toml` (uv), squelette du dépôt et contrat MQTT `common/mqtt/` + `tests/test_mqtt_contract.py`
 2. ✅ `vision/datasets/taxonomy.yaml`
 3. ✅ `vision/datasets/prepare.py`, `build_index.py` + `tests/test_index.py`, `test_taxonomy.py`, `test_near_duplicates.py`
-4. `vision/datasets/dataset.py`, `augment.py`
-5. `vision/models/multihead.py`
-6. `vision/train/train_classifier.py` + `configs/clf_effnet_b0.yaml`
-7. `vision/eval/cross_domain_eval.py`, `gradcam.py`
+4. ✅ `vision/datasets/dataset.py`, `augment.py`
+5. ✅ `vision/models/multihead.py`
+6. ✅ `vision/train/train_classifier.py` + `configs/clf_effnet_b0.yaml` (+ `configs/ablations/`)
+7. ✅ `vision/eval/cross_domain_eval.py`, `gradcam.py` (+ `vision/export/to_onnx.py`) — code testé sur CPU ; entraînements réels en attente de CUDA et de `data/backgrounds/`
 
 ## Risques et parades
 

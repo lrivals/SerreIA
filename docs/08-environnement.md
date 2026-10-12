@@ -34,20 +34,23 @@ uv run pytest                                  # tests
 uv run ruff format . && uv run ruff check .    # style
 uv run python -c "import torch; print(torch.cuda.is_available())"
 ```
-Pour une version CUDA précise de PyTorch, ajouter l'index `https://download.pytorch.org/whl/cu124` dans `[tool.uv]`.
+Le `.venv` actuel contient **torch CPU** : une fois le driver installé, réinstaller torch/torchvision depuis l'index CUDA. Pour une version CUDA précise de PyTorch, ajouter l'index `https://download.pytorch.org/whl/cu124` dans `[tool.uv]`.
 Phase 2 : `uv add ultralytics anomalib`.
 
 **Sans uv** (solution de repli, utilisée tant que uv n'est pas installé) :
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -e . pytest ruff
 .venv/bin/pip install pandas pyarrow imagehash scikit-learn pyyaml tqdm pillow  # données (doc 02), sans torch
+# classifieur (doc 03) : torch CPU tant que le driver NVIDIA ne répond pas
+.venv/bin/pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+.venv/bin/pip install -e '.[vision]'
 .venv/bin/pytest -q
 ```
 
 ## 3. Outils annexes
 | Outil | Usage | Installation |
 |---|---|---|
-| MLflow | suivi des expériences | `uv run mlflow ui` (stockage local `mlruns/`) |
+| MLflow | suivi des expériences | `uv run mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db` (SQLite local `mlruns/mlflow.db`, artefacts dans `mlruns/artifacts/`) |
 | Label Studio | annotation | `docker run -p 8080:8080 heartexlabs/label-studio` |
 | Hailo AI SW Suite | compilation HEF (x86 uniquement) | Docker, compte développeur Hailo |
 | Mosquitto | broker MQTT | `sudo apt install mosquitto` |

@@ -1,0 +1,4 @@
+# D : C + CCMT (apport des images « terrain »). Identique à la configuration principale.
+_base_: C_background.yaml
+data:
+  sources: [plantvillage, ccmt]

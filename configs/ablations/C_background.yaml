@@ -1,0 +1,5 @@
+# C : B + remplacement de fond (gain cross-domain attendu le plus fort).
+_base_: B_strong_aug.yaml
+augment:
+  background:
+    enabled: true

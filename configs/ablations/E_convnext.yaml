@@ -1,0 +1,4 @@
+# E : D avec ConvNeXt-Nano (plafond de performance, pas forcément déployé).
+_base_: D_ccmt.yaml
+model:
+  backbone: convnext_nano

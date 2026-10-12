@@ -1,0 +1,4 @@
+# B : A + augmentations fortes (gain photométrique).
+_base_: A_baseline.yaml
+augment:
+  level: strong
