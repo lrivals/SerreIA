@@ -47,6 +47,8 @@ PlantVillage montre une feuille isolée sur fond uni, sous une lumière homogèn
 - dégradations : flou de mouvement ou gaussien, bruit ISO, compression JPEG (qualité 30–90), ombres aléatoires ;
 - `CoarseDropout` (occlusions par d'autres feuilles).
 
+Les workers du DataLoader (CPU) ne font que le décodage, le remplacement de fond, la géométrie, les ombres et le CLAHE, et rendent des images uint8. Les opérations pixel par pixel (couleur, LED, gamma, flou, bruit, JPEG, `CoarseDropout`) et la normalisation tournent par batch sur le GPU (`vision/datasets/batch_augment.py`), avec des paramètres tirés pour chaque image. Le bruit ISO y est une approximation de celui d'albumentations.
+
 ### 3.2 Remplacement de fond (contribution originale) — `BackgroundPaster` dans `augment.py`
 PlantVillage fournit `segmented/`, des versions détourées qui permettent d'extraire les masques.
 1. Constituer `data/backgrounds/` : photos de serre, de feuillage, de terreau, de bacs hydroponiques (les nôtres, plus des images libres de droits).

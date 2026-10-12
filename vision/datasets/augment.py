@@ -13,56 +13,27 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png"}
 LEVELS = ("eval", "light", "strong")
 
 
-class LedTint(A.ImageOnlyTransform):
-    """Pink / violet cast of horticultural LEDs: red and blue gains, green attenuated."""
-
-    def __init__(
-        self,
-        r_gain: tuple[float, float] = (1.0, 1.4),
-        g_gain: tuple[float, float] = (0.7, 1.0),
-        b_gain: tuple[float, float] = (1.0, 1.5),
-        p: float = 0.5,
-    ):
-        super().__init__(p=p)
-        self.r_gain, self.g_gain, self.b_gain = r_gain, g_gain, b_gain
-
-    def get_params(self) -> dict:
-        return {"gains": [random.uniform(*g) for g in (self.r_gain, self.g_gain, self.b_gain)]}
-
-    def apply(self, img: np.ndarray, gains: Sequence[float], **params) -> np.ndarray:
-        out = img.astype(np.float32) * np.asarray(gains, dtype=np.float32)
-        return np.clip(out, 0, 255).astype(np.uint8)
-
-    def get_transform_init_args_names(self) -> tuple[str, ...]:
-        return ("r_gain", "g_gain", "b_gain")
-
-
 def _strong(size: int) -> list[A.BasicTransform]:
+    """Per-image part of §3.1: geometry, shadows, CLAHE. The per-pixel photometric ops
+    (colour, LED tint, gamma, blur, noise, JPEG, CoarseDropout) run on the GPU, by batch:
+    batch_augment.BatchAugment."""
     return [
         A.RandomResizedCrop(size=(size, size), scale=(0.3, 1.0)),
         A.HorizontalFlip(),
         A.VerticalFlip(),
         A.Rotate(limit=30, border_mode=cv2.BORDER_REFLECT_101, p=0.5),
         A.Perspective(scale=(0.02, 0.08), p=0.3),
-        A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.05, p=0.8),
-        LedTint(p=0.3),
-        A.RandomGamma(gamma_limit=(70, 150), p=0.3),
-        A.CLAHE(clip_limit=(1, 4), p=0.2),
-        A.OneOf([A.MotionBlur(blur_limit=(3, 9)), A.GaussianBlur(blur_limit=(3, 7))], p=0.3),
-        A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=0.3),
-        A.ImageCompression(quality_range=(30, 90), p=0.5),
         A.RandomShadow(shadow_roi=(0, 0, 1, 1), num_shadows_limit=(1, 2), p=0.3),
-        A.CoarseDropout(
-            num_holes_range=(1, 4),
-            hole_height_range=(0.1, 0.25),
-            hole_width_range=(0.1, 0.25),
-            p=0.3,
-        ),
+        A.CLAHE(clip_limit=(1, 4), p=0.2),
     ]
 
 
 def build_transform(level: str, size: int) -> A.Compose:
-    """eval: resize only; light: crop + flip (ablation A); strong: everything in §3.1."""
+    """CPU stage (DataLoader workers) -> uint8 (3, size, size) tensor, not normalized.
+
+    eval: resize only; light: crop + flip (ablation A); strong: see _strong. Finish with
+    batch_augment.BatchAugment(level) on the training device.
+    """
     if level == "eval":
         ops = [A.Resize(size, size)]
     elif level == "light":
@@ -71,7 +42,7 @@ def build_transform(level: str, size: int) -> A.Compose:
         ops = _strong(size)
     else:
         raise ValueError(f"niveau d'augmentation {level!r} hors de {LEVELS}")
-    return A.Compose([*ops, A.Normalize(), ToTensorV2()])
+    return A.Compose([*ops, ToTensorV2()])
 
 
 def leaf_mask(segmented: np.ndarray, thresh: int = 20) -> np.ndarray:

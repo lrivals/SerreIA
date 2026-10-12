@@ -120,6 +120,19 @@ def ensure_backgrounds(cfg):
 """
 
 
+GPU_CHECK = """
+# Entraînement, évaluation et Grad-CAM tournent sur le GPU, augmentations comprises.
+import torch
+
+if torch.cuda.is_available():
+    print("GPU :", torch.cuda.get_device_name(0))
+elif COLAB:
+    raise RuntimeError("pas de GPU : Exécution → Modifier le type d'exécution → GPU (T4)")
+else:
+    print("pas de GPU : tout tournera sur CPU (lent)")
+"""
+
+
 def header(name: str, title: str, intro: str, gpu: bool) -> dict:
     badge = f"[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]({COLAB_URL}/{name})"
     gpu_note = (
@@ -145,6 +158,7 @@ class Notebook:
             code(self.params, tags=["parameters"]),
             md("## Environnement"),
             code(SETUP),
+            *([code(GPU_CHECK)] if self.gpu else []),
             *[code(c) for c in self.extra_setup],
             *self.body,
         ]
@@ -210,18 +224,26 @@ NB_DONNEES = Notebook(
         code("""
         import random
 
+        import torch
+
         from vision.datasets.augment import build_transform
+        from vision.datasets.batch_augment import BatchAugment
         from vision.eval.gradcam import denormalize
 
         random.seed(SEED)
+        torch.manual_seed(SEED)
         r = df[df["source"] == "plantvillage"].sample(1, random_state=SEED).iloc[0]
         img = read_rgb(DATA_DIR / r["path"])
+        # Étage CPU (workers : géométrie, ombres, CLAHE) puis étage par batch (GPU à
+        # l'entraînement, CPU ici : couleur, LED, flou, bruit, JPEG, occlusions).
         strong = build_transform("strong", 224)
+        x = torch.stack([strong(image=img)["image"] for _ in range(N_EXAMPLES)])
+        x = BatchAugment("strong")(x)
         fig, axes = plt.subplots(1, N_EXAMPLES + 1, figsize=(2.2 * (N_EXAMPLES + 1), 2.4))
         axes[0].imshow(img)
         axes[0].set_title("original", fontsize=8)
-        for ax in axes[1:]:
-            ax.imshow(denormalize(strong(image=img)["image"][None])[0])
+        for ax, aug in zip(axes[1:], denormalize(x)):
+            ax.imshow(aug)
         for ax in axes:
             ax.axis("off")
         plt.show()

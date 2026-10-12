@@ -114,7 +114,10 @@ def read_rgb(path: Path) -> np.ndarray:
 
 
 class PlantDataset(Dataset):
-    """(image tensor, int64 targets [espece, sante, classe]) per index row."""
+    """(uint8 image tensor, int64 targets [espece, sante, classe]) per index row.
+
+    Images are normalized later, by batch on the device (batch_augment.BatchAugment).
+    """
 
     def __init__(
         self,

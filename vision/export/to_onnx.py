@@ -14,6 +14,7 @@ import onnxruntime as ort
 import torch
 from torch import nn
 
+from vision.datasets.batch_augment import BatchAugment
 from vision.datasets.dataset import HEADS, load_index, stratified_subset
 from vision.train.config import resolve
 from vision.train.train_classifier import RUNS_DIR, load_checkpoint, make_loader
@@ -40,7 +41,11 @@ def export_onnx(model: nn.Module, path: Path, size: int) -> None:
 
 @torch.no_grad()
 def compare(model: nn.Module, path: Path, batches) -> dict[str, float]:
-    """Max |logit| gap and argmax agreement (in points) per head, ONNX vs PyTorch."""
+    """Max |logit| gap and argmax agreement (in points) per head, ONNX vs PyTorch.
+
+    batches: normalized float images. Both sides on CPU, in fp32: the reference of the
+    edge runtime (the gap must not come from the GPU's arithmetic).
+    """
     model = model.cpu().eval()
     sess = ort.InferenceSession(str(path), providers=["CPUExecutionProvider"])
     gap = dict.fromkeys(HEADS, 0.0)
@@ -75,7 +80,8 @@ def export_and_check(ckpt: Path, n: int = 256, out: Path | None = None) -> dict[
     loader = make_loader(
         df, labels, {**cfg, "data": {**cfg["data"], "num_workers": 0}}, train=False
     )
-    res = compare(model, out, (x for x, _ in loader))
+    prepare = BatchAugment("eval")
+    res = compare(model, out, (prepare(x) for x, _ in loader))
     res["worst_disagree_pts"] = max(res[f"{h}/disagree_pts"] for h in HEADS)
     return res
 

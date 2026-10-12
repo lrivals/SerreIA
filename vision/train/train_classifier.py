@@ -20,6 +20,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from vision.datasets.augment import BackgroundPaster, build_transform
+from vision.datasets.batch_augment import BatchAugment
 from vision.datasets.dataset import (
     IGNORE_INDEX,
     LabelSpace,
@@ -77,6 +78,7 @@ def make_loader(
         pin_memory=torch.cuda.is_available(),
         drop_last=train and len(ds) > cfg["train"]["batch_size"],
         persistent_workers=d["num_workers"] > 0,
+        prefetch_factor=4 if d["num_workers"] > 0 else None,
         worker_init_fn=_worker_init,
     )
 
@@ -178,7 +180,7 @@ def setup_mlflow(cfg: dict) -> None:
 
 
 def train_one_epoch(
-    model, loader, loss_fn, opt, sched, scaler, device, amp_dtype, limit_batches: int
+    model, loader, augment, loss_fn, opt, sched, scaler, device, amp_dtype, limit_batches: int
 ) -> dict[str, float]:
     model.train()
     sums: dict[str, float] = {}
@@ -187,6 +189,7 @@ def train_one_epoch(
         if limit_batches and b >= limit_batches:
             break
         x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
+        x = augment(x).contiguous(memory_format=torch.channels_last)
         with torch.autocast(device.type, dtype=amp_dtype, enabled=amp_dtype is not None):
             parts = loss_fn(model(x), y)
         opt.zero_grad(set_to_none=True)
@@ -223,7 +226,10 @@ def run(
     )
     val_loader = make_loader(val_df, labels, cfg, train=False)
 
-    model = build_model(cfg, labels.sizes()).to(device)
+    # Per-pixel augmentations and normalization by batch on the device (docs/03 §3.1).
+    augment = BatchAugment(cfg["augment"]["level"]).to(device)
+    model = build_model(cfg, labels.sizes()).to(device, memory_format=torch.channels_last)
+    torch.backends.cudnn.benchmark = device.type == "cuda"  # fixed input size
     o, t = cfg["optim"], cfg["train"]
     opt = torch.optim.AdamW(model.param_groups(o["lr_head"], o["lr_backbone"], o["weight_decay"]))
     steps = min(limit_batches, len(train_loader)) if limit_batches else len(train_loader)
@@ -259,7 +265,16 @@ def run(
             frozen = epoch < t["freeze_epochs"]
             model.set_backbone_trainable(not frozen)
             losses = train_one_epoch(
-                model, train_loader, loss_fn, opt, sched, scaler, device, amp_dtype, limit_batches
+                model,
+                train_loader,
+                augment,
+                loss_fn,
+                opt,
+                sched,
+                scaler,
+                device,
+                amp_dtype,
+                limit_batches,
             )
             preds = collect_predictions(model, val_loader, device, limit_batches)
             metrics = {f"val/{k}": v for k, v in compute_metrics(preds, labels).items()}

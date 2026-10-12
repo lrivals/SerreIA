@@ -11,9 +11,16 @@ pytest.importorskip("albumentations")
 
 from vision.datasets.augment import (  # noqa: E402
     BackgroundPaster,
-    LedTint,
     build_transform,
     leaf_mask,
+)
+from vision.datasets.batch_augment import (  # noqa: E402
+    MEAN,
+    STD,
+    BatchAugment,
+    coarse_dropout,
+    jpeg,
+    led_tint,
 )
 from vision.datasets.dataset import (  # noqa: E402
     IGNORE_INDEX,
@@ -129,7 +136,7 @@ def test_dataset_item(data_dir, labels):
     df = pd.read_parquet(data_dir / "index.parquet")
     ds = PlantDataset(df, labels, build_transform("eval", 32), data_dir)
     x, y = ds[0]
-    assert x.shape == (3, 32, 32) and x.dtype == torch.float32
+    assert x.shape == (3, 32, 32) and x.dtype == torch.uint8
     assert y.shape == (3,) and y.dtype == torch.int64
 
 
@@ -140,7 +147,24 @@ def test_dataset_item(data_dir, labels):
 def test_build_transform(level):
     img = np.random.default_rng(0).integers(0, 255, (80, 100, 3), dtype=np.uint8)
     out = build_transform(level, 48)(image=img)["image"]
-    assert out.shape == (3, 48, 48)
+    assert out.shape == (3, 48, 48) and out.dtype == torch.uint8
+
+
+@pytest.mark.parametrize("level", ["eval", "light", "strong"])
+def test_batch_augment(level):
+    torch.manual_seed(0)
+    x = torch.randint(0, 256, (6, 3, 48, 48), dtype=torch.uint8)
+    out = BatchAugment(level)(x)
+    assert out.shape == x.shape and out.dtype == torch.float32
+    assert torch.isfinite(out).all()
+    lo = (0 - torch.tensor(MEAN)) / torch.tensor(STD)
+    hi = (1 - torch.tensor(MEAN)) / torch.tensor(STD)
+    assert (out >= lo.view(1, 3, 1, 1) - 1e-5).all() and (out <= hi.view(1, 3, 1, 1) + 1e-5).all()
+    if level != "strong":  # normalization only, as albumentations' Normalize
+        ref = (x.float() / 255 - torch.tensor(MEAN).view(1, 3, 1, 1)) / torch.tensor(STD).view(
+            1, 3, 1, 1
+        )
+        assert torch.allclose(out, ref, atol=1e-6)
 
 
 def test_build_transform_unknown():
@@ -149,9 +173,17 @@ def test_build_transform_unknown():
 
 
 def test_led_tint_boosts_red_blue():
-    img = np.full((8, 8, 3), 100, np.uint8)
-    out = LedTint(r_gain=(1.3, 1.3), g_gain=(0.8, 0.8), b_gain=(1.5, 1.5), p=1.0)(image=img)
-    assert out["image"][0, 0].tolist() == [130, 80, 150]
+    out = led_tint(torch.full((16, 3, 4, 4), 0.4))
+    assert (out[:, 0] >= 0.4).all() and (out[:, 1] <= 0.4).all() and (out[:, 2] >= 0.4).all()
+
+
+def test_jpeg_and_dropout():
+    x = torch.rand(4, 3, 32, 32)
+    out = jpeg(x, torch.tensor([1.0, 0.0, 1.0, 0.0]))
+    assert torch.equal(out[1], x[1]) and not torch.equal(out[0], x[0])
+    holes = coarse_dropout(torch.ones(8, 3, 40, 40))
+    zero = (holes == 0).float().mean((1, 2, 3))
+    assert ((zero > 0) & (zero < 0.5)).all()
 
 
 def test_leaf_mask_fills_lesions():
@@ -321,6 +353,7 @@ def test_end_to_end(data_dir, tmp_path):
 
     df = pd.read_parquet(data_dir / "index.parquet").head(4)
     x = torch.stack([make_loader(df, labels, cfg2, train=False).dataset[i][0] for i in range(4)])
+    x = BatchAugment("eval")(x)
     cams = compute_cams(model, "sante", x, [0, 1, 0, 1])
     assert cams.shape == (4, 64, 64)
 

@@ -15,6 +15,7 @@ from sklearn.metrics import (
 )
 from torch.utils.data import DataLoader
 
+from vision.datasets.batch_augment import BatchAugment
 from vision.datasets.dataset import HEADS, IGNORE_INDEX, LabelSpace
 
 ANORMAL = 1  # index of "anormal" in LabelSpace.sante
@@ -39,13 +40,17 @@ class Predictions:
 def collect_predictions(
     model: torch.nn.Module, loader: DataLoader, device: torch.device, limit_batches: int = 0
 ) -> Predictions:
+    """Logits of a loader of uint8 images, normalized on the device (fp16 on CUDA)."""
     model.eval()
+    prepare = BatchAugment("eval")
     logits = {h: [] for h in HEADS}
     targets = []
     for b, (x, y) in enumerate(loader):
         if limit_batches and b >= limit_batches:
             break
-        out = model(x.to(device, non_blocking=True))
+        x = prepare(x.to(device, non_blocking=True)).contiguous(memory_format=torch.channels_last)
+        with torch.autocast(device.type, dtype=torch.float16, enabled=device.type == "cuda"):
+            out = model(x)
         for h, o in zip(HEADS, out, strict=True):
             logits[h].append(o.float().cpu().numpy())
         targets.append(y.numpy())

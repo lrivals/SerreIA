@@ -19,6 +19,7 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from torch import nn
 
+from vision.datasets.batch_augment import BatchAugment
 from vision.datasets.dataset import HEADS, IGNORE_INDEX, LabelSpace, load_index
 from vision.eval.metrics import collect_predictions
 from vision.models.multihead import MultiHeadClassifier
@@ -47,7 +48,7 @@ class HeadOutput(nn.Module):
 def compute_cams(
     model: MultiHeadClassifier, head: str, x: torch.Tensor, classes: list[int], batch: int = 16
 ) -> np.ndarray:
-    """(n, H, W) Grad-CAM maps in [0, 1] for the given class of each image."""
+    """(n, H, W) Grad-CAM maps in [0, 1] for the given class of each (normalized) image."""
     out = []
     with GradCAM(
         model=HeadOutput(model, head), target_layers=[model.last_conv(x.shape[-1])]
@@ -59,7 +60,10 @@ def compute_cams(
 
 
 def denormalize(x: torch.Tensor) -> np.ndarray:
-    img = x.permute(0, 2, 3, 1).cpu().numpy() * STD + MEAN
+    """(n, H, W, 3) float images in [0, 1] from a uint8 or normalized batch."""
+    if x.dtype == torch.uint8:
+        return x.permute(0, 2, 3, 1).cpu().numpy().astype(np.float32) / 255
+    img = x.permute(0, 2, 3, 1).float().cpu().numpy() * STD + MEAN
     return np.clip(img, 0, 1)
 
 
@@ -119,7 +123,7 @@ def sheet_for(
         if len(idx) == 0:
             continue
         x = torch.stack([loader.dataset[int(i)][0] for i in idx]).to(device)
-        cams = compute_cams(model, head, x, pred[idx].tolist())
+        cams = compute_cams(model, head, BatchAugment("eval")(x), pred[idx].tolist())
         ok = pred[idx] == target[idx]
         titles = [
             f"{short(vocab[t])}\n→ {short(vocab[p])}"
