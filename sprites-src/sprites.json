@@ -1,0 +1,501 @@
+{
+  "version": "1.1",
+  "game": "Greenhouse Management",
+  "description": "Cozy greenhouse management game inspired by Stardew Valley and Animal Crossing",
+  "style": {
+    "type": "pixel_art",
+    "perspective": "top_down_3_4",
+    "lighting": "top_left",
+    "outline_color": "#49352B",
+    "max_colors": 32,
+    "background": "transparent",
+    "anti_aliasing": false,
+    "palette": {
+      "leaf_green": "#5D8C45",
+      "dark_green": "#315B35",
+      "soil_brown": "#805333",
+      "wood_brown": "#A66E43",
+      "terracotta": "#C76F4F",
+      "cream": "#F3E5C8",
+      "water_blue": "#559BC4",
+      "flower_yellow": "#E8C957",
+      "alert_red": "#D94F45",
+      "led_purple": "#D45BE8"
+    }
+  },
+  "grid": {
+    "tile_size": [16, 16],
+    "character_size": [16, 24],
+    "large_object_sizes": [
+      [16, 32],
+      [32, 16],
+      [32, 32],
+      [64, 16],
+      [48, 48]
+    ]
+  },
+  "sources": {
+    "planche_01": {
+      "sheet": "brut/planche_01.png",
+      "cut_dir": "decoupe/planche_01/",
+      "file_pattern": "sprite_{n:03d}.png",
+      "generator": "ChatGPT (image generation)",
+      "sprite_count": 150
+    }
+  },
+  "assets": {
+    "characters": {
+      "gardener": {
+        "path": "sprites/characters/gardener/",
+        "description": "Small gardener wearing a straw hat, green apron and brown boots",
+        "size": [16, 24],
+        "animations": {
+          "walk_down": {
+            "frames": 5,
+            "file": "walk_down.png",
+            "source": { "sheet": "planche_01", "sprites": [1, 2, 3, 4, 5] }
+          },
+          "walk_right": {
+            "frames": 5,
+            "file": "walk_right.png",
+            "source": { "sheet": "planche_01", "sprites": [20, 21, 22, 23, 24] }
+          },
+          "walk_left": {
+            "frames": 5,
+            "file": "walk_right.png",
+            "flip_x": true,
+            "note": "not drawn: horizontal mirror of walk_right"
+          },
+          "walk_up": {
+            "frames": 5,
+            "file": "walk_up.png",
+            "source": { "sheet": "planche_01", "sprites": [39, 40, 41, 42, 43] }
+          },
+          "idle": {
+            "frames": 2,
+            "file": "idle.png",
+            "source": { "sheet": "planche_01", "sprites": [44, 45] }
+          },
+          "idle_back": {
+            "frames": 1,
+            "file": "idle_back.png",
+            "source": { "sheet": "planche_01", "sprites": [46] },
+            "note": "seen from behind, three-quarter; usage to be decided"
+          },
+          "watering": {
+            "frames": 2,
+            "file": "watering_right.png",
+            "facing": "right",
+            "source": { "sheet": "planche_01", "sprites": [47, 48] }
+          }
+        }
+      }
+    },
+    "plants": {
+      "tomato": {
+        "path": "sprites/plants/tomato/",
+        "description": "Tomato plant with five growth stages and three health states",
+        "size": [16, 32],
+        "growth_stages": ["seedling", "young", "flowering", "green_fruit", "ripe_fruit"],
+        "health_states": ["healthy", "yellowing", "sick"],
+        "details": {
+          "flower_color": "yellow",
+          "unripe_fruit_color": "green",
+          "ripe_fruit_color": "red",
+          "sick_state": "brown_spots_and_drooping_leaves"
+        },
+        "total_variants": 15,
+        "source": {
+          "sheet": "planche_01",
+          "layout": "rows = health_states, columns = growth_stages",
+          "sprites": [
+            [6, 7, 8, 9, 10],
+            [25, 26, 27, 28, 29],
+            [49, 50, 51, 52, 53]
+          ]
+        }
+      },
+      "strawberry": {
+        "path": "sprites/plants/strawberry/",
+        "description": "Strawberry plant with white flowers and red berries",
+        "size": [16, 16],
+        "growth_stages": ["seedling", "young", "flowering", "green_fruit", "ripe_fruit"],
+        "health_states": ["healthy", "yellowing", "sick"],
+        "total_variants": 15,
+        "source": {
+          "sheet": "planche_01",
+          "layout": "rows = health_states, columns = growth_stages",
+          "sprites": [
+            [11, 12, 13, 14, 15],
+            [30, 31, 32, 33, 34],
+            [54, 55, 56, 57, 58]
+          ]
+        }
+      },
+      "pepper": {
+        "path": "sprites/plants/pepper/",
+        "description": "Pepper plant with green leaves and elongated peppers",
+        "size": [16, 32],
+        "growth_stages": ["seedling", "young", "flowering_green_fruit", "ripe_fruit"],
+        "health_states": ["healthy", "yellowing", "sick"],
+        "total_variants": 12,
+        "note": "only 4 stages were generated: flowering and green fruit share one sprite",
+        "source": {
+          "sheet": "planche_01",
+          "layout": "rows = health_states, columns = growth_stages",
+          "sprites": [
+            [16, 17, 18, 19],
+            [35, 36, 37, 38],
+            [59, 60, 61, 62]
+          ]
+        }
+      },
+      "basil": {
+        "path": "sprites/plants/basil/",
+        "description": "Compact basil plant with dense green foliage",
+        "size": [16, 16],
+        "growth_stages": ["seedling", "young", "growing", "mature", "flowering"],
+        "health_states": ["healthy", "yellowing", "sick"],
+        "total_variants": 15,
+        "source": {
+          "sheet": "planche_01",
+          "layout": "rows = health_states, columns = growth_stages",
+          "sprites": [
+            [63, 64, 65, 66, 67],
+            [76, 77, 78, 79, 80],
+            [96, 81, 82, 83, 84]
+          ]
+        }
+      }
+    },
+    "containers": {
+      "plastic_pot": {
+        "file": "sprites/containers/plastic_pot.png",
+        "size": [16, 16],
+        "description": "Small dark plastic plant pot",
+        "source": { "sheet": "planche_01", "sprites": [68] }
+      },
+      "terracotta_pot": {
+        "file": "sprites/containers/terracotta_pot.png",
+        "size": [16, 16],
+        "description": "Traditional orange-brown terracotta pot",
+        "source": { "sheet": "planche_01", "sprites": [69] }
+      },
+      "wooden_planter": {
+        "file": "sprites/containers/wooden_planter.png",
+        "size": [32, 16],
+        "description": "Rectangular wooden planter box",
+        "source": { "sheet": "planche_01", "sprites": [70] }
+      },
+      "fabric_grow_bag": {
+        "file": "sprites/containers/fabric_grow_bag.png",
+        "size": [16, 16],
+        "description": "Reusable fabric growing container",
+        "source": { "sheet": "planche_01", "sprites": [71] }
+      },
+      "seedling_tray": {
+        "file": "sprites/containers/seedling_tray.png",
+        "size": [32, 16],
+        "description": "Tray containing multiple seedlings",
+        "source": { "sheet": "planche_01", "sprites": [72] }
+      },
+      "hydroponic_nft_channel": {
+        "file": "sprites/containers/nft_channel.png",
+        "size": [64, 16],
+        "description": "Horizontal white hydroponic channel with four plant sites",
+        "tileable": true,
+        "note": "generated as one 4-site segment; the ends must be cut off to tile",
+        "source": { "sheet": "planche_01", "sprites": [73] }
+      },
+      "dwc_tub": {
+        "file": "sprites/containers/dwc_tub.png",
+        "size": [32, 32],
+        "description": "Deep water culture reservoir with drain tap",
+        "source": { "sheet": "planche_01", "sprites": [74] }
+      },
+      "soil_patch": {
+        "file": "sprites/containers/soil_patch.png",
+        "size": [32, 32],
+        "description": "Patch of cultivated soil",
+        "source": { "sheet": "planche_01", "sprites": [75] }
+      }
+    },
+    "tiles": {
+      "soil": {
+        "file": "sprites/tiles/soil.png",
+        "size": [16, 16],
+        "tileable": true,
+        "source": { "sheet": "planche_01", "sprites": [85] }
+      },
+      "stone_floor": {
+        "file": "sprites/tiles/stone_floor.png",
+        "size": [16, 16],
+        "tileable": true,
+        "source": { "sheet": "planche_01", "sprites": [86] }
+      },
+      "gravel": {
+        "file": "sprites/tiles/gravel.png",
+        "size": [16, 16],
+        "tileable": true,
+        "source": { "sheet": "planche_01", "sprites": [87] }
+      },
+      "wooden_path": {
+        "file": "sprites/tiles/wooden_path.png",
+        "size": [16, 16],
+        "tileable": true,
+        "source": { "sheet": "planche_01", "sprites": [88] }
+      },
+      "greenhouse_glass_front": {
+        "file": "sprites/structures/glass_front.png",
+        "size": [32, 32],
+        "tileable": true,
+        "description": "Front glass wall, 2×2 panes",
+        "source": { "sheet": "planche_01", "sprites": [89] }
+      },
+      "greenhouse_glass_side": {
+        "file": "sprites/structures/glass_side.png",
+        "size": [16, 32],
+        "tileable": true,
+        "description": "Side glass wall seen at an angle",
+        "source": { "sheet": "planche_01", "sprites": [90] }
+      },
+      "greenhouse_glass_side_narrow": {
+        "file": "sprites/structures/glass_side_narrow.png",
+        "size": [16, 32],
+        "tileable": true,
+        "description": "Narrow side glass panel",
+        "source": { "sheet": "planche_01", "sprites": [91] }
+      },
+      "greenhouse_corner": {
+        "file": "sprites/structures/glass_corner.png",
+        "size": [32, 32],
+        "source": { "sheet": "planche_01", "sprites": [92] }
+      },
+      "brick_border_corner": {
+        "file": "sprites/structures/brick_border_corner.png",
+        "size": [32, 16],
+        "description": "Low brick border, L-shaped corner piece",
+        "note": "no straight tileable segment was generated; cut one from the corner piece",
+        "source": { "sheet": "planche_01", "sprites": [93] }
+      },
+      "greenhouse_door": {
+        "file": "sprites/structures/greenhouse_door.png",
+        "size": [16, 32],
+        "source": { "sheet": "planche_01", "sprites": [94] }
+      },
+      "metal_shelf": {
+        "file": "sprites/structures/metal_shelf.png",
+        "size": [16, 32],
+        "source": { "sheet": "planche_01", "sprites": [95] }
+      }
+    },
+    "devices": {
+      "fan": {
+        "path": "sprites/devices/fan/",
+        "size": [16, 16],
+        "description": "Wall-mounted ventilation fan",
+        "actuator": "ventilo",
+        "states": { "off": [97], "on": [98, 99, 100, 101, 102] },
+        "frames": 6,
+        "source": { "sheet": "planche_01", "sprites": [97, 98, 99, 100, 101, 102] }
+      },
+      "grow_light": {
+        "path": "sprites/devices/grow_light/",
+        "size": [32, 16],
+        "description": "LED grow light bar",
+        "actuator": "led",
+        "states": { "off": [106, 107], "on": [108, 109, 110, 111] },
+        "effects": { "on": "pink_purple_glow" },
+        "frames": 6,
+        "note": "sprite 107 is the bar seen at an angle",
+        "source": { "sheet": "planche_01", "sprites": [106, 107, 108, 109, 110, 111] }
+      },
+      "mist_sprayer": {
+        "path": "sprites/devices/mist_sprayer/",
+        "size": [16, 16],
+        "description": "Plant misting device",
+        "actuator": "brumisateur",
+        "states": { "off": [115, 116], "on": [117, 118, 119, 120] },
+        "frames": 6,
+        "note": "sprite 115 includes a stand; mist is semi-transparent and partly cropped at the bottom",
+        "source": { "sheet": "planche_01", "sprites": [115, 116, 117, 118, 119, 120] }
+      },
+      "heater": {
+        "path": "sprites/devices/heater/",
+        "size": [16, 16],
+        "description": "Small electric greenhouse heater",
+        "actuator": "chauffage",
+        "states": { "off": [121, 122], "on": [123, 124, 125, 126] },
+        "effects": { "on": "orange_glow" },
+        "frames": 6,
+        "source": { "sheet": "planche_01", "sprites": [121, 122, 123, 124, 125, 126] }
+      },
+      "water_pump": {
+        "path": "sprites/devices/water_pump/",
+        "size": [16, 16],
+        "description": "Water circulation pump",
+        "actuator": "pompe_nutri",
+        "states": { "off": [130, 131, 132, 133], "on": [134, 135] },
+        "frames": 6,
+        "source": { "sheet": "planche_01", "sprites": [130, 131, 132, 133, 134, 135] }
+      },
+      "ph_dosing_pump": {
+        "path": "sprites/devices/ph_dosing_pump/",
+        "size": [16, 16],
+        "description": "Small pH dosing pump with bottle",
+        "actuator": "pompe_ph_down",
+        "states": { "off": [142, 143, 144], "on": [145, 146, 147] },
+        "frames": 6,
+        "note": "off frames are inconsistent (bottle missing on 142 and 144); 143 is the cleanest",
+        "source": { "sheet": "planche_01", "sprites": [142, 143, 144, 145, 146, 147] }
+      }
+    },
+    "sensors": {
+      "environment_sensor_online": {
+        "file": "sprites/sensors/sensor_online.png",
+        "size": [16, 16],
+        "description": "White sensor box with green LED",
+        "status": "online",
+        "source": { "sheet": "planche_01", "sprites": [103] }
+      },
+      "environment_sensor_offline": {
+        "file": "sprites/sensors/sensor_offline.png",
+        "size": [16, 16],
+        "description": "White sensor box with grey LED",
+        "status": "offline",
+        "source": { "sheet": "planche_01", "sprites": [104] }
+      },
+      "soil_moisture_probe": {
+        "file": "sprites/sensors/soil_moisture_probe.png",
+        "size": [16, 16],
+        "description": "Probe inserted into the soil",
+        "source": { "sheet": "planche_01", "sprites": [112] }
+      },
+      "light_sensor": {
+        "file": "sprites/sensors/light_sensor.png",
+        "size": [16, 16],
+        "description": "Sensor measuring light intensity",
+        "source": { "sheet": "planche_01", "sprites": [105] }
+      },
+      "security_camera": {
+        "path": "sprites/sensors/security_camera/",
+        "size": [16, 32],
+        "description": "Security camera mounted on a pole",
+        "states": { "normal": [113], "flash": [114] },
+        "frames": 2,
+        "source": { "sheet": "planche_01", "sprites": [113, 114] }
+      },
+      "water_tank": {
+        "path": "sprites/sensors/water_tank/",
+        "size": [16, 32],
+        "description": "Water storage tank with three fill levels (niveau_cuve)",
+        "states": { "full": [127], "half": [128], "low": [129] },
+        "frames": 3,
+        "source": { "sheet": "planche_01", "sprites": [127, 128, 129] }
+      }
+    },
+    "ui": {
+      "alert": {
+        "file": "sprites/ui/alert.png",
+        "size": [16, 16],
+        "description": "Red exclamation mark speech bubble",
+        "source": { "sheet": "planche_01", "sprites": [136] }
+      },
+      "question": {
+        "file": "sprites/ui/question.png",
+        "size": [16, 16],
+        "description": "Yellow question mark speech bubble",
+        "source": { "sheet": "planche_01", "sprites": [137] }
+      },
+      "thinking": {
+        "file": "sprites/ui/thinking.png",
+        "size": [16, 16],
+        "description": "Three-dot thinking bubble",
+        "source": { "sheet": "planche_01", "sprites": [138] }
+      },
+      "heart": {
+        "file": "sprites/ui/heart.png",
+        "size": [16, 16],
+        "description": "Heart bubble (harvest ready, positive feedback)",
+        "source": { "sheet": "planche_01", "sprites": [139] }
+      },
+      "sparkles": {
+        "file": "sprites/ui/sparkles.png",
+        "size": [16, 16],
+        "description": "Sparkle bubble for rewards or discoveries",
+        "source": { "sheet": "planche_01", "sprites": [140] }
+      },
+      "spore_particles": {
+        "path": "sprites/ui/spores/",
+        "size": [16, 16],
+        "description": "Spore / contamination particles in three colors (not animation frames)",
+        "variants": { "green": [148], "purple": [149], "brown": [150] },
+        "source": { "sheet": "planche_01", "sprites": [148, 149, 150] }
+      },
+      "dialogue_box": {
+        "file": "sprites/ui/dialogue_box.png",
+        "size": [96, 48],
+        "description": "Cream dialogue panel with a wooden border",
+        "rendering": "nine_slice",
+        "background": "#F3E5C8",
+        "border": "#805333",
+        "note": "generated as a wide panel; nine-slice margins to be set after downscaling",
+        "source": { "sheet": "planche_01", "sprites": [141] }
+      }
+    }
+  },
+  "suggested_additions": {
+    "plants": ["lettuce", "cucumber", "zucchini", "carrot", "mint", "rosemary"],
+    "plant_problems": [
+      "aphids",
+      "spider_mites",
+      "powdery_mildew",
+      "leaf_spots",
+      "root_rot",
+      "sunburn",
+      "underwatering",
+      "overwatering"
+    ],
+    "environment": ["sunlight", "clouds", "rain", "wind", "day_night_cycle", "temperature_indicator"],
+    "tools": [
+      "watering_can",
+      "pruning_shears",
+      "hand_trowel",
+      "seed_packet",
+      "harvest_basket",
+      "fertilizer_bottle"
+    ],
+    "gameplay": [
+      "inventory_icons",
+      "seed_shop",
+      "plant_health_indicator",
+      "water_level_indicator",
+      "temperature_indicator",
+      "growth_progress_bar",
+      "harvest_ready_indicator"
+    ],
+    "missing_from_planche_01": [
+      "gardener_walk_left (mirrored for now)",
+      "gardener_watering_down / up",
+      "gardener_inspect, gardener_switch, gardener_dose, gardener_notebook, gardener_sleep (doc 13 §2)",
+      "pepper_flowering (separate from green fruit)",
+      "brick_border_straight",
+      "plant_isolated, plant_removed (etat_sante isolee / retiree)"
+    ]
+  },
+  "export": {
+    "format": "PNG",
+    "transparency": true,
+    "recommended_filter": "nearest_neighbor",
+    "recommended_scale_factors": [2, 3, 4],
+    "naming_convention": "snake_case",
+    "directory_structure": "frontend/public/sprites/{category}/{asset_name}/"
+  },
+  "notes": [
+    "`size` is the target size in game pixels; the generated sprites are about 3 to 5 times larger and not on an exact grid, so they must be downscaled (nearest neighbor) and cleaned up.",
+    "`source.sprites` are the numbers of the files cut by `tools/decouper_sprites.py --auto` (see decoupe/planche_01/apercu.png); re-cutting the sheet with different settings may renumber them.",
+    "Devices, sensors and tanks were generated on semi-transparent white squares: remove the residual haze when cleaning up.",
+    "Keep animation frames aligned to a consistent grid to avoid visual jitter.",
+    "Use nearest-neighbor scaling to preserve crisp pixel edges."
+  ]
+}

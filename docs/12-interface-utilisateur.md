@@ -2,7 +2,7 @@
 
 Interface web pour **constituer sa serre** (zones, emplacements, plantes, pots, mode de culture, capteurs, actionneurs), **suivre** mesures, images et consommations, **comprendre** les décisions (preuves vision + capteurs, arbre des actions) et **dialoguer** avec l'agent.
 
-> Statut : **conception**. Modèle de données : [09](09-modele-gestion-serre.md) ; décisions et arbre : [10](10-decisions-tracabilite.md) ; agent : [11](11-agent-decision.md).
+> Statut : **conception**. Modèle de données : [09](09-modele-gestion-serre.md) ; décisions et arbre : [10](10-decisions-tracabilite.md) ; agent : [11](11-agent-decision.md) ; vue « jeu » en pixel art (construction de la serre, jardinier animé, stats en bulles) : [13](13-interface-jeu-pixel-art.md).
 
 ## 1. Architecture
 
@@ -36,6 +36,7 @@ Interface web pour **constituer sa serre** (zones, emplacements, plantes, pots, 
 | Courbes temps réel / consommation | Recharts |
 | Formulaires | React Hook Form + Zod (schémas générés depuis l'OpenAPI de FastAPI) |
 | Composants | shadcn/ui (Radix) + Tailwind |
+| Vue jeu pixel art ([13](13-interface-jeu-pixel-art.md)) | Phaser 3, easystarjs, mitt (chargés à la demande) |
 | Types API | `openapi-typescript` à partir de `/openapi.json` |
 
 ## 2. Écrans
@@ -147,7 +148,8 @@ frontend/
     ├── api/             # client généré (openapi-typescript) + hooks TanStack Query
     ├── pages/           # Constructeur, Equipements, Dashboard, Consommation, Decisions, Arbre, Agent
     ├── components/      # PlanSerre, FicheEmplacement, FicheDecision, ArbreActions, CarteProposition…
-    └── live/            # client WebSocket
+    ├── live/            # client WebSocket
+    └── game/            # vue jeu pixel art (Phaser), voir doc 13
 ```
 
 Dépendances Python à ajouter à l'extra `backend` de `pyproject.toml` : `sqlalchemy`, `alembic`, `anthropic`, `sse-starlette` (en plus de `fastapi`, `uvicorn`, `psycopg` déjà présents).
