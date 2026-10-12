@@ -18,7 +18,7 @@ Une vue de l'interface inspirée d'Animal Crossing / Stardew Valley : on **const
 │  ▓   🍅    🍓    ·     ·                          ▓   ═🌿═🌿═🌿═🌿═🌿═🌿═  canal G1–G6         ▓ │
 │  ▓   A1    A2    A3    A4        ☺ ← jardinier    ▓   ═🌿═🌿═🌿═🌿═🌿═🌿═  canal G7–G12        ▓ │
 │  ▓   🍅?   ·     ·     ·                          ▓                       [cuve] pH 5,9      ▓ │
-│  ▓   B1    B2    B3    B4    📷cam-z1-a           ▓   ▤ SHT45  ▤ SCD41      EC 1,8         ▓ │
+│  ▓   B1    B2    B3    B4    📷cam-z1-a           ▓   ▤ SHT41  ▤ LD2450     EC 1,8         ▓ │
 │  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ │
 │ [🔨 Construire]  [▶ Serre vivante]  [⏪ Rejouer 24 h]                       ⚠ 1 décision à valider │
 └────────────────────────────────────────────────────────────────────────────────────────────────┘

@@ -9,7 +9,7 @@
 | **S4 — Export edge** | 1 semaine | ONNX → HEF, benchmark sur le Pi 5 + Hailo | écart HEF/ONNX < 2 pts, latence mesurée |
 | **S5–S7 — Détection** | 3 semaines | PlantDoc → YOLO, pseudo-labels (Grad-CAM + SAM 2), Label Studio, deux étages | mAP@0.5 « feuille » ≥ 0,6 ; pipeline de bout en bout sur des photos réelles |
 | **En parallèle** | continu | simulateur MQTT, ingestion → TimescaleDB, dashboard Grafana | dashboard alimenté par le simulateur |
-| **S8+ — Serre réelle** | — | premier nœud ESP32 (air), caméra fixe, `camera_service`, sécurités | 7 jours sans intervention, alertes cohérentes |
+| **S8+ — Serre réelle** | — | premiers nœuds XIAO ESP32-C6 (air, sol), caméra fixe, `camera_service`, sécurités | 7 jours sans intervention, alertes cohérentes |
 | **G1 — Modèle de serre et base** | 1 semaine | schéma PostgreSQL/TimescaleDB ([09](09-modele-gestion-serre.md)), ingestion MQTT → DB, calcul des consommations | simulateur ingéré, consommation journalière calculée |
 | **G2 — API et constructeur de serre** | 2 semaines | FastAPI CRUD, front React + Vite : constructeur, équipements, tableau de bord ([12](12-interface-utilisateur.md)), export de configuration vers le Pi | serre complète saisie dans l'UI et chargée par le controller |
 | **G3 — Traçabilité des décisions** | 2 semaines | `Decision` / `Action`, topic `decision` dans `common/mqtt/`, journal, fiche décision, arbre des actions ([10](10-decisions-tracabilite.md)) | une décision du simulateur (vision + capteurs) visible dans l'UI avec ses preuves et ses actions |

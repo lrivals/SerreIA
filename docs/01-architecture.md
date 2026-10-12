@@ -5,10 +5,12 @@
 ```
                     ┌─────────────────────── SERRE ───────────────────────┐
                     │                                                     │
-  [Nœud ESP32 #1]───┤  SHT45 (T/HR), SCD41 (CO₂), BH1750 (lux)            │
-  [Nœud ESP32 #2]───┤  pH, EC, DS18B20 (T° eau), niveau cuve              │
-  [Nœud ESP32 #3]───┤  relais / MOSFET : pompes, ventilos, LED (PWM)      │
-        │  Wi-Fi    │                                                     │
+  [Nœud air]     ───┤  SHT41 (T/HR), BMP280 (pression), GY-302 (lux),     │
+                    │  SCD41 (CO₂), HLK-LD2450 (radar de présence)        │
+  [Nœud sol]     ───┤  sondes capacitives d'humidité du sol               │
+  [Nœud cuve]    ───┤  pH, EC, DS18B20 (T° eau), niveau cuve              │
+  [Nœud action]  ───┤  relais / MOSFET : pompes, ventilos, LED (PWM)      │
+        │  Wi-Fi    │  (tous les nœuds : Seeed XIAO ESP32-C6)             │
         ▼  MQTT     │                                                     │
   ┌──────────────────────────────┐        caméras CSI / USB               │
   │ Raspberry Pi 5 + Hailo-8L    │◄───────────────────────────────────────┤
@@ -49,6 +51,7 @@
 | `serre/<zone>/decision` *(proposé)* | controller / backend | 1 | non | décision et ses preuves — cf. [10 §7](10-decisions-tracabilite.md#7-évolution-proposée-du-contrat-mqtt), pas encore dans `common/mqtt/` |
 
 `<zone>` : `z1`, `z2`… ; `<type>` : `temperature`, `humidite`, `co2`, `lux`, `ph`, `ec`, `temp_eau`, `niveau_cuve`.
+Types **proposés** pour le matériel retenu ([06 §1.2](06-capteurs-controle.md#12-capteurs-bom)), pas encore dans `SensorType` de `common/mqtt/topics.py` : `pression` (hPa, BMP280), `presence` (nombre de cibles 0–3, HLK-LD2450), `humidite_sol` (%, sondes capacitives).
 `<actionneur>` : `pompe_nutri`, `pompe_ph_down`, `ventilo`, `led`, `brumisateur`, `chauffage`.
 
 ### Schémas JSON

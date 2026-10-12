@@ -58,7 +58,7 @@ python3 -m venv .venv && .venv/bin/pip install -e . pytest ruff
 | Hailo AI SW Suite | compilation HEF (x86 uniquement) | Docker, compte développeur Hailo |
 | Mosquitto | broker MQTT | `sudo apt install mosquitto` |
 | TimescaleDB + Grafana | séries temporelles et dashboard | `docker compose` (dans `backend/`) |
-| PlatformIO | firmware ESP32 | extension VS Code |
+| PlatformIO | firmware ESP32 (XIAO ESP32-C6) | extension VS Code + plateforme pioarduino (core Arduino 3.x) |
 
 ### GPU : Colab en attendant le driver
 Tant que la RTX locale n'est pas utilisable, les entraînements tournent sur Colab : le notebook clone le dépôt (public), installe `.[vision]`, monte le Drive et extrait les archives de `MyDrive/SerreIA/data/` sur le disque local de la session. Les sorties reviennent sur le PC par `make harvest`.

@@ -11,7 +11,8 @@ C'est la référence commune au contrôleur ([06](06-capteurs-controle.md)), au 
 Serre ─┬─ Zone z1 ─┬─ Emplacement A1 ── Plante (tomate « Cœur de bœuf », floraison)
        │           ├─ Emplacement A2 ── Plante (fraisier, croissance)
        │           ├─ Emplacement B1 ── (vide)
-       │           ├─ Capteurs  : SHT45, SCD41, BH1750           (air de la zone)
+       │           ├─ Capteurs  : SHT41, BMP280, GY-302, SCD41, LD2450   (air de la zone)
+       │           ├─ Sondes sol : capacitives sur A1, A2        (une par emplacement en terre)
        │           ├─ Actionneurs : ventilo, led, brumisateur, chauffage
        │           └─ Caméras : cam-z1-a (voit A1, A2, B1)
        └─ Zone z2 (hydroponie NFT) ─┬─ Emplacements G1…G12
@@ -75,16 +76,16 @@ Le mode de culture sert à :
 - **choisir les règles** actives du contrôleur (pas de dosage pH sur un emplacement en terre, pas d'arrosage cyclique sur du DWC) ;
 - **contrôler la cohérence** : un emplacement `hydro_*` sans capteur pH/EC dans sa cuve déclenche un avertissement de configuration.
 
-> L'humidité substrat n'existe pas encore dans `SensorType` ; elle est à ajouter au contrat (`humidite_sol`) quand le capteur capacitif sera câblé.
+> Les sondes capacitives d'humidité du sol sont achetées ([06 §1.2](06-capteurs-controle.md#12-capteurs-bom)), mais `humidite_sol` n'existe pas encore dans `SensorType` ; il est à ajouter au contrat avec `pression` et `presence`.
 
 ## 4. Équipements
 
 ### Capteur
 | Champ | Exemple | Remarque |
 |---|---|---|
-| `id` | `sht45-z1` | |
-| `modele` | `SHT45`, `SCD41`, `BH1750`, `EZO-pH`, `EZO-EC`, `DS18B20`, `JSN-SR04T` | BOM de [06 §1](06-capteurs-controle.md#1-capteurs-bom-indicative) |
-| `mesures` | liste de `SensorType` (`temperature`, `humidite`…) | un SCD41 publie `co2`, `temperature`, `humidite` |
+| `id` | `sht41-z1` | |
+| `modele` | `SHT41`, `BMP280`, `GY-302`, `HLK-LD2450`, `capacitif-sol`, `SCD41`, `EZO-pH`, `EZO-EC`, `DS18B20`, `JSN-SR04T` | BOM de [06 §1.2](06-capteurs-controle.md#12-capteurs-bom) |
+| `mesures` | liste de `SensorType` (`temperature`, `humidite`…) | un SHT41 publie `temperature`, `humidite` ; un SCD41 publie `co2`, `temperature`, `humidite` |
 | `noeud` | `esp32-01` | champ `noeud` du message `SensorReading` |
 | `zone`, `cuve_id` | `z1` | |
 | `emplacements_couverts` | `[z1-A1, z1-A2]` ou `*` (toute la zone) | sert à rattacher une mesure à une plante |
@@ -95,7 +96,7 @@ Le mode de culture sert à :
 | Champ | Exemple | Remarque |
 |---|---|---|
 | `id` / `type` | `led-z1` / `Actuator.LED` | type ∈ `Actuator` de `common/mqtt/topics.py` |
-| `noeud`, `zone` | `esp32-03`, `z1` | |
+| `noeud`, `zone` | `esp32-04`, `z1` | |
 | `puissance_w` | `240` | puissance nominale à 100 % ; base du calcul d'énergie |
 | `debit_l_h` | `120` | pompes uniquement |
 | `ppfd_max` | `450` µmol/m²/s au niveau de la canopée | LED uniquement ; base de l'estimation DLI |

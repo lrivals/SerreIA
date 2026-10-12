@@ -51,7 +51,7 @@ Plan en grille par zone ; on ajoute des zones, des emplacements, puis on dépose
 │ │  A1 🍅●  A2 🍓●  A3 ·    A4 ·            │  ● sain             │ │ Recette  tomate-standard ▾      │
 │ │  B1 ·    B2 🍅▲  B3 ·    B4 ·            │  ▲ à surveiller     │ │ Contenant pot 11 L plastique    │
 │ │                         📷 cam-z1-a      │  ✖ malade           │ │ Culture  terre ▾                │
-│ └────────────────────────────────────────┘                     │ │ Capteurs SHT45, SCD41, BH1750   │
+│ └────────────────────────────────────────┘                     │ │ Capteurs SHT41, BMP280, GY-302  │
 │ Palette : [Tomate] [Fraisier] [Poivron] [+ autre espèce]        │ │ Caméra   cam-z1-a (région ✓)    │
 └────────────────────────────────────────────────────────────────┘ │ [Historique] [Décisions] [Photos]│
                                                                    └──────────────────────────────────┘
