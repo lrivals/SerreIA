@@ -1,0 +1,21 @@
+# Données et artefacts (volumineux, non versionnés)
+data/
+mlruns/
+reports/*.png
+*.pt
+*.pth
+*.onnx
+*.hef
+runs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
+.pytest_cache/
+
+# Éditeur / OS
+.vscode/
+.idea/
+.DS_Store
