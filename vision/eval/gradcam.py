@@ -7,6 +7,7 @@ predictions) and, with --save-cams, the raw maps (.npz) reused as YOLO pre-annot
 
 import argparse
 import logging
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
@@ -105,10 +106,11 @@ def sheet_for(
     tag: str,
     save_cams: bool,
     device: torch.device,
-) -> None:
+) -> list[Path]:
     pool = df.sample(min(POOL, len(df)), random_state=cfg["seed"]).reset_index(drop=True)
     loader = make_loader(pool, labels, cfg, train=False)
     preds = collect_predictions(model, loader, device)
+    written = []
     for head in HEADS:
         vocab = labels.vocab(head)
         pred = preds.logits[head].argmax(1)
@@ -123,14 +125,9 @@ def sheet_for(
             f"{short(vocab[t])}\n→ {short(vocab[p])}"
             for t, p in zip(target[idx], pred[idx], strict=True)
         ]
-        plot_sheet(
-            denormalize(x),
-            cams,
-            titles,
-            ok,
-            f"{head} — {tag}",
-            out_dir / f"gradcam_{tag}_{head}.png",
-        )
+        sheet = out_dir / f"gradcam_{tag}_{head}.png"
+        plot_sheet(denormalize(x), cams, titles, ok, f"{head} — {tag}", sheet)
+        written.append(sheet)
         if save_cams:
             np.savez_compressed(
                 out_dir / f"cams_{tag}_{head}.npz",
@@ -139,6 +136,30 @@ def sheet_for(
                 pred=pred[idx],
                 target=target[idx],
             )
+    return written
+
+
+def make_sheets(
+    ckpt: Path,
+    splits: Sequence[str] = ("test", "test_xdomain"),
+    n: int = 32,
+    save_cams: bool = False,
+    device: torch.device | None = None,
+    out_dir: Path | None = None,
+) -> list[Path]:
+    """Grad-CAM sheets of a checkpoint for every (split, source) and head; written paths."""
+    device = device or pick_device(None)
+    model, labels, cfg = load_checkpoint(ckpt, device)
+    out_dir = out_dir or REPORTS_DIR / ckpt.parent.name
+    out_dir.mkdir(parents=True, exist_ok=True)
+    df = load_index(resolve(cfg["data"]["index"]), list(splits))
+    written = []
+    for (split, source), sub in df.groupby(["split", "source"], observed=True):
+        tag = f"{split}_{source}"
+        log.info("Grad-CAM %s (%d images)", tag, len(sub))
+        written += sheet_for(model, labels, cfg, sub, n, out_dir, tag, save_cams, device)
+    log.info("planches écrites dans %s", out_dir)
+    return written
 
 
 def main() -> None:
@@ -154,16 +175,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
     ckpt = RUNS_DIR / args.run / "best.pt" if args.run else args.checkpoint
-    device = pick_device(args.device)
-    model, labels, cfg = load_checkpoint(ckpt, device)
-    out_dir = REPORTS_DIR / ckpt.parent.name
-    out_dir.mkdir(parents=True, exist_ok=True)
-    df = load_index(resolve(cfg["data"]["index"]), args.splits)
-    for (split, source), sub in df.groupby(["split", "source"], observed=True):
-        tag = f"{split}_{source}"
-        log.info("Grad-CAM %s (%d images)", tag, len(sub))
-        sheet_for(model, labels, cfg, sub, args.n, out_dir, tag, args.save_cams, device)
-    log.info("planches écrites dans %s", out_dir)
+    make_sheets(ckpt, args.splits, args.n, args.save_cams, pick_device(args.device))
 
 
 if __name__ == "__main__":

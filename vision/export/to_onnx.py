@@ -60,6 +60,26 @@ def compare(model: nn.Module, path: Path, batches) -> dict[str, float]:
     return res
 
 
+def export_and_check(ckpt: Path, n: int = 256, out: Path | None = None) -> dict[str, float]:
+    """Export of a checkpoint (default <run>/model.onnx) and comparison on n val images.
+
+    `worst_disagree_pts` is compared to the 0.5 point criterion of docs/03 §6.
+    """
+    model, labels, cfg = load_checkpoint(ckpt)
+    out = out or ckpt.parent / "model.onnx"
+    export_onnx(model, out, cfg["data"]["size"])
+    log.info("export : %s", out)
+
+    df = load_index(resolve(cfg["data"]["index"]), ["val"], cfg["data"]["sources"])
+    df = stratified_subset(df, n, cfg["seed"])
+    loader = make_loader(
+        df, labels, {**cfg, "data": {**cfg["data"], "num_workers": 0}}, train=False
+    )
+    res = compare(model, out, (x for x, _ in loader))
+    res["worst_disagree_pts"] = max(res[f"{h}/disagree_pts"] for h in HEADS)
+    return res
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     g = parser.add_mutually_exclusive_group(required=True)
@@ -71,20 +91,10 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
     ckpt = RUNS_DIR / args.run / "best.pt" if args.run else args.checkpoint
-    model, labels, cfg = load_checkpoint(ckpt)
-    out = args.out or ckpt.parent / "model.onnx"
-    export_onnx(model, out, cfg["data"]["size"])
-    log.info("export : %s", out)
-
-    df = load_index(resolve(cfg["data"]["index"]), ["val"], cfg["data"]["sources"])
-    df = stratified_subset(df, args.n, cfg["seed"])
-    loader = make_loader(
-        df, labels, {**cfg, "data": {**cfg["data"], "num_workers": 0}}, train=False
-    )
-    res = compare(model, out, (x for x, _ in loader))
+    res = export_and_check(ckpt, args.n, args.out)
     for k, v in res.items():
         print(f"{k:24s} {v:.6f}")
-    worst = max(res[f"{h}/disagree_pts"] for h in HEADS)
+    worst = res["worst_disagree_pts"]
     verdict = "OK" if worst < 0.5 else "ÉCHEC"
     print(f"écart max {worst:.2f} pt (critère < 0,5 pt) : {verdict}")
 

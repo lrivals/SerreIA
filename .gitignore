@@ -1,5 +1,6 @@
 # Données et artefacts (volumineux, non versionnés)
 data/
+data_archives/
 mlruns/
 reports/*.png
 reports/*/

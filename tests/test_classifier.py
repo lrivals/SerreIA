@@ -329,3 +329,32 @@ def test_end_to_end(data_dir, tmp_path):
     res = compare(model, onnx_path, [x])
     assert res["n"] == 4
     assert max(res[f"{h}/max_abs_gap"] for h in ("espece", "sante", "classe")) < 1e-3
+
+
+# --- phase 1 report ---
+
+
+def test_phase1_report(tmp_path):
+    import json
+
+    from vision.eval.ablation_report import load_registry, save_registry, write_phase1_report
+
+    def metrics(f1_sante, recall):
+        return {
+            "results": {
+                "test": {"all": {"sante/f1_macro": f1_sante, "classe/f1_macro": 0.9}},
+                "test_xdomain": {"all": {"sante/recall_anormal": recall}},
+            }
+        }
+
+    for run_id, m in {"run_a": metrics(0.98, 0.85), "run_b": metrics(0.95, 0.6)}.items():
+        (tmp_path / run_id).mkdir()
+        (tmp_path / run_id / "metrics.json").write_text(json.dumps(m))
+    runs = {"A_baseline": "run_a", "B_strong_aug": "run_b", "C_background": "absent"}
+    save_registry(runs, tmp_path / "ablations.json")
+    assert load_registry(tmp_path / "ablations.json") == runs
+
+    text = write_phase1_report(reports_dir=tmp_path).read_text(encoding="utf-8")
+    assert "| A_baseline | `run_a` | 0.980 | 0.900 | 0.850 |" in text
+    assert "**A_baseline** : ✅" in text and "❌ rappel" in text
+    assert "C_background (absent)" in text

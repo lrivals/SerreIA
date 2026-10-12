@@ -29,6 +29,8 @@ data/
 └── index.parquet
 ```
 
+Les jeux préparés (`index`, `plantvillage`, `ccmt/raw`, `plantdoc`) sont aussi **archivés sur Google Drive** pour Colab et les autres machines : `tools/get_datasets.sh pull <jeu>` (voir [data-drive](data-drive.md)).
+
 PlantDoc : récupérer la version **détection** (dépôt GitHub `pratikkayal/PlantDoc-Object-Detection-Dataset`, annotations VOC XML). Elle sert à la fois au test cross-domain du classifieur (via des crops des boîtes) et à l'entraînement YOLO.
 
 > **Pourquoi « Raw » pour CCMT ?** La version augmentée contient des transformations des mêmes images réparties entre `train_set` et `test_set` : c'est une fuite garantie. On applique notre propre augmentation, à la volée.

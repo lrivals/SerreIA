@@ -26,13 +26,15 @@ Choix structurants :
 | 06 | [Capteurs et contrôle](docs/06-capteurs-controle.md) | Électronique, firmware ESP32, stratégie de contrôle, simulateur |
 | 07 | [Feuille de route](docs/07-roadmap.md) | Étapes, critères de validation, risques |
 | 08 | [Environnement](docs/08-environnement.md) | Installation, dépendances, conventions |
+| — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
 ## État actuel (12/10/2026)
 
 - ✅ Données rangées (`data/plantvillage`, `data/ccmt`, `data/plantdoc`), taxonomie unifiée et **`data/index.parquet`** généré : 88 135 images, 16 espèces, 56 classes, splits groupés sans fuite (détail dans [02-donnees](docs/02-donnees.md)).
 - ⚠️ GPU NVIDIA RTX 1000 Ada (6 Go) présent, mais le driver ne répond pas (`nvidia-smi`) → voir [08-environnement](docs/08-environnement.md).
 - ✅ Squelette du dépôt, `pyproject.toml` et **contrat MQTT** (`common/mqtt/`, testé) en place — cf. [01-architecture](docs/01-architecture.md).
-- ✅ **Classifieur phase 1** écrit (dataset, augmentations + remplacement de fond, modèle multi-têtes, entraînement MLflow, évaluation cross-domain, Grad-CAM, export ONNX) et testé sur CPU — cf. [03-classifieur](docs/03-classifieur.md). En attente : driver CUDA et `data/backgrounds/` pour les ablations A–E.
+- ✅ **Classifieur phase 1** écrit (dataset, augmentations + remplacement de fond, modèle multi-têtes, entraînement MLflow, évaluation cross-domain, Grad-CAM, export ONNX) et testé sur CPU — cf. [03-classifieur](docs/03-classifieur.md). **Notebooks Colab** (`notebooks/`, données servies par Google Drive) pour lancer les entraînements et les ablations A–E sur GPU ; reste à constituer `data/backgrounds/`.
+- ✅ Données archivées sur **Google Drive** (`tools/get_datasets.sh`, rclone) — cf. [data-drive](docs/data-drive.md).
 - ⏳ Edge, backend, simulateur et firmware : à écrire.
 
 ## Démarrage rapide
@@ -52,4 +54,20 @@ uv run python -m vision.eval.cross_domain_eval --run <run_id>
 uv run python -m vision.eval.gradcam --run <run_id>
 uv run python -m vision.export.to_onnx --run <run_id>
 uv run mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db   # suivi des expériences
+```
+
+Notebooks (`notebooks/`, ouvrables dans Colab via leur badge) :
+
+| Notebook | Rôle |
+|---|---|
+| `01_donnees.ipynb` | index, effectifs, exemples, aperçu des augmentations et du remplacement de fond |
+| `02_entrainement.ipynb` | un run complet : entraînement, évaluation, Grad-CAM, ONNX |
+| `03_evaluation.ipynb` | évaluation d'un run existant |
+| `04_ablations.ipynb` | ablations A–E à la suite (reprise possible) → `reports/phase1.md` |
+
+```bash
+tools/get_datasets.sh check                            # état des jeux (data/ ↔ Google Drive)
+tools/get_datasets.sh pull plantvillage                # récupérer un jeu depuis le Drive
+make harvest                                           # rapatrier les sorties Colab (runs/, reports/, mlruns/colab/)
+make notebooks                                         # régénérer notebooks/ (tools/notebooks/build.py)
 ```

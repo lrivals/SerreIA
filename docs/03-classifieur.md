@@ -99,13 +99,27 @@ Livrable : `reports/phase1.md`, avec le tableau des ablations, les matrices et u
 - **rappel « anormal » sur PlantDoc ≥ 0,80** (objectif réaliste ; la littérature rapporte de fortes chutes cross-domain) ;
 - export ONNX validé (écart < 0,5 point par rapport à PyTorch) : `vision/export/to_onnx.py`.
 
-## 7. Commandes
+## 7. Commandes et notebooks
+
+Les entraînements réels se font sur GPU, via les notebooks de `notebooks/` (Colab : badge en tête de chaque notebook ; données servies par Google Drive, voir [data-drive](data-drive.md)) :
+
+| Notebook | Rôle |
+|---|---|
+| `01_donnees.ipynb` | effectifs, exemples, aperçu des augmentations et du remplacement de fond |
+| `02_entrainement.ipynb` | un run (`CONFIG`, `SET`) : entraînement, évaluation, Grad-CAM, ONNX |
+| `03_evaluation.ipynb` | évaluation d'un run existant (`RUN_ID`, défaut : le plus récent) |
+| `04_ablations.ipynb` | A–E à la suite, reprise via `reports/ablations.json`, puis `reports/phase1.md` |
+
+Les notebooks sont générés par `tools/notebooks/build.py` (`make notebooks`, vérifié par `tests/test_notebooks.py`) : modifier le générateur, pas les `.ipynb`. Sur Colab, les sorties (`runs/`, `reports/`, `mlruns/colab/`) sont copiées sur le Drive toutes les 10 min ; sur le PC, `make harvest`.
+
+En ligne de commande :
 ```bash
 python -m vision.train.train_classifier --config configs/clf_effnet_b0.yaml
 python -m vision.train.train_classifier --config configs/ablations/A_baseline.yaml
 python -m vision.eval.cross_domain_eval --run <run_id>      # reports/<run_id>/
 python -m vision.eval.gradcam --run <run_id> [--save-cams]
 python -m vision.export.to_onnx --run <run_id>              # runs/<run_id>/model.onnx
+python -m vision.eval.ablation_report                       # reports/ablations.json → reports/phase1.md
 # smoke test CPU : --subset 512 --limit-batches 5 --device cpu --set train.epochs=2
 ```
 Chaque run écrit `runs/<run_id>/{best,last}.pt` (poids, config, vocabulaires des têtes, version de taxonomie) et enregistre dans MLflow (SQLite `mlruns/mlflow.db`, le stockage fichier étant refusé par MLflow 3) la config aplatie, la version de la taxonomie, le sha256 de `index.parquet` et le commit git.
