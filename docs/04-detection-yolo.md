@@ -11,7 +11,7 @@ image caméra ──► YOLO (détecteur générique) ──► boîtes « feuil
                                          classifieur phase 1 ──► espece / sante / classe
 ```
 
-Pourquoi ce choix plutôt qu'un YOLO à 55 classes :
+Pourquoi ce choix plutôt qu'un YOLO à 56 classes :
 - le détecteur n'a besoin que de **3 classes génériques** : annotation plus rapide et données plus abondantes ;
 - le classifieur de la phase 1 est réutilisé tel quel et ré-entraînable séparément ;
 - une nouvelle maladie se gère côté classifieur, sans ré-annoter de boîtes.

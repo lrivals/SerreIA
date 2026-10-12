@@ -14,8 +14,8 @@
 
 ## Premier lot de développement
 1. ✅ `pyproject.toml` (uv), squelette du dépôt et contrat MQTT `common/mqtt/` + `tests/test_mqtt_contract.py`
-2. `vision/datasets/taxonomy.yaml`
-3. `vision/datasets/build_index.py` + `tests/test_index.py`
+2. ✅ `vision/datasets/taxonomy.yaml`
+3. ✅ `vision/datasets/prepare.py`, `build_index.py` + `tests/test_index.py`, `test_taxonomy.py`, `test_near_duplicates.py`
 4. `vision/datasets/dataset.py`, `augment.py`
 5. `vision/models/multihead.py`
 6. `vision/train/train_classifier.py` + `configs/clf_effnet_b0.yaml`
@@ -27,7 +27,7 @@
 |---|---|---|
 | Écart de domaine labo → serre | modèle inutilisable en réel | remplacement de fond, test PlantDoc, images de serre au plus tôt, apprentissage actif |
 | Taxonomie incohérente entre datasets | métriques faussées | règle « fusion seulement si sûre », classes `ambigu`, revue manuelle |
-| Fuite train/test (quasi-doublons) | scores surestimés | splits groupés par pHash, CCMT Raw uniquement, tests automatiques |
+| Fuite train/test (quasi-doublons) | scores surestimés | splits groupés par pHash + dHash, CCMT Raw uniquement, tests automatiques |
 | Opérateurs non supportés par Hailo | blocage du déploiement | export test dès le début de S2, backbones du Model Zoo |
 | VRAM 6 Go | entraînement lent | AMP, batch 64 à 224 px, gradient accumulation si besoin |
 | Faux positifs d'alerte | perte de confiance | lissage temporel, éclairage maîtrisé à la capture, seuils calibrés |

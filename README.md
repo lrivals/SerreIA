@@ -29,10 +29,7 @@ Choix structurants :
 
 ## État actuel (12/10/2026)
 
-- ✅ Datasets téléchargés dans `data/`, **mais deux dossiers sont mal nommés et un dataset manque** (détail dans [02-donnees](docs/02-donnees.md#1-état-réel-du-dossier-data)) :
-  - `data/PlantVillage Dataset/` contient en réalité **ASL Alphabet** (langue des signes) → à supprimer ;
-  - `data/PlantDoc Dataset/plantvillage dataset/` contient en réalité **PlantVillage** ;
-  - **le vrai PlantDoc n'est pas encore téléchargé.**
+- ✅ Données rangées (`data/plantvillage`, `data/ccmt`, `data/plantdoc`), taxonomie unifiée et **`data/index.parquet`** généré : 88 135 images, 16 espèces, 56 classes, splits groupés sans fuite (détail dans [02-donnees](docs/02-donnees.md)).
 - ⚠️ GPU NVIDIA RTX 1000 Ada (6 Go) présent, mais le driver ne répond pas (`nvidia-smi`) → voir [08-environnement](docs/08-environnement.md).
 - ✅ Squelette du dépôt, `pyproject.toml` et **contrat MQTT** (`common/mqtt/`, testé) en place — cf. [01-architecture](docs/01-architecture.md).
 - ⏳ Vision, edge, backend, simulateur et firmware : à écrire.
@@ -42,7 +39,7 @@ Choix structurants :
 Disponible dès maintenant :
 ```bash
 uv sync                                                # dépendances de base + dev
-uv run pytest                                          # tests (contrat MQTT)
+uv run pytest                                          # tests (contrat MQTT, taxonomie, index)
 ```
 
 Une fois le code de vision écrit :

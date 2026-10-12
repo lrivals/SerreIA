@@ -1,0 +1,235 @@
+# Taxonomie unifiée (docs/02-donnees.md §2).
+# Clés source :
+#   plantvillage : nom de dossier dans data/plantvillage/color/
+#   ccmt         : "<Culture>/<classe>" dans data/ccmt/raw/
+#   plantdoc     : label <name> des annotations VOC (à revérifier à chaque téléchargement)
+# Toute modification incrémente `version`.
+version: 1
+classes:
+  # --- tomate ---
+  tomate/sain/sain:
+    sources:
+      plantvillage: ["Tomato___healthy"]
+      ccmt: ["Tomato/healthy"]
+      plantdoc: ["Tomato leaf"]
+  tomate/maladie/tache_bacterienne:
+    sources:
+      plantvillage: ["Tomato___Bacterial_spot"]
+      plantdoc: ["Tomato leaf bacterial spot"]
+  tomate/maladie/alternariose:
+    sources:
+      plantvillage: ["Tomato___Early_blight"]
+      plantdoc: ["Tomato Early blight leaf"]
+  tomate/maladie/mildiou:
+    sources:
+      plantvillage: ["Tomato___Late_blight"]
+      plantdoc: ["Tomato leaf late blight"]
+  tomate/maladie/cladosporiose:
+    sources:
+      plantvillage: ["Tomato___Leaf_Mold"]
+      plantdoc: ["Tomato mold leaf"]
+  tomate/maladie/septoriose:
+    sources:
+      plantvillage: ["Tomato___Septoria_leaf_spot"]
+      ccmt: ["Tomato/septoria leaf spot"]
+      plantdoc: ["Tomato Septoria leaf spot"]
+  tomate/maladie/tache_cible:
+    sources:
+      plantvillage: ["Tomato___Target_Spot"]
+  tomate/maladie/verticilliose:
+    sources:
+      ccmt: ["Tomato/verticulium wilt"]
+  tomate/maladie/brulure_ccmt: # "leaf blight" CCMT : early ou late ? ambigu
+    ambigu: true
+    sources:
+      ccmt: ["Tomato/leaf blight"]
+  tomate/nuisible/tetranyque:
+    sources:
+      plantvillage: ["Tomato___Spider_mites Two-spotted_spider_mite"]
+      plantdoc: ["Tomato two spotted spider mites leaf"]
+  tomate/virus/mosaique:
+    sources:
+      plantvillage: ["Tomato___Tomato_mosaic_virus"]
+      plantdoc: ["Tomato leaf mosaic virus"]
+  tomate/virus/tylcv:
+    sources:
+      plantvillage: ["Tomato___Tomato_Yellow_Leaf_Curl_Virus"]
+      plantdoc: ["Tomato leaf yellow virus"]
+  tomate/virus/enroulement_ccmt: # "leaf curl" CCMT : TYLCV probable, non garanti
+    ambigu: true
+    sources:
+      ccmt: ["Tomato/leaf curl"]
+
+  # --- maïs ---
+  mais/sain/sain:
+    sources:
+      plantvillage: ["Corn_(maize)___healthy"]
+      ccmt: ["Maize/healthy"]
+  mais/maladie/cercosporiose:
+    sources:
+      plantvillage: ["Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot"]
+      plantdoc: ["Corn Gray leaf spot"]
+  mais/maladie/rouille:
+    sources:
+      plantvillage: ["Corn_(maize)___Common_rust_"]
+      plantdoc: ["Corn rust leaf"]
+  mais/maladie/helminthosporiose:
+    sources:
+      plantvillage: ["Corn_(maize)___Northern_Leaf_Blight"]
+      ccmt: ["Maize/leaf blight"]
+      plantdoc: ["Corn leaf blight"]
+  mais/maladie/taches_ccmt: # "leaf spot" CCMT : cercosporiose ou autre ? ambigu
+    ambigu: true
+    sources:
+      ccmt: ["Maize/leaf spot"]
+  mais/nuisible/chenille_legionnaire:
+    sources:
+      ccmt: ["Maize/fall armyworm"]
+  mais/nuisible/criquet:
+    sources:
+      ccmt: ["Maize/grasshoper"]
+  mais/nuisible/chrysomele:
+    sources:
+      ccmt: ["Maize/leaf beetle"]
+  mais/virus/striure:
+    sources:
+      ccmt: ["Maize/streak virus"]
+
+  # --- pommier ---
+  pommier/sain/sain:
+    sources:
+      plantvillage: ["Apple___healthy"]
+      plantdoc: ["Apple leaf"]
+  pommier/maladie/tavelure:
+    sources:
+      plantvillage: ["Apple___Apple_scab"]
+      plantdoc: ["Apple Scab Leaf"]
+  pommier/maladie/pourriture_noire:
+    sources:
+      plantvillage: ["Apple___Black_rot"]
+  pommier/maladie/rouille:
+    sources:
+      plantvillage: ["Apple___Cedar_apple_rust"]
+      plantdoc: ["Apple rust leaf"]
+
+  # --- vigne ---
+  vigne/sain/sain:
+    sources:
+      plantvillage: ["Grape___healthy"]
+      plantdoc: ["grape leaf"]
+  vigne/maladie/pourriture_noire:
+    sources:
+      plantvillage: ["Grape___Black_rot"]
+      plantdoc: ["grape leaf black rot"]
+  vigne/maladie/esca:
+    sources:
+      plantvillage: ["Grape___Esca_(Black_Measles)"]
+  vigne/maladie/brulure_isariopsis:
+    sources:
+      plantvillage: ["Grape___Leaf_blight_(Isariopsis_Leaf_Spot)"]
+
+  # --- pomme de terre ---
+  pomme_de_terre/sain/sain:
+    sources:
+      plantvillage: ["Potato___healthy"]
+      plantdoc: ["Potato leaf"]
+  pomme_de_terre/maladie/alternariose:
+    sources:
+      plantvillage: ["Potato___Early_blight"]
+      plantdoc: ["Potato leaf early blight"]
+  pomme_de_terre/maladie/mildiou:
+    sources:
+      plantvillage: ["Potato___Late_blight"]
+      plantdoc: ["Potato leaf late blight"]
+
+  # --- poivron ---
+  poivron/sain/sain:
+    sources:
+      plantvillage: ["Pepper,_bell___healthy"]
+      plantdoc: ["Bell_pepper leaf"]
+  poivron/maladie/tache_bacterienne:
+    sources:
+      plantvillage: ["Pepper,_bell___Bacterial_spot"]
+      plantdoc: ["Bell_pepper leaf spot"]
+
+  # --- pêcher ---
+  pecher/sain/sain:
+    sources:
+      plantvillage: ["Peach___healthy"]
+      plantdoc: ["Peach leaf"]
+  pecher/maladie/tache_bacterienne:
+    sources:
+      plantvillage: ["Peach___Bacterial_spot"]
+
+  # --- cerisier ---
+  cerisier/sain/sain:
+    sources:
+      plantvillage: ["Cherry_(including_sour)___healthy"]
+      plantdoc: ["Cherry leaf"]
+  cerisier/maladie/oidium:
+    sources:
+      plantvillage: ["Cherry_(including_sour)___Powdery_mildew"]
+
+  # --- fraisier ---
+  fraisier/sain/sain:
+    sources:
+      plantvillage: ["Strawberry___healthy"]
+      plantdoc: ["Strawberry leaf"]
+  fraisier/maladie/brulure:
+    sources:
+      plantvillage: ["Strawberry___Leaf_scorch"]
+
+  # --- autres espèces PlantVillage ---
+  oranger/maladie/huanglongbing:
+    sources:
+      plantvillage: ["Orange___Haunglongbing_(Citrus_greening)"]
+  courge/maladie/oidium:
+    sources:
+      plantvillage: ["Squash___Powdery_mildew"]
+      plantdoc: ["Squash Powdery mildew leaf"]
+  myrtillier/sain/sain:
+    sources:
+      plantvillage: ["Blueberry___healthy"]
+      plantdoc: ["Blueberry leaf"]
+  framboisier/sain/sain:
+    sources:
+      plantvillage: ["Raspberry___healthy"]
+      plantdoc: ["Raspberry leaf"]
+  soja/sain/sain:
+    sources:
+      plantvillage: ["Soybean___healthy"]
+      plantdoc: ["Soyabean leaf"]
+
+  # --- anacardier (CCMT) ---
+  anacardier/sain/sain:
+    sources:
+      ccmt: ["Cashew/healthy"]
+  anacardier/maladie/anthracnose:
+    sources:
+      ccmt: ["Cashew/anthracnose"]
+  anacardier/maladie/gommose:
+    sources:
+      ccmt: ["Cashew/gumosis"]
+  anacardier/maladie/rouille_rouge: # algue Cephaleuros
+    sources:
+      ccmt: ["Cashew/red rust"]
+  anacardier/nuisible/mineuse:
+    sources:
+      ccmt: ["Cashew/leaf miner"]
+
+  # --- manioc (CCMT) ---
+  manioc/sain/sain:
+    sources:
+      ccmt: ["Cassava/healthy"]
+  manioc/maladie/bacteriose:
+    sources:
+      ccmt: ["Cassava/bacterial blight"]
+  manioc/maladie/tache_brune:
+    sources:
+      ccmt: ["Cassava/brown spot"]
+  manioc/nuisible/acarien_vert:
+    sources:
+      ccmt: ["Cassava/green mite"]
+  manioc/virus/mosaique:
+    sources:
+      ccmt: ["Cassava/mosaic"]

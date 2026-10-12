@@ -40,6 +40,7 @@ Phase 2 : `uv add ultralytics anomalib`.
 **Sans uv** (solution de repli, utilisée tant que uv n'est pas installé) :
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -e . pytest ruff
+.venv/bin/pip install pandas pyarrow imagehash scikit-learn pyyaml tqdm pillow  # données (doc 02), sans torch
 .venv/bin/pytest -q
 ```
 

@@ -99,12 +99,13 @@ SerreIA/
 ├── README.md
 ├── docs/                      # cette documentation
 ├── data/                      # datasets bruts (non versionné)
+│   ├── plantvillage/ ccmt/ plantdoc/   # rangés par vision.datasets.prepare
 │   └── index.parquet          # généré par build_index
 ├── configs/                   # YAML d'entraînement / d'export
 ├── common/
 │   └── mqtt/                  # contrat MQTT partagé : topics.py, schemas.py (pydantic)
 ├── vision/
-│   ├── datasets/              # taxonomy.yaml, build_index.py, dataset.py, augment.py
+│   ├── datasets/              # taxonomy.yaml/.py, prepare.py, near_duplicates.py, build_index.py, dataset.py, augment.py
 │   ├── models/                # multihead.py
 │   ├── train/                 # train_classifier.py, train_yolo.py
 │   ├── eval/                  # cross_domain_eval.py, gradcam.py, report.py
