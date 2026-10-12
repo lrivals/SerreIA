@@ -35,13 +35,13 @@ ls -l data_archives/            # doivent être identiques ; data_archives/ peut
 
 | Jeu | Contenu archivé (`data/…`) | Taille | Marqueur (`data/…`) | Sur le Drive | Remarque |
 |---|---|---|---|---|---|
-| `index` | `index.parquet`, `index_rejets.txt` | 7 Mo | `index.parquet` | — | à repousser après chaque `build_index` |
-| `plantvillage` | `plantvillage/{color,segmented}` | 1,5 Go | `plantvillage/segmented/Tomato___healthy` | — | `grayscale/` exclu (inutilisé) |
-| `ccmt` | `ccmt/raw` | 1,3 Go | `ccmt/raw/Tomato/healthy` | — | `augmented/` (6,9 Go, fuite) exclu |
-| `plantdoc` | `plantdoc/{train,test,crops}` | 1,7 Go | `plantdoc/crops/test` | — | images VOC + crops du classifieur |
+| `index` | `index.parquet`, `index_rejets.txt` | 7,4 Mo | `index.parquet` | 12/10/2026 | à repousser après chaque `build_index` |
+| `plantvillage` | `plantvillage/{color,segmented}` | 1,53 Go | `plantvillage/segmented/Tomato___healthy` | 12/10/2026 | `grayscale/` exclu (inutilisé) |
+| `ccmt` | `ccmt/raw` | 1,36 Go | `ccmt/raw/Tomato/healthy` | 12/10/2026 | `augmented/` (6,9 Go, fuite) exclu |
+| `plantdoc` | `plantdoc/{train,test,crops}` | 1,71 Go | `plantdoc/crops/test` | 12/10/2026 | images VOC + crops du classifieur |
 | `backgrounds` | `backgrounds` | — | `backgrounds` | — | **à constituer** (docs/03 §3.2) |
 
-Tailles mesurées avec `du -shL`. Après un envoi, remplir la colonne « Sur le Drive » avec la date. Vérifier l'espace avec `rclone about gdrive:` avant un gros envoi.
+Tailles : taille des archives (`ls -l data_archives/`). Après un envoi, remplir la colonne « Sur le Drive » avec la date. Vérifier l'espace avec `rclone about gdrive:` avant un gros envoi.
 
 ## Accès
 
