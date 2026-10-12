@@ -13,7 +13,7 @@
 | **Ensuite** | — | nœud solution (pH/EC), PatchCore, suivi de croissance, apprentissage actif, prévision GRU | voir docs 04, 05, 06 |
 
 ## Premier lot de développement
-1. `pyproject.toml` (uv)
+1. ✅ `pyproject.toml` (uv), squelette du dépôt et contrat MQTT `common/mqtt/` + `tests/test_mqtt_contract.py`
 2. `vision/datasets/taxonomy.yaml`
 3. `vision/datasets/build_index.py` + `tests/test_index.py`
 4. `vision/datasets/dataset.py`, `augment.py`

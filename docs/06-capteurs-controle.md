@@ -72,5 +72,5 @@ On commence avec des règles agronomiques connues (ex. mildiou : HR > 90 % penda
 Permet de développer le logiciel **avant** l'électronique :
 - modèle thermique simple de la serre (1er ordre : T° intérieure en fonction de la T° extérieure, du rayonnement, de la ventilation et du chauffage) ;
 - dynamique HR, pH et EC simplifiée ; bruit et pannes injectables (capteur figé, valeur aberrante, déconnexion) ;
-- publie sur les **mêmes topics MQTT** que les ESP32 et réagit aux commandes ;
+- publie sur les **mêmes topics MQTT** que les ESP32 et réagit aux commandes, via `common.mqtt` (`sensor_topic`, `encode`, `decode`) ;
 - sert aussi d'environnement d'entraînement pour le niveau 3.

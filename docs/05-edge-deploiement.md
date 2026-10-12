@@ -36,7 +36,7 @@ Boucle (service systemd) :
 2. **Éclairage maîtrisé** : si les LED horticoles sont colorées, publier `cmd/led` → blanc (ou couper) pendant 2 s, puis capturer. Cela améliore beaucoup la cohérence des images.
 3. Pré-traitement : correction de la balance des blancs (mire grise fixe dans le champ), redimensionnement.
 4. Inférence : YOLO → crops → classifieur → PatchCore (si disponible) → indicateurs de croissance.
-5. Publication MQTT `serre/<zone>/vision/<camera>` (schéma en [01](01-architecture.md#schémas-json)).
+5. Publication MQTT `serre/<zone>/vision/<camera>` (schéma en [01](01-architecture.md#schémas-json), sérialisé avec `common.mqtt.VisionResult` et `encode`).
 6. Archivage : JPEG + JSON localement (tampon circulaire de 7 jours), puis upload asynchrone vers le serveur.
 
 Configuration `edge/config.yaml` : caméras (id, zone, résolution, ROI par plante), période, seuils, chemins des HEF.

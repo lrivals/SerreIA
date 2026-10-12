@@ -37,10 +37,17 @@ Choix structurants :
 - ✅ Squelette du dépôt, `pyproject.toml` et **contrat MQTT** (`common/mqtt/`, testé) en place — cf. [01-architecture](docs/01-architecture.md).
 - ⏳ Vision, edge, backend, simulateur et firmware : à écrire.
 
-## Démarrage rapide (une fois le code écrit)
+## Démarrage rapide
 
+Disponible dès maintenant :
 ```bash
-uv sync                                                # dépendances
+uv sync                                                # dépendances de base + dev
+uv run pytest                                          # tests (contrat MQTT)
+```
+
+Une fois le code de vision écrit :
+```bash
+uv sync --extra vision                                 # dépendances d'entraînement
 uv run python -m vision.datasets.build_index           # index.parquet + splits
 uv run python -m vision.train.train_classifier --config configs/clf_effnet_b0.yaml
 uv run python -m vision.eval.cross_domain_eval --run <run_id>

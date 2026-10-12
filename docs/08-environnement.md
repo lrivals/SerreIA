@@ -17,16 +17,30 @@ Secure Boot actif : enregistrer la clé MOK proposée pendant l'installation.
 Pas besoin d'installer CUDA Toolkit séparément : les wheels PyTorch embarquent le runtime CUDA.
 
 ## 2. Gestion du projet Python avec `uv`
+Le `pyproject.toml` existe déjà. Les dépendances sont réparties en groupes :
+
+| Groupe | Contenu | Installation |
+|---|---|---|
+| base | `pydantic`, `paho-mqtt` (contrat MQTT) | `uv sync` |
+| `vision` | torch, torchvision, timm, albumentations, OpenCV, pandas, pyarrow, imagehash, scikit-learn, MLflow, grad-cam, ONNX… | `uv sync --extra vision` |
+| `backend` | FastAPI, uvicorn, psycopg | `uv sync --extra backend` |
+| `dev` | pytest, ruff | inclus par défaut dans `uv sync` |
+
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-uv init --python 3.12
-uv add torch torchvision --index https://download.pytorch.org/whl/cu124
-uv add timm albumentations opencv-python-headless pandas pyarrow imagehash scikit-learn \
-       mlflow pyyaml tqdm grad-cam onnx onnxruntime matplotlib
-uv add ultralytics anomalib                    # phase 2
-uv add paho-mqtt fastapi uvicorn psycopg       # edge / backend
-uv add --dev pytest ruff
+uv sync                                        # base + dev
+uv sync --extra vision                         # poste d'entraînement
+uv run pytest                                  # tests
+uv run ruff format . && uv run ruff check .    # style
 uv run python -c "import torch; print(torch.cuda.is_available())"
+```
+Pour une version CUDA précise de PyTorch, ajouter l'index `https://download.pytorch.org/whl/cu124` dans `[tool.uv]`.
+Phase 2 : `uv add ultralytics anomalib`.
+
+**Sans uv** (solution de repli, utilisée tant que uv n'est pas installé) :
+```bash
+python3 -m venv .venv && .venv/bin/pip install -e . pytest ruff
+.venv/bin/pytest -q
 ```
 
 ## 3. Outils annexes
@@ -46,5 +60,5 @@ uv run python -c "import torch; print(torch.cuda.is_available())"
 - **Reproductibilité** : seed fixée ; chaque run MLflow enregistre la config, le commit git, la version de la taxonomie et le hash de `index.parquet`.
 - **Données** : `data/`, `mlruns/` et les poids (`*.pt`, `*.onnx`, `*.hef`) sont exclus de git (`.gitignore`).
 - **Données téléchargées** : à traiter comme non fiables (aucun script exécuté depuis ces dossiers).
-- **Tests** : `uv run pytest`, au minimum sur l'index (non-fuite, effectifs), la taxonomie (tous les dossiers mappés) et le format des messages MQTT.
+- **Tests** : `uv run pytest`, au minimum sur l'index (non-fuite, effectifs), la taxonomie (tous les dossiers mappés) et le format des messages MQTT (`tests/test_mqtt_contract.py`, ✅ en place).
 - **Git** : `git init` à la racine ; branches par fonctionnalité (`feat/build-index`, …).
