@@ -23,6 +23,8 @@
   │ Serveur / PC (RTX 1000 Ada)                  │
   │  • TimescaleDB (séries) + stockage images    │
   │  • API FastAPI + dashboard (Grafana)         │
+  │  • interface web React (serre, décisions)    │
+  │  • agent conversationnel (Claude, conseil)   │
   │  • Label Studio (annotation)                 │
   │  • entraînement / ré-entraînement + MLflow   │
   └──────────────────────────────────────────────┘
@@ -44,6 +46,7 @@
 | `serre/<zone>/cmd/<actionneur>` | controller / dashboard | 1 | non | commande |
 | `serre/<zone>/etat/<actionneur>` | ESP32 | 1 | oui | état réel de l'actionneur |
 | `serre/<noeud>/status` | ESP32 (LWT) | 1 | oui | `online` / `offline` |
+| `serre/<zone>/decision` *(proposé)* | controller / backend | 1 | non | décision et ses preuves — cf. [10 §7](10-decisions-tracabilite.md#7-évolution-proposée-du-contrat-mqtt), pas encore dans `common/mqtt/` |
 
 `<zone>` : `z1`, `z2`… ; `<type>` : `temperature`, `humidite`, `co2`, `lux`, `ph`, `ec`, `temp_eau`, `niveau_cuve`.
 `<actionneur>` : `pompe_nutri`, `pompe_ph_down`, `ventilo`, `led`, `brumisateur`, `chauffage`.
@@ -116,7 +119,8 @@ SerreIA/
 │   ├── sensor_bridge.py
 │   ├── controller/            # rules.py, safety.py, forecast.py
 │   └── systemd/               # unités de service
-├── backend/                   # FastAPI, schéma DB, ingestion MQTT → DB
+├── backend/                   # FastAPI, schéma DB, ingestion MQTT → DB, agent (docs 09–12)
+├── frontend/                  # interface React + Vite (doc 12)
 ├── firmware/                  # ESP32 (PlatformIO)
 ├── sim/                       # simulateur de capteurs / serre
 ├── tests/                     # test_mqtt_contract.py, …
@@ -133,3 +137,11 @@ caméra ──capture toutes les 10 min──► camera_service (Pi)
    │                                      └─ publish serre/z1/vision/cam-z1-a
    └──── image JPEG ──► serveur (archive) ──► file Label Studio si conf < seuil
 ```
+
+## 5. Gestion de la serre, décisions et interface
+
+La description de la serre physique, la traçabilité des décisions, l'agent conversationnel et l'interface web font l'objet de documents dédiés :
+- [09 — Modèle de gestion de serre](09-modele-gestion-serre.md) : zones, emplacements, plantes, contenants, mode de culture, équipements, consommations, recettes ;
+- [10 — Décisions et arbre des actions](10-decisions-tracabilite.md) : preuves vision + capteurs de chaque décision, routines vs actions exceptionnelles ;
+- [11 — Agent de décision](11-agent-decision.md) : LLM qui explique et propose, le contrôleur reste seul décideur automatique ;
+- [12 — Interface utilisateur et API](12-interface-utilisateur.md) : écrans, API REST/WebSocket, organisation `backend/` et `frontend/`.

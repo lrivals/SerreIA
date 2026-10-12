@@ -43,6 +43,8 @@ Un nœud = un rôle (ex. `esp32-01` air, `esp32-02` solution, `esp32-03` actionn
 
 Le « réseau de neurones » de pilotage s'introduit **progressivement**, sans jamais remplacer les sécurités.
 
+Chaque commande émise par le contrôleur est précédée d'une **décision** enregistrée avec ses preuves (classification vision, mesures, règle, consignes) et référencée dans `Command.raison` — voir [10 — Décisions et arbre des actions](10-decisions-tracabilite.md). La configuration de la serre (zones, plantes, recettes, équipements) provient de l'interface ([09 §8](09-modele-gestion-serre.md#8-configuration-exportée-vers-le-contrôleur)).
+
 ### Niveau 0 — sécurité (`safety.py`)
 Limites dures, toujours actives : T° max et min, durée max des pompes, cuve vide, pH hors [4,5 ; 8], absence de mesure depuis plus de 5 min → alerte.
 
