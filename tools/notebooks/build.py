@@ -150,6 +150,7 @@ class Notebook:
     body: list[dict]
     gpu: bool = False
     extra_setup: list[str] = field(default_factory=list)
+    extras: str = "vision"  # pyproject extras installed on Colab
 
     def build(self) -> dict:
         cells = [
@@ -157,7 +158,7 @@ class Notebook:
             md("## Paramètres"),
             code(self.params, tags=["parameters"]),
             md("## Environnement"),
-            code(SETUP),
+            code(SETUP.replace("[vision]", f"[{self.extras}]")),
             *([code(GPU_CHECK)] if self.gpu else []),
             *[code(c) for c in self.extra_setup],
             *self.body,
@@ -477,7 +478,134 @@ NB_ABLATIONS = Notebook(
     ],
 )
 
-NOTEBOOKS = [NB_DONNEES, NB_ENTRAINEMENT, NB_EVALUATION, NB_ABLATIONS]
+
+# ------------------------------------------------------------------------- 05 détection
+
+NB_DETECTION = Notebook(
+    name="05_detection.ipynb",
+    title="05 — Détection YOLO et deux étages",
+    intro="""
+    Phase 2 (docs/04-detection-yolo.md) : jeu YOLO `data/yolo/` (PlantDoc + PlantVillage,
+    classe `feuille`), entraînement du détecteur suivi dans MLflow, puis pipeline deux étages
+    (YOLO → crops → classifieur de la phase 1) évalué de bout en bout sur PlantDoc TEST.
+    `YOLO_RUN` renseigné : pas d'entraînement, le run existant est évalué.
+    """,
+    params="""
+    CONFIG = "configs/yolo_v8n.yaml"
+    SET = []  # surcharges, ex. ["yolo.epochs=50", "model=yolov8s.pt"]
+    DEVICE = None  # None : Ultralytics choisit (GPU 0 s'il y en a un)
+    YOLO_RUN = None  # run existant (runs/<id>/best.pt) : saute l'entraînement
+    PV_PER_CLASS = 40  # feuilles PlantVillage par classe dans le jeu YOLO
+    REBUILD = False  # reconstruit data/yolo/ même s'il existe
+    CLF_RUN = None  # classifieur de la phase 1 pour les deux étages ; None : le plus récent
+    LIMIT = 0  # images PlantDoc TEST évaluées (0 : toutes)
+    DATASETS = ["index", "plantvillage", "plantdoc"]
+    """,
+    gpu=True,
+    extras="vision,detection",
+    body=[
+        md("## Jeu YOLO `data/yolo/`"),
+        code("""
+        from IPython.display import Image, display
+
+        from vision.datasets.build_index import DATA_DIR
+        from vision.labeling import build_yolo_dataset as byd
+
+        YOLO_DIR = DATA_DIR / byd.OUT_NAME
+        if REBUILD or not (YOLO_DIR / byd.MANIFEST).exists():
+            byd.build(DATA_DIR, YOLO_DIR, PV_PER_CLASS, os.cpu_count())
+        """),
+        code("""
+        import pandas as pd
+
+        manifest = pd.read_parquet(YOLO_DIR / byd.MANIFEST)
+        byd.report(manifest)
+        byd.preview(YOLO_DIR, "train", path=YOLO_DIR / "preview_train.png")
+        display(Image(filename=YOLO_DIR / "preview_train.png"))
+        """),
+        md("## Configuration"),
+        code("""
+        import yaml
+
+        from vision.train.config import apply_overrides, load_config
+
+        # Colab : tous les cœurs pour le chargement, base MLflow séparée de celle du PC.
+        YOLO_ENV_SET = (
+            [f"yolo.workers={os.cpu_count()}", f"mlflow.tracking_uri={drive_data.COLAB_MLFLOW}"]
+            if COLAB
+            else []
+        )
+        cfg = apply_overrides(load_config(ROOT / CONFIG), YOLO_ENV_SET + SET)
+        print(yaml.safe_dump(cfg, sort_keys=False, allow_unicode=True))
+        """),
+        md("## Entraînement"),
+        code("""
+        from vision.train.train_yolo import run
+
+        if YOLO_RUN is None:
+            with drive_data.PeriodicSync(drive_data.OUTPUTS, DRIVE_DIR):
+                YOLO_RUN = run(cfg, DEVICE).name
+        print("YOLO_RUN =", YOLO_RUN)
+        """),
+        md("## Courbes et métriques (val, puis test)"),
+        code("""
+        UL = ROOT / "runs" / "ultralytics"
+        for png in ["results.png", "BoxPR_curve.png"]:
+            for d in [UL / YOLO_RUN, UL / f"{YOLO_RUN}_test"]:
+                if (d / png).exists():
+                    print(d.name, png)
+                    display(Image(filename=d / png))
+        """),
+        md("## Deux étages sur PlantDoc TEST"),
+        code("""
+        import json
+
+        from vision.eval.two_stage import (
+            CropClassifier,
+            TwoStagePipeline,
+            YoloDetector,
+            evaluate,
+            plantdoc_scenes,
+            plot_examples,
+        )
+        from vision.eval.cross_domain_eval import REPORTS_DIR
+        from vision.train.train_classifier import pick_device
+
+        if CLF_RUN is None:  # the YOLO runs have a runs/ultralytics/<id>/ folder
+            ckpts = [p for p in (ROOT / "runs").glob("*/best.pt") if not (UL / p.parent.name).exists()]
+            if not ckpts:
+                raise FileNotFoundError("aucun classifieur runs/*/best.pt : notebook 02")
+            CLF_RUN = max(ckpts, key=lambda p: p.stat().st_mtime).parent.name
+        print("CLF_RUN =", CLF_RUN)
+
+        device = pick_device(DEVICE)
+        pipeline = TwoStagePipeline(
+            YoloDetector(ROOT / "runs" / YOLO_RUN / "best.pt", device=str(device)),
+            CropClassifier(ROOT / "runs" / CLF_RUN / "best.pt", device),
+        )
+        scenes = plantdoc_scenes(DATA_DIR, "test")
+        scenes = scenes[:LIMIT] if LIMIT else scenes
+        metrics, results = evaluate(pipeline, scenes)
+        OUT = REPORTS_DIR / CLF_RUN
+        OUT.mkdir(parents=True, exist_ok=True)
+        (OUT / "two_stage_test.json").write_text(json.dumps(metrics, indent=1))
+        plot_examples(scenes, results, OUT / "two_stage_test.png")
+        drive_data.sync_all(DRIVE_DIR)
+        display(pd.Series(metrics).to_frame("valeur"))
+        display(Image(filename=OUT / "two_stage_test.png"))
+        """),
+        md("""
+        ## Résumé
+
+        Détecteur : `runs/<YOLO_RUN>/best.pt` (courbes dans `runs/ultralytics/<YOLO_RUN>/`) ;
+        deux étages : `reports/<CLF_RUN>/two_stage_test.{json,png}`. Critère de la feuille de
+        route (docs/07) : mAP@0.5 « feuille » ≥ 0,6. Suite : pseudo-labels SAM 2 et Label
+        Studio (`python -m vision.labeling.pseudo_labels`, docs/04 §2).
+        """),
+    ],
+)
+
+NOTEBOOKS = [NB_DONNEES, NB_ENTRAINEMENT, NB_EVALUATION, NB_ABLATIONS, NB_DETECTION]
 
 
 def main() -> None:

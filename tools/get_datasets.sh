@@ -22,6 +22,7 @@ declare -A MARKER=(
   [ccmt]="ccmt/raw/Tomato/healthy"
   [plantdoc]="plantdoc/crops/test"
   [backgrounds]="backgrounds"
+  [yolo]="yolo/data.yaml"
 )
 # Paths under data/ archived for the dataset, when they differ from its name (default: the
 # name). Several paths are separated by spaces.

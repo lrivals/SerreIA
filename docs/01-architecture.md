@@ -106,7 +106,8 @@ SerreIA/
 ├── docs/                      # cette documentation
 ├── data/                      # datasets bruts (non versionné)
 │   ├── plantvillage/ ccmt/ plantdoc/   # rangés par vision.datasets.prepare
-│   └── index.parquet          # généré par build_index
+│   ├── index.parquet          # généré par build_index
+│   └── yolo/                  # jeu de détection, généré par build_yolo_dataset (doc 04)
 ├── configs/                   # YAML d'entraînement / d'export
 ├── common/
 │   └── mqtt/                  # contrat MQTT partagé : topics.py, schemas.py (pydantic)
@@ -114,8 +115,10 @@ SerreIA/
 │   ├── datasets/              # taxonomy.yaml/.py, prepare.py, near_duplicates.py, build_index.py, dataset.py, augment.py
 │   ├── models/                # multihead.py
 │   ├── train/                 # train_classifier.py, train_yolo.py
-│   ├── eval/                  # cross_domain_eval.py, gradcam.py, report.py
-│   ├── labeling/              # pseudo_labels.py (Grad-CAM + SAM), export Label Studio
+│   ├── eval/                  # cross_domain_eval.py, gradcam.py, ablation_report.py, two_stage.py
+│   ├── labeling/              # yolo_format.py, build_yolo_dataset.py, pseudo_labels.py (Grad-CAM + SAM 2), label_studio.py
+│   ├── anomaly/               # patchcore.py (anomalies non vues, doc 04 §4)
+│   ├── growth/                # canopy.py, curve.py (suivi de croissance, doc 04 §5)
 │   └── export/                # to_onnx.py, hailo/ (scripts DFC)
 ├── edge/                      # services Raspberry Pi
 │   ├── camera_service.py

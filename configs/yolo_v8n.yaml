@@ -1,0 +1,35 @@
+# Détecteur générique feuille / plante / fruit (docs/04-detection-yolo.md §3).
+# Chemins relatifs à la racine du dépôt. `yolo:` est passé tel quel à Ultralytics
+# (model.train), sauf `model` et `data` qui sont résolus ici.
+seed: 42
+
+model: yolov8n.pt                  # poids COCO ; yolov8s.pt ou yolo11n.pt en alternative
+data: data/yolo/data.yaml          # python -m vision.labeling.build_yolo_dataset
+
+yolo:
+  imgsz: 640
+  epochs: 100
+  patience: 30
+  batch: 16
+  workers: 8
+  optimizer: auto
+  cos_lr: true
+  close_mosaic: 10
+  fraction: 1.0                    # part des images train utilisées (smoke test : 0.05)
+  # Augmentations Ultralytics
+  mosaic: 1.0
+  mixup: 0.0
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  degrees: 10.0
+  flipud: 0.5                      # feuilles vues du dessus : pas d'orientation privilégiée
+  fliplr: 0.5
+  scale: 0.5
+
+led_tint:
+  p: 0.3                           # part du batch teintée LED horticoles (rose / violet)
+
+mlflow:
+  tracking_uri: mlruns/mlflow.db
+  experiment: phase2-detection

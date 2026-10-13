@@ -87,27 +87,43 @@ def _safe_name(name: str) -> str:
     return re.sub(r"[^A-Za-z0-9._-]+", "_", name)[:120]
 
 
+def voc_boxes(xml_path: Path) -> tuple[Path, tuple[int, int], list[Box]] | None:
+    """(image, its (width, height), boxes in its pixels, clipped) of a VOC file.
+
+    None if the image is missing. Some PlantDoc boxes were drawn on a resized copy of the
+    image: they are rescaled to the real size. Raises on unreadable files.
+    """
+    img_path = _image_for(xml_path)
+    if img_path is None:
+        return None
+    size, boxes = _parse_voc(xml_path)
+    with Image.open(img_path) as img:
+        w, h = img.size
+    sx, sy = (w / size[0], h / size[1]) if size and all(size) else (1.0, 1.0)
+    out = []
+    for label, (x0, y0, x1, y1) in boxes:
+        x0, x1 = max(0, round(x0 * sx)), min(w, round(x1 * sx))
+        y0, y1 = max(0, round(y0 * sy)), min(h, round(y1 * sy))
+        out.append((label, (x0, y0, x1, y1)))
+    return img_path, (w, h), out
+
+
 def extract_crops(split_dir: Path, crops_dir: Path) -> Counter:
     """Crop every VOC box of split_dir into crops_dir/<label>/<stem>_<i>.jpg."""
     labels: Counter = Counter()
     for xml_path in sorted(split_dir.glob("*.xml")):
-        img_path = _image_for(xml_path)
-        if img_path is None:
-            log.warning("image manquante : %s", xml_path.name)
-            continue
         try:
-            size, boxes = _parse_voc(xml_path)
+            found = voc_boxes(xml_path)
+            if found is None:
+                log.warning("image manquante : %s", xml_path.name)
+                continue
+            img_path, _, boxes = found
             img = Image.open(img_path).convert("RGB")
         except (ET.ParseError, OSError, TypeError, ValueError) as e:
-            log.warning("ignoré %s : %s", img_path.name, e)
+            log.warning("ignoré %s : %s", xml_path.name, e)
             continue
-        w, h = img.size
-        # Some PlantDoc boxes were drawn on a resized copy of the image.
-        sx, sy = (w / size[0], h / size[1]) if size and all(size) else (1.0, 1.0)
         stem = _safe_name(xml_path.stem)
         for i, (label, (x0, y0, x1, y1)) in enumerate(boxes):
-            x0, x1 = max(0, round(x0 * sx)), min(w, round(x1 * sx))
-            y0, y1 = max(0, round(y0 * sy)), min(h, round(y1 * sy))
             if x1 - x0 < MIN_CROP or y1 - y0 < MIN_CROP:
                 continue
             out = crops_dir / label / f"{stem}_{i}.jpg"

@@ -30,6 +30,11 @@ vision = [
     "onnxruntime",
     "matplotlib",
 ]
+detection = [  # phase 2 (docs/04): YOLO, SAM 2 pseudo-labels, growth curves
+    "ultralytics>=8.4",
+    "sam2",
+    "scipy",
+]
 notebook = [
     "ipykernel",
     "nbclient",

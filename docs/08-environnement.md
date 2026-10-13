@@ -23,6 +23,7 @@ Le `pyproject.toml` existe déjà. Les dépendances sont réparties en groupes :
 |---|---|---|
 | base | `pydantic`, `paho-mqtt` (contrat MQTT) | `uv sync` |
 | `vision` | torch, torchvision, timm, albumentations, OpenCV, pandas, pyarrow, imagehash, scikit-learn, MLflow, grad-cam, ONNX… | `uv sync --extra vision` |
+| `detection` | ultralytics (YOLO, AGPL-3.0), sam2, scipy (phase 2, doc 04) | `uv sync --extra vision --extra detection` |
 | `notebook` | ipykernel, nbclient, nbformat, ipywidgets (notebooks en local) | `uv sync --extra notebook` |
 | `backend` | FastAPI, uvicorn, psycopg | `uv sync --extra backend` |
 | `dev` | pytest, ruff | inclus par défaut dans `uv sync` |

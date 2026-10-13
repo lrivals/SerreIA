@@ -40,6 +40,7 @@ ls -l data_archives/            # doivent être identiques ; data_archives/ peut
 | `ccmt` | `ccmt/raw` | 1,36 Go | `ccmt/raw/Tomato/healthy` | 12/10/2026 | `augmented/` (6,9 Go, fuite) exclu |
 | `plantdoc` | `plantdoc/{train,test,crops}` | 1,71 Go | `plantdoc/crops/test` | 12/10/2026 | images VOC + crops du classifieur |
 | `backgrounds` | `backgrounds` | — | `backgrounds` | — | **à constituer** (docs/03 §3.2) |
+| `yolo` | `yolo` | — | `yolo/data.yaml` | — | jeu de détection (docs/04 §2), liens suivis ; reconstructible en ~1 min (`build_yolo_dataset`) |
 
 Tailles : taille des archives (`ls -l data_archives/`). Après un envoi, remplir la colonne « Sur le Drive » avec la date. Vérifier l'espace avec `rclone about gdrive:` avant un gros envoi.
 
