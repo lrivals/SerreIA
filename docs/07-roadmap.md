@@ -24,7 +24,7 @@
 4. ✅ `vision/datasets/dataset.py`, `augment.py`
 5. ✅ `vision/models/multihead.py`
 6. ✅ `vision/train/train_classifier.py` + `configs/clf_effnet_b0.yaml` (+ `configs/ablations/`)
-7. ✅ `vision/eval/cross_domain_eval.py`, `gradcam.py` (+ `vision/export/to_onnx.py`) — code testé sur CPU ; entraînements réels en attente de `data/backgrounds/`
+7. ✅ `vision/eval/cross_domain_eval.py`, `gradcam.py` (+ `vision/export/to_onnx.py`) — entraînements réels faits (run principal + ablations A–E, analyse [14](14-resultats-phase1.md)) ; remplacement de fond encore à tester faute de `data/backgrounds/`
 8. ✅ Notebooks Colab `notebooks/01–04` (générés par `tools/notebooks/build.py`) et données archivées sur Google Drive (`tools/get_datasets.sh`, [data-drive](data-drive.md))
 
 Les étapes G1–G4 peuvent démarrer en parallèle de la vision : elles ne dépendent que du contrat MQTT et du simulateur.

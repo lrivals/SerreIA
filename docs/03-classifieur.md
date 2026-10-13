@@ -90,6 +90,7 @@ Configurations : `configs/ablations/{A_baseline,B_strong_aug,C_background,D_ccmt
 Sorties de l'évaluation : `reports/<run_id>/metrics.json`, `summary.md` (tableau prêt à coller), matrices de confusion `sante` et `classe` par jeu et par source. Les classes ambiguës sont rapportées à part (`sante`, `espece`). Sur `test_xdomain`, la métrique `classe` ne porte que sur les classes communes à PlantDoc et aux sources d'entraînement du run.
 
 Livrable : `reports/phase1.md`, avec le tableau des ablations, les matrices et une planche Grad-CAM.
+Analyse des premiers résultats et pistes d'amélioration : [14](14-resultats-phase1.md).
 
 ## 5. Explicabilité — `vision/eval/gradcam.py`
 - Grad-CAM sur la dernière couche convolutive **spatiale** (détectée automatiquement : le `conv_head` de MobileNetV3, appliqué après le pooling, est ignoré), pour chaque tête ;
@@ -100,6 +101,8 @@ Livrable : `reports/phase1.md`, avec le tableau des ablations, les matrices et u
 - F1 `sante` in-domain ≥ 0,97 ;
 - **rappel « anormal » sur PlantDoc ≥ 0,80** (objectif réaliste ; la littérature rapporte de fortes chutes cross-domain) ;
 - export ONNX validé (écart < 0,5 point par rapport à PyTorch) : `vision/export/to_onnx.py`.
+
+Ces critères sont atteints mais insuffisants (le rappel seul récompense un biais « anormal ») : voir [14](14-resultats-phase1.md) §5 et §7.
 
 ## 7. Commandes et notebooks
 
