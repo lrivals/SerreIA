@@ -1,5 +1,7 @@
 # 06 — Capteurs, électronique et contrôle
 
+> Statut : **implémenté et testé sur PC** (contrôleur, simulateur, contrat MQTT). Firmware écrit, pas encore compilé sur cible. Voir [§6](#6-implémentation-et-test-sur-pc).
+
 ## 1. Matériel des nœuds
 
 Matériel choisi par LitWin. Tous les modules (capteurs comme actionneurs) utilisent le même microcontrôleur : un seul firmware de base, une seule carte en stock de rechange.
@@ -55,7 +57,7 @@ Les adresses I²C de SHT41, BMP280, SCD41 et BH1750 sont toutes différentes : l
 | Actionneur | Commande | Remarques |
 |---|---|---|
 | Pompe nutritive / arrosage | relais ou MOSFET | durée max imposée par le firmware |
-| Pompes doseuses pH−, nutriments A/B | MOSFET (péristaltiques 12 V) | dosage par impulsions + temps de mélange |
+| Pompes doseuses pH−, nutriments A/B (`pompe_ph_down`, `pompe_nutri_a`, `pompe_nutri_b`) | MOSFET (péristaltiques 12 V) | dosage par impulsions + temps de mélange |
 | Ventilation / extraction | relais ou PWM (ventilos 4 fils) | |
 | LED horticoles | driver avec entrée PWM / 0-10 V | photopériode + intensité |
 | Brumisateur, chauffage | relais (SSR pour les charges secteur) | ⚠️ **230 V** : boîtier, disjoncteur différentiel, électricien si doute |
@@ -93,7 +95,7 @@ Présence détectée par le radar → brumisation et traitements suspendus tant 
 - lumière : photopériode par culture + complément si la lumière naturelle est insuffisante (intégrale lumineuse journalière, DLI) ;
 - humidité du sol : arrosage des emplacements en terre sous un seuil par culture, avec une durée max et un délai minimal entre deux arrosages ;
 - présence : une présence la nuit ou hors des plages déclarées → **alerte intrusion** (humain ou animal) ; les présences en journée sont journalisées (visites, entretien) ;
-- consignes par culture et par stade dans `edge/controller/recettes.yaml`.
+- consignes par culture et par stade dans `edge/controller/recettes.yaml` ([09 §6](09-modele-gestion-serre.md#6-recettes-de-culture)), configuration de la serre dans `edge/controller/serre.yaml`.
 
 ### Niveau 2 — prévision par réseau de neurones (`forecast.py`)
 - modèle **GRU** (puis Temporal Fusion Transformer si les données suffisent), entraîné sur l'historique TimescaleDB ;
@@ -116,3 +118,78 @@ Permet de développer le logiciel **avant** l'électronique :
 - dynamique HR, pH et EC simplifiée ; bruit et pannes injectables (capteur figé, valeur aberrante, déconnexion) ;
 - publie sur les **mêmes topics MQTT** que les ESP32 et réagit aux commandes, via `common.mqtt` (`sensor_topic`, `encode`, `decode`) ;
 - sert aussi d'environnement d'entraînement pour le niveau 3.
+
+## 6. Implémentation et test sur PC
+
+Tout se teste sans électronique : le simulateur publie sur les mêmes topics que les ESP32 et émule leur logique locale. Avec `--mqtt none`, simulateur et contrôleur partagent un bus en mémoire (`edge/publisher.py`, `LoopbackBus`), sans broker.
+
+### Contrat MQTT (`common/mqtt/`)
+
+- Nouveaux types de capteurs : `pression` (hPa), `presence` (nombre de cibles 0–3) et `humidite_sol` (%). Ce dernier porte le champ optionnel `emplacement` de `SensorReading`, une mesure par sonde.
+- Nouveaux actionneurs : `pompe_nutri_a`, `pompe_nutri_b` (EC). Ce sont des pompes, donc `duree_s` est obligatoire.
+- Topic `serre/<zone>/decision` et schéma `Decision`, version minimale de [10 §2](10-decisions-tracabilite.md#2-enregistrement-decision) : preuves capteurs, vision, prévision et consignes, `regle` versionnée, `config_version`, `explication`, `statut`. `Command.raison` vaut `"<decision_id> | <texte>"` (`command_raison`, `parse_raison`).
+- `ranges.py` : plages physiques et unités par type, la même table que le firmware.
+
+### Contrôleur (`edge/controller/`, `python -m edge.controller`)
+
+| Fichier | Rôle |
+|---|---|
+| `serre.yaml`, `config.py` | configuration exportée ([09 §8](09-modele-gestion-serre.md#8-configuration-exportée-vers-le-contrôleur)) : zones, emplacements, plantes, actionneurs (`duree_max_s`, `impulsion_s`, `melange_s`, `delai_min_s`, `marche_min_s`), limites de sécurité. Rechargée à chaud ; une version invalide garde la précédente |
+| `recettes.yaml`, `recipes.py` | recettes par espèce et stade. Consigne de zone = intersection des plages, à défaut la plante prioritaire ; pH et EC seulement en zone hydro |
+| `state.py` | état issu du flux MQTT : mesures, états réels `etat/`, status des nœuds, vision récente, durée HR > seuil, T° moyenne sur 12 h, DLI du jour |
+| `safety.py` | niveau 0 : `check()` sur chaque ordre, `watch()` pour les limites dures. Ajout : alerte « capteur figé » (même valeur pendant 30 min) |
+| `rules.py` | niveau 1 : règles à id stable (`climat.temperature.ventilation`, `ph.dosage`, `sol.arrosage`, `presence.intrusion`…) |
+| `risk.py` | indice de risque mildiou, règle `maladie.mildiou.ventilation` (preuves vision si confirmée sur 3 captures) |
+| `forecast.py` | niveau 2 : GRU (torch) → ONNX (onnxruntime sur le Pi), ventilation préventive, anomalie capteur (écart à la prévision > 4 σ) |
+| `decisions.py`, `service.py` | arbitrage, `Decision` puis `Command`, alertes verrouillées tant que la condition dure, puis info de fin |
+| `edge/systemd/serreia-controller.service` | service du Pi |
+
+Choix d'implémentation :
+- **Arbitrage**. Un « off » du niveau sécurité l'emporte toujours ; sinon c'est le « on » de plus haute priorité (sécurité > manuel > exceptionnel > routine). Un ordre identique à l'état réel, ou à une commande non confirmée depuis moins de 2 min, est ignoré : une décision par cycle de régulation, pas par mesure.
+- **Arrêt d'un actionneur**. Seule la règle qui a allumé un actionneur peut l'éteindre, et pas avant `marche_min_s` (300 s par défaut, contre les cycles courts).
+- **Dosage pH / EC**. Une impulsion, puis une nouvelle impulsion seulement après `melange_s` **et** une mesure postérieure. Sans pompe pH+, un pH bas donne une alerte.
+- **Lumière**. LED seulement dans la photopériode. Avec un capteur de lux et une cible DLI, il s'agit d'un complément : DLI mesuré + lumière naturelle actuelle (lux × 0,0185, contribution LED retirée) × durée restante < cible. Chaque décision est maintenue au moins 30 min (bruit, nuages).
+- **Ventilation d'humidité**. Elle ne démarre pas si T° < min de la recette, et s'arrête sous min − hystérésis.
+- **Refus de sécurité**. Il est tracé une fois (`bloquee_securite` + alerte `warning`), puis plus tant que la cause ne change pas.
+
+### Simulateur (`sim/`, `python -m sim`)
+
+| Fichier | Rôle |
+|---|---|
+| `weather.py` | météo synthétique : saison, jour, soleil, nuages, pression (fronts) |
+| `model.py` | `ZoneModel` du 1er ordre : T°, HR, CO₂, lux, sol par emplacement, pH, EC, T° eau, niveau de cuve, présence. `step()` sert d'API pour le niveau 3 |
+| `nodes.py` | nœuds émulés : bruit, `qualite`, présence au changement, nœud actionneurs (refus sans `duree_s`, échéance, flotteur local) |
+| `faults.py` | `fige:z1/temperature@30-90`, `aberrant:z1/humidite@60`, `deconnexion:esp32-02@10-40`, `cuve_vide:z2@120` |
+| `simulation.py` | disposition de `serre.yaml` (z1 terre : esp32-01, 02 ; z2 hydro : esp32-03, 05 ; esp32-04 actionneurs) |
+| `dataset.py` | historique simulé (pas de 60 s, sans MQTT) pour entraîner le GRU |
+
+### Firmware (`firmware/`)
+
+Un environnement PlatformIO par nœud, plus `native` pour les tests de la logique pure (voir [firmware/README](../firmware/README.md)). La logique de `lib/serre_logic` (trames LD2450, commandes et sécurités pompes, mode dégradé, sondes de sol) est testée avec Unity. La cohérence avec le contrat est vérifiée par `tests/test_firmware_contract.py`.
+
+### Commandes
+
+```bash
+uv sync --extra controle
+
+# Simulateur + contrôleur dans un processus, sans broker, 2 h simulées au plus vite
+uv run python -m sim --mqtt none --avec-controleur --accel 0 --duree-h 2 --debut 2026-07-15T06:00
+uv run python -m sim --mqtt none --avec-controleur --accel 0 --duree-h 3 \
+    --panne cuve_vide:z2@30 --panne deconnexion:esp32-02@10-40 --panne fige:z1/temperature@60-100
+
+# Avec mosquitto : simulateur et contrôleur séparés (comme sur le Pi)
+uv run python -m sim --accel 60
+uv run python -m edge.controller
+
+# Niveau 2 : entraînement (torch, extra vision) puis export ONNX dans edge/models/forecast
+uv run python -m edge.controller.forecast train --sim-jours 60      # mécanique seulement
+uv run python -m edge.controller.forecast train --donnees historique.parquet
+```
+
+Tests : `tests/test_mqtt_contract.py`, `test_recipes.py`, `test_safety.py`, `test_rules.py`, `test_risk.py`, `test_forecast.py` (GRU non entraîné, sans apprentissage), `test_sim.py`, `test_controller.py` (simulateur + contrôleur de bout en bout), `test_firmware_contract.py`.
+
+Reste à faire :
+- compiler et flasher le firmware ;
+- entraîner le GRU (simulateur, puis plusieurs semaines de données réelles) ;
+- brancher l'API météo (entrée `t_ext`, absente au runtime pour l'instant) ;
+- ingérer `decision` côté serveur (G3) et construire le niveau 3.

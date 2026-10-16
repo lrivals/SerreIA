@@ -48,6 +48,71 @@ class DryRunPublisher:
         pass
 
 
+class LoopbackBus:
+    """In-memory broker: the simulator, the controller and the tests share one process.
+
+    Retained messages (etat/, status) are replayed to late subscribers, as mosquitto does.
+    Delivery is synchronous; messages published from a handler are queued and delivered
+    after it returns, so the order seen by every subscriber is the publication order.
+    """
+
+    def __init__(self):
+        self.subs: list[tuple[str, Handler]] = []
+        self.retained: dict[str, bytes] = {}
+        self.log: list[tuple[str, bytes]] = []
+        self._queue: list[tuple[str, bytes]] = []
+        self._delivering = False
+
+    def publish(self, topic: str, payload: bytes) -> None:
+        self.log.append((topic, payload))
+        if _policy(topic).retain:
+            self.retained[topic] = payload
+        self._queue.append((topic, payload))
+        if self._delivering:
+            return
+        self._delivering = True
+        try:
+            while self._queue:
+                t, p = self._queue.pop(0)
+                for pattern, handler in list(self.subs):
+                    if _matches(pattern, t):
+                        try:
+                            handler(t, p)
+                        except Exception:
+                            log.exception("traitement de %s", t)
+        finally:
+            self._delivering = False
+
+    def subscribe(self, pattern: str, handler: Handler) -> None:
+        self.subs.append((pattern, handler))
+        for t, p in list(self.retained.items()):
+            if _matches(pattern, t):
+                handler(t, p)
+
+
+def _matches(pattern: str, topic: str) -> bool:
+    import paho.mqtt.client as mqtt
+
+    return mqtt.topic_matches_sub(pattern, topic)
+
+
+class LoopbackPublisher:
+    """Publisher on a LoopbackBus, with the `online` / `offline` status of MqttPublisher."""
+
+    def __init__(self, node: str, bus: LoopbackBus):
+        self.node, self.bus = node, bus
+        self.publish(status_topic(node), "online")
+
+    def publish(self, topic: str, message) -> None:
+        self.bus.publish(topic, encode(message))
+
+    def subscribe(self, pattern: str, handler: Handler) -> None:
+        self.bus.subscribe(pattern, handler)
+
+    def close(self) -> None:
+        self.publish(status_topic(self.node), "offline")
+
+
 class MqttPublisher:
     """paho-mqtt 2 client: QoS / retain from the contract, LWT `status = offline`,
     `online` published at every (re)connection, subscriptions restored on reconnect."""

@@ -10,6 +10,7 @@ from common.mqtt import (
     Actuator,
     CaptureRequest,
     Command,
+    Decision,
     SensorReading,
     SensorType,
     TopicKind,
@@ -17,8 +18,11 @@ from common.mqtt import (
     alert_topic,
     capture_topic,
     cmd_topic,
+    command_raison,
+    decision_topic,
     decode,
     encode,
+    parse_raison,
     parse_topic,
     sensor_topic,
     state_topic,
@@ -185,6 +189,11 @@ def test_topic_builders():
         ("serre/z1/etat/chauffage", TopicKind.ETAT, "z1", "chauffage"),
         ("serre/z1/cmd/capture", TopicKind.CMD, "z1", "capture"),
         ("serre/esp32-02/status", TopicKind.STATUS, "esp32-02", None),
+        ("serre/z1/capteur/pression", TopicKind.CAPTEUR, "z1", "pression"),
+        ("serre/z1/capteur/presence", TopicKind.CAPTEUR, "z1", "presence"),
+        ("serre/z1/capteur/humidite_sol", TopicKind.CAPTEUR, "z1", "humidite_sol"),
+        ("serre/z2/cmd/pompe_nutri_a", TopicKind.CMD, "z2", "pompe_nutri_a"),
+        ("serre/z1/decision", TopicKind.DECISION, "z1", None),
     ],
 )
 def test_parse_topic(topic, kind, scope, subject):
@@ -196,7 +205,7 @@ def test_parse_topic(topic, kind, scope, subject):
     "topic",
     [
         "serre/zone1/capteur/co2",  # bad zone
-        "serre/z1/capteur/pression",  # unknown sensor
+        "serre/z1/capteur/pluie",  # unknown sensor
         "serre/z1/cmd/arroseur",  # unknown actuator
         "serre/z1/etat/capture",  # capture is a command only
         "maison/z1/capteur/co2",
@@ -217,4 +226,69 @@ def test_topic_policy_matches_doc():
         TopicKind.CMD: (1, False),
         TopicKind.ETAT: (1, True),
         TopicKind.STATUS: (1, True),
+        TopicKind.DECISION: (1, False),
     }
+
+
+# --- decisions (docs/10 §2, §7) ---------------------------------------------
+
+DECISION_EXAMPLE = {
+    "id": "dec-20261012-0231-z1-007",
+    "ts": "2026-10-12T02:31:00Z",
+    "zone": "z1",
+    "emplacements": ["z1-A1"],
+    "niveau": 1,
+    "origine": "controller",
+    "regle": {"id": "maladie.mildiou.ventilation", "version": 3},
+    "type": "exceptionnelle",
+    "config_version": 12,
+    "preuves": {
+        "vision": [
+            {
+                "image_id": "z1-a-20261012T020000", "camera": "cam-z1-a", "modele": "clf-effb0-v3",
+                "emplacement": "z1-A1", "espece": "tomate", "espece_conf": 0.97,
+                "sante": "anormal", "sante_conf": 0.88, "classe": "tomate/maladie/mildiou",
+                "classe_conf": 0.81, "bbox": None, "score_anomalie": 0.42, "confirmations": 3,
+            }
+        ],
+        "capteurs": [
+            {"topic": "serre/z1/capteur/humidite", "agregat": "duree_au_dessus", "seuil": 90,
+             "valeur": 11.2, "unite": "h", "qualite": "ok"},
+        ],
+        "prevision": [{"grandeur": "humidite", "horizon": "+6h", "valeur": 93, "modele": "gru-v1"}],
+        "consignes": {"recette": "tomate-standard", "stade": "floraison", "humidite": [55, 70]},
+    },
+    "explication": "HR > 90 % depuis 11,2 h -> ventilation 15 min + alerte.",
+    "actions": ["cmd:ventilo on 900 s", "alerte"],
+    "statut": "executee",
+}  # fmt: skip
+
+
+def test_decision_roundtrip():
+    topic = decision_topic("z1")
+    assert topic == "serre/z1/decision"
+    message = decode(topic, json.dumps(DECISION_EXAMPLE))
+    assert isinstance(message, Decision) and message.preuves.vision[0].confirmations == 3
+    assert decode(topic, encode(message)) == message
+    with pytest.raises(ValidationError):
+        Decision.model_validate(with_(DECISION_EXAMPLE, id="007"))
+    with pytest.raises(ValidationError):
+        Decision.model_validate(with_(DECISION_EXAMPLE, statut="faite"))
+
+
+def test_command_raison_links_decision():
+    raison = command_raison("dec-20261012-0231-z1-007", "ventilation mildiou")
+    assert parse_raison(raison) == ("dec-20261012-0231-z1-007", "ventilation mildiou")
+    assert parse_raison("pH 6.9 > consigne 6.2") == (None, "pH 6.9 > consigne 6.2")
+    assert parse_raison(None) == (None, None)
+
+
+def test_soil_reading_with_emplacement():
+    payload = with_(SENSOR_EXAMPLE, noeud="esp32-02", valeur=41.0, unite="%", emplacement="z1-A1")
+    message = decode(sensor_topic("z1", SensorType.HUMIDITE_SOL), json.dumps(payload))
+    assert message.emplacement == "z1-A1"
+    assert SensorReading.model_validate(SENSOR_EXAMPLE).emplacement is None
+
+
+def test_nutrient_pumps_are_pumps():
+    assert Actuator.POMPE_NUTRI_A.is_pump and Actuator.POMPE_NUTRI_B.is_pump

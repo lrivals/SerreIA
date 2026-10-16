@@ -19,11 +19,16 @@ class SensorType(StrEnum):
     EC = "ec"
     TEMP_EAU = "temp_eau"
     NIVEAU_CUVE = "niveau_cuve"
+    PRESSION = "pression"  # hPa, BMP280
+    PRESENCE = "presence"  # number of radar targets 0-3, HLK-LD2450
+    HUMIDITE_SOL = "humidite_sol"  # %, capacitive probes (one reading per emplacement)
 
 
 class Actuator(StrEnum):
     POMPE_NUTRI = "pompe_nutri"
     POMPE_PH_DOWN = "pompe_ph_down"
+    POMPE_NUTRI_A = "pompe_nutri_a"  # dosing pumps of the nutrient solution (EC)
+    POMPE_NUTRI_B = "pompe_nutri_b"
     VENTILO = "ventilo"
     LED = "led"
     BRUMISATEUR = "brumisateur"
@@ -41,6 +46,7 @@ class TopicKind(StrEnum):
     CMD = "cmd"
     ETAT = "etat"
     STATUS = "status"
+    DECISION = "decision"
 
 
 @dataclass(frozen=True)
@@ -56,6 +62,7 @@ TOPIC_POLICY: dict[TopicKind, TopicPolicy] = {
     TopicKind.CMD: TopicPolicy(qos=1, retain=False),
     TopicKind.ETAT: TopicPolicy(qos=1, retain=True),
     TopicKind.STATUS: TopicPolicy(qos=1, retain=True),
+    TopicKind.DECISION: TopicPolicy(qos=1, retain=False),
 }
 
 SUBSCRIPTIONS: dict[TopicKind, str] = {
@@ -65,6 +72,7 @@ SUBSCRIPTIONS: dict[TopicKind, str] = {
     TopicKind.CMD: f"{ROOT}/+/cmd/+",
     TopicKind.ETAT: f"{ROOT}/+/etat/+",
     TopicKind.STATUS: f"{ROOT}/+/status",
+    TopicKind.DECISION: f"{ROOT}/+/decision",
 }
 
 
@@ -111,6 +119,10 @@ def state_topic(zone: str, actuator: Actuator | str) -> str:
     return f"{ROOT}/{_check_zone(zone)}/etat/{Actuator(actuator)}"
 
 
+def decision_topic(zone: str) -> str:
+    return f"{ROOT}/{_check_zone(zone)}/decision"
+
+
 def status_topic(node: str) -> str:
     return f"{ROOT}/{_check_id(node, 'node id')}/status"
 
@@ -125,8 +137,8 @@ def parse_topic(topic: str) -> ParsedTopic:
         scope, kind = parts[1], parts[2]
         if kind == TopicKind.STATUS:
             return ParsedTopic(TopicKind.STATUS, _check_id(scope, "node id"))
-        if kind == TopicKind.ALERTE:
-            return ParsedTopic(TopicKind.ALERTE, _check_zone(scope))
+        if kind in (TopicKind.ALERTE, TopicKind.DECISION):
+            return ParsedTopic(TopicKind(kind), _check_zone(scope))
         raise ValueError(f"not a contract topic: {topic!r}")
 
     if len(parts) != 4:

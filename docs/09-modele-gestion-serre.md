@@ -76,7 +76,7 @@ Le mode de culture sert à :
 - **choisir les règles** actives du contrôleur (pas de dosage pH sur un emplacement en terre, pas d'arrosage cyclique sur du DWC) ;
 - **contrôler la cohérence** : un emplacement `hydro_*` sans capteur pH/EC dans sa cuve déclenche un avertissement de configuration.
 
-> Les sondes capacitives d'humidité du sol sont achetées ([06 §1.2](06-capteurs-controle.md#12-capteurs-bom)), mais `humidite_sol` n'existe pas encore dans `SensorType` ; il est à ajouter au contrat avec `pression` et `presence`.
+> Les sondes capacitives d'humidité du sol publient `humidite_sol` avec le champ `emplacement` (une mesure par sonde) ; `pression` et `presence` sont aussi dans le contrat ([06 §6](06-capteurs-controle.md#6-implémentation-et-test-sur-pc)).
 
 ## 4. Équipements
 

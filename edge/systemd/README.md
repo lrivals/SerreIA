@@ -8,17 +8,17 @@ Services systemd, redémarrage automatique (`Restart=always`) et watchdog logici
 | `mosquitto` | broker MQTT (paquet Debian) |
 | `serreia-camera.service` | `python -m edge.camera_service` |
 | `serreia-vision-alerts.service` | `python -m edge.controller.vision_alerts` |
-| `sensor_bridge`, `controller` | à venir (docs/06) |
+| `serreia-controller.service` | `python -m edge.controller` : sécurité, règles, risque, prévision, décisions ([06 §4](../../docs/06-capteurs-controle.md#4-stratégie-de-contrôle--edgecontroller)) |
 
 Installation (une fois, sur le Pi, utilisateur `serre`, dépôt dans `/home/serre/SerreIA`) :
 
 ```bash
 sudo apt install mosquitto hailo-all python3-picamera2
 uv venv --system-site-packages        # picamera2 et hailo_platform viennent d'apt
-uv sync --extra edge
+uv sync --extra edge --extra controle
 sudo cp edge/systemd/serreia-*.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now mosquitto serreia-camera serreia-vision-alerts
+sudo systemctl enable --now mosquitto serreia-camera serreia-vision-alerts serreia-controller
 ```
 
 Watchdog matériel du Pi 5 (redémarre la carte si le système se fige) :

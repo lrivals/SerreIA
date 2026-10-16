@@ -180,7 +180,9 @@ Structure de données renvoyée par l'API (`GET /actions/arbre?zone=&debut=&fin=
 
 Chaque nœud `decision` ouvre la fiche de décision (preuves image + capteurs, cf. [12](12-interface-utilisateur.md)).
 
-## 7. Évolution proposée du contrat MQTT
+## 7. Évolution du contrat MQTT
+
+> Version minimale **implémentée** ([06 §6](06-capteurs-controle.md#6-implémentation-et-test-sur-pc)) : topic `decision`, schéma `Decision` (sans `Action` séparée : `actions` est une liste de libellés `cmd:ventilo on 900 s`, `alerte`, `bloquee:…`), convention `raison`, publication par `edge/controller/service.py` avant chaque commande. Restent pour G3 : tables `decision` / `action`, confirmation par `etat/`, cycle de vie complet, arbre.
 
 | Topic | Émetteur | QoS | Retain | Schéma |
 |---|---|---|---|---|

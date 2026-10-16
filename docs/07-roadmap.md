@@ -29,6 +29,8 @@
 9. ✅ Phase 2 ([04](04-detection-yolo.md)) : `vision/labeling/` (jeu `data/yolo/`, pseudo-labels Grad-CAM + SAM 2, Label Studio), `vision/train/train_yolo.py` + `configs/yolo_v8n.yaml`, `vision/eval/two_stage.py`, `vision/anomaly/patchcore.py`, `vision/growth/`, notebook `05_detection` ; extra `detection` (ultralytics, sam2, scipy). Détecteur entraîné (run `a604f044`, YOLOv8n : mAP@0.5 val 0,888, test 0,956) et deux étages évalués sur PlantDoc TEST (42 % de faux positifs sur images saines), analyse [14](14-resultats-phase1.md) §8, plan d'amélioration [15](15-ameliorations-detection.md) ; pipeline sur photos réelles de la serre encore à évaluer.
 10. ✅ Edge ([05](05-edge-deploiement.md)) côté code : bundle de modèles (`vision/export/package.py`), calibration INT8, scripts Hailo DFC, comparaison de backends, runtime `edge/vision/` (ONNX Runtime / HailoRT), `edge/camera_service.py`, alertes vision lissées (`edge/controller/vision_alerts.py`), apprentissage actif, systemd. Testé sur PC (ONNX, sans broker) ; HEF, HailoRT et picamera2 à valider sur le Pi.
 
+11. ✅ Capteurs et contrôle ([06](06-capteurs-controle.md)) côté code : contrat MQTT étendu (`pression`, `presence`, `humidite_sol`, `pompe_nutri_a/b`, topic `decision` minimal), contrôleur `edge/controller/` (sécurité, règles, risque mildiou, prévision GRU → ONNX, décisions tracées), simulateur `sim/` (météo, modèle de zone, nœuds émulés, pannes), firmware `firmware/` (4 nœuds, logique pure testée). Testé sur PC (simulateur + contrôleur sur bus en mémoire) ; firmware à compiler et flasher, GRU à entraîner.
+
 Les étapes G1–G4 peuvent démarrer en parallèle de la vision : elles ne dépendent que du contrat MQTT et du simulateur.
 
 ## Risques et parades

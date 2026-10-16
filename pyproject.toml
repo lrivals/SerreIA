@@ -41,6 +41,12 @@ edge = [  # Pi services (docs/05); picamera2 and hailo_platform come from apt (h
     "onnxruntime",
     "pyyaml",
 ]
+controle = [  # controller and simulator (docs/06); torch (vision extra) only to train the GRU
+    "numpy>=2",
+    "pandas",
+    "pyyaml",
+    "onnxruntime",
+]
 notebook = [
     "ipykernel",
     "nbclient",

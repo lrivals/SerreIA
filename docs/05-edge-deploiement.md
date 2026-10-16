@@ -59,7 +59,7 @@ déploiement HEF ◄── export ◄── ré-entraînement (RTX) ◄── in
 - C'est ainsi qu'on ajoute **fraise, salades et aromatiques** : nouvelles entrées de taxonomie, puis annotation, puis ré-entraînement.
 
 ## 6. Exploitation
-- Services systemd : `mosquitto`, `camera_service`, `sensor_bridge`, `controller`, avec redémarrage automatique.
+- Services systemd : `mosquitto`, `camera_service`, `vision_alerts`, `controller` (la validation des mesures est faite par le firmware, [06 §3](06-capteurs-controle.md#3-firmware-esp32--firmware-platformio-arduino-ou-esp-idf)), avec redémarrage automatique.
 - Watchdog matériel du Pi activé.
 - Logs : journald + envoi des erreurs au serveur.
 - Mises à jour : `git pull` + `uv sync` + redémarrage des services ; HEF copiés dans `edge/models/` avec un lien symbolique `current`.

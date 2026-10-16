@@ -36,7 +36,8 @@ Choix structurants :
 - ✅ **Classifieur phase 1** écrit (dataset, augmentations + remplacement de fond, modèle multi-têtes, entraînement MLflow, évaluation cross-domain, Grad-CAM, export ONNX) et testé sur CPU — cf. [03-classifieur](docs/03-classifieur.md). **Notebooks Colab** (`notebooks/`, données servies par Google Drive) pour lancer les entraînements et les ablations A–E sur GPU ; reste à constituer `data/backgrounds/`.
 - ✅ Données archivées sur **Google Drive** (`tools/get_datasets.sh`, rclone) — cf. [data-drive](docs/data-drive.md).
 - ✅ **Edge** (doc 05) écrit et testé sur PC : bundle de modèles, calibration et scripts Hailo, service caméra (ONNX Runtime, mode sans broker), alertes vision lissées, apprentissage actif, systemd — cf. [05-edge-deploiement §7](docs/05-edge-deploiement.md#7-implémentation-et-test-sur-pc). HEF / HailoRT / picamera2 à valider sur le Pi.
-- ⏳ Backend, simulateur et firmware : à écrire.
+- ✅ **Capteurs et contrôle** (doc 06) écrits et testés sur PC : contrat MQTT étendu (dont le topic `decision`), contrôleur (sécurité, règles, risque, prévision GRU), simulateur MQTT avec pannes injectables, firmware des 4 nœuds XIAO ESP32-C6 — cf. [06 §6](docs/06-capteurs-controle.md#6-implémentation-et-test-sur-pc). Firmware à compiler et flasher, GRU à entraîner.
+- ⏳ Backend : à écrire.
 
 ## Démarrage rapide
 
@@ -63,6 +64,13 @@ uv sync --extra vision --extra detection --extra edge
 uv run python -m vision.export.package --classifier <run_id> --version clf-effb0-v1
 uv run python -m edge.camera_service --once --mqtt none     # images de data/plantdoc/test
 uv run python -m edge.controller.vision_alerts --replay edge/archive
+```
+
+Contrôle et simulateur, sur PC sans broker (doc 06 §6) :
+```bash
+uv sync --extra controle
+uv run python -m sim --mqtt none --avec-controleur --accel 0 --duree-h 2 --debut 2026-07-15T06:00
+uv run python -m sim --mqtt none --avec-controleur --accel 0 --duree-h 3 --panne cuve_vide:z2@30
 ```
 
 Notebooks (`notebooks/`, ouvrables dans Colab via leur badge) :

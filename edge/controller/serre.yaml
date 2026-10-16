@@ -1,0 +1,49 @@
+# Configuration de la serre exportée vers le contrôleur (docs/09 §8), lue par
+# edge/controller/config.py et rechargée à chaud. Cet exemple correspond au simulateur
+# (sim/) : z1 en terre (nœuds esp32-01 air, esp32-02 sol), z2 en hydro NFT (esp32-03).
+# Heures locales (fuseau) ; chemins relatifs à la racine du dépôt.
+
+config_version: 1
+nom: Maison
+fuseau: Europe/Paris
+recettes: edge/controller/recettes.yaml
+
+zones:
+  - id: z1
+    nom: terre
+    jour_debut: "06:00"
+    presence_autorisee: [{debut: "07:00", fin: "21:00"}]
+    emplacements:
+      - {id: z1-A1, mode_culture: terre,
+         plante: {id: tomate-1, espece: tomate, recette: tomate-standard, stade: floraison, prioritaire: true}}
+      - {id: z1-A2, mode_culture: terre,
+         plante: {id: basilic-1, espece: basilic, recette: basilic-standard, stade: croissance}}
+  - id: z2
+    nom: hydro NFT
+    jour_debut: "06:00"
+    cuve: true
+    emplacements:
+      - {id: z2-A1, mode_culture: hydro_nft,
+         plante: {id: laitue-1, espece: laitue, recette: laitue-hydro, stade: croissance}}
+
+actionneurs:
+  # z1
+  - {id: ventilo-z1, zone: z1, type: ventilo, commande: pwm, puissance_w: 40}
+  - {id: chauffage-z1, zone: z1, type: chauffage, puissance_w: 1500}
+  - {id: brumisateur-z1, zone: z1, type: brumisateur, duree_s: 60, delai_min_s: 600, puissance_w: 30}
+  - {id: led-z1, zone: z1, type: led, commande: pwm, puissance_w: 240, ppfd_max: 450}
+  - {id: arrosage-z1, zone: z1, type: pompe_nutri, duree_s: 45, duree_max_s: 120, delai_min_s: 3600, puissance_w: 20}
+  # z2
+  - {id: ventilo-z2, zone: z2, type: ventilo, commande: pwm, puissance_w: 40}
+  - {id: led-z2, zone: z2, type: led, commande: pwm, puissance_w: 240, ppfd_max: 450}
+  - {id: pompe-nft-z2, zone: z2, type: pompe_nutri, duree_s: 900, duree_max_s: 1800, delai_min_s: 1800, puissance_w: 25}
+  - {id: ph-down-z2, zone: z2, type: pompe_ph_down, impulsion_s: 2, duree_max_s: 10, melange_s: 600}
+  - {id: nutri-a-z2, zone: z2, type: pompe_nutri_a, impulsion_s: 3, duree_max_s: 15, melange_s: 900}
+  - {id: nutri-b-z2, zone: z2, type: pompe_nutri_b, impulsion_s: 3, duree_max_s: 15, melange_s: 900}
+
+hysteresis: {temperature: 1.0, humidite: 5.0, humidite_sol: 5.0}
+securite: {t_max: 35, t_min: 5, ph_min: 4.5, ph_max: 8.0, niveau_cuve_min: 10, capteur_muet_s: 300,
+           capteur_fige_s: 1800}
+risque: {hr_humectation: 90, humectation_h: 10, t_min: 10, t_max: 25, ventilation_s: 900, periode_s: 3600}
+lumiere: {lux_vers_ppfd: 0.0185, pwm_complement: 100, maintien_s: 1800}
+prevision: {modele: edge/models/forecast, hr_max_nuit: 85, ventilation_s: 900, ecart_sigma: 4}
