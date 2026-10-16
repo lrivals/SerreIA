@@ -57,9 +57,15 @@ db-init:
 ingest:
 	$(PY) -m backend.ingestion
 
-# HTTP API (docs/12 §5): decisions, validation of the proposals, action tree (docs/10).
+# HTTP API (docs/12 §5): decisions, validation of the proposals, action tree (docs/10),
+# agent (docs/11; `--agent none` without it).
 api:
 	$(PY) -m backend.api
+
+# Reference questions of the agent (docs/11 §6) with Claude: real API calls, tokens spent.
+# Q=led-2h for one question; MODELE=claude-opus-5-5, EFFORT=high to compare.
+agent-eval:
+	$(PY) -m backend.agent.eval $(if $(Q),--question $(Q)) $(if $(MODELE),--modele $(MODELE)) $(if $(EFFORT),--effort $(EFFORT))
 
 # Action tree of the last 24 h in the terminal (docs/10 §6); ZONE=z1 for one zone.
 arbre:
@@ -79,4 +85,4 @@ sim-demo:
 sim-live:
 	$(PY) -m sim --avec-controleur
 
-.PHONY: setup check-env cuda-torch test lint mlflow harvest harvest-all notebooks stack-up stack-down db-init ingest api arbre config-export sim-demo sim-live
+.PHONY: setup check-env cuda-torch test lint mlflow harvest harvest-all notebooks stack-up stack-down db-init ingest api agent-eval arbre config-export sim-demo sim-live

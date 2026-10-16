@@ -1,0 +1,84 @@
+# Catalogue des règles du contrôleur (docs/10 §2), pour l'agent (docs/11 §2) : `get_regle` et
+# le prompt système. Identifiants et versions = ceux des décisions (`regle.id`, `regle.version`) ;
+# `parametres` : clés de serre.yaml (`section.cle`) ou de regles.yaml (`regles.cle`) dont l'outil
+# donne la valeur courante. tests/test_agent.py vérifie que tout identifiant cité dans
+# edge/controller/ figure ici.
+
+# --- niveau 0 : sécurité (safety.py), veto sur tout ordre ---------------------------------
+securite.actionneur_inconnu: {version: 1, niveau: 0, description: "ordre refusé : actionneur non déclaré dans la zone"}
+securite.pompe_sans_duree: {version: 1, niveau: 0, description: "ordre de pompe refusé sans duree_s"}
+securite.duree_max: {version: 1, niveau: 0, description: "durée d'une pompe raccourcie à duree_max_s de l'actionneur"}
+securite.cuve_inconnue: {version: 1, niveau: 0, description: "pompe refusée : niveau de cuve inconnu"}
+securite.cuve_vide:
+  {version: 1, niveau: 0, description: "pompes refusées ou coupées sous le niveau de cuve minimal",
+   parametres: [securite.niveau_cuve_min]}
+securite.ph_bas: {version: 1, niveau: 0, description: "dosage pH− refusé sous le pH minimal", parametres: [securite.ph_min]}
+securite.ph: {version: 1, niveau: 0, description: "alerte pH hors limites", parametres: [securite.ph_min, securite.ph_max]}
+securite.t_max: {version: 1, niveau: 0, description: "chauffage refusé ou coupé au-dessus de T max", parametres: [securite.t_max]}
+securite.t_min: {version: 1, niveau: 0, description: "ventilation refusée ou coupée sous T min", parametres: [securite.t_min]}
+securite.presence: {version: 1, niveau: 0, description: "brumisation refusée ou coupée en présence d'une personne"}
+securite.capteur_muet: {version: 1, niveau: 0, description: "alerte : capteur sans mesure", parametres: [securite.capteur_muet_s]}
+securite.capteur_fige: {version: 1, niveau: 0, description: "alerte : valeur identique trop longtemps", parametres: [securite.capteur_fige_s]}
+securite.noeud_offline: {version: 1, niveau: 0, description: "alerte : nœud ESP32 hors ligne"}
+
+# --- niveau 1 : régulation (rules.py) ----------------------------------------------------
+climat.temperature.ventilation:
+  {version: 1, niveau: 1, description: "ventilation au-dessus de la T max de la recette (hystérésis)",
+   parametres: [hysteresis.temperature]}
+climat.temperature.chauffage:
+  {version: 1, niveau: 1, description: "chauffage sous la T min de la recette (hystérésis)",
+   parametres: [hysteresis.temperature]}
+climat.humidite.ventilation:
+  {version: 1, niveau: 1, description: "ventilation au-dessus de l'HR max de la recette, pas sous la T min",
+   parametres: [hysteresis.humidite]}
+climat.humidite.brumisation:
+  {version: 1, niveau: 1, description: "brumisation sous l'HR min de la recette", parametres: [hysteresis.humidite]}
+lumiere.photoperiode:
+  {version: 1, niveau: 1, description: "LED en complément pendant la photopériode quand le DLI est en retard, off en dehors",
+   parametres: [lumiere.pwm_complement, lumiere.maintien_s, lumiere.lux_vers_ppfd]}
+sol.arrosage:
+  {version: 1, niveau: 1, description: "arrosage quand l'humidité du sol d'un emplacement passe sous la recette",
+   parametres: [hysteresis.humidite_sol]}
+hydro.circulation: {version: 1, niveau: 1, description: "cycles de la pompe NFT des zones hydroponiques"}
+presence.intrusion: {version: 1, niveau: 1, description: "alerte de présence hors des plages autorisées de la zone"}
+
+# --- niveau 1 : risque et vision (risk.py, vision_rules.py) -------------------------------
+maladie.mildiou.ventilation:
+  {version: 1, niveau: 1, description: "humectation longue (HR élevée, T modérée) ou mildiou confirmé par la vision → ventilation et alerte",
+   parametres: [risque.hr_humectation, risque.humectation_h, risque.t_min, risque.t_max, risque.ventilation_s, regles.confirmations, regles.classe_conf_min]}
+maladie.mildiou.plante:
+  {version: 1, niveau: 1, description: "mildiou confirmé → plante malade et consigne HR max abaissée temporairement",
+   parametres: [regles.confirmations, regles.classe_conf_min, regles.hr_abaissement, regles.hr_abaissement_h]}
+maladie.mildiou.isolement: {version: 1, niveau: 1, description: "mildiou confirmé → proposition d'isoler la plante (avec validation)"}
+maladie.oidium.surveillance:
+  {version: 1, niveau: 1, description: "oïdium avec HR et T favorables → plante à surveiller, recapture rapprochée",
+   parametres: [regles.recapture_s]}
+maladie.taches.arrosage:
+  {version: 1, niveau: 1, description: "taches foliaires → arrêt de l'aspersion, arrosage au pied, inspection (avec validation)"}
+nuisible.brumisation:
+  {version: 1, niveau: 1, description: "nuisible (acarien) en air sec → brumisation légère et recapture",
+   parametres: [regles.brumisation_s, regles.recapture_s]}
+virus.isolement: {version: 1, niveau: 1, description: "virus → isoler la plante, alerte critique (avec validation)"}
+vision.espece.incoherence: {version: 1, niveau: 1, description: "espèce prédite différente de l'espèce déclarée → alerte, aucune action"}
+vision.anomalie.recapture:
+  {version: 1, niveau: 1, description: "plante classée saine mais score d'anomalie élevé → recapture",
+   parametres: [regles.anomalie_seuil, regles.recapture_s]}
+vision.anormal.surveillance: {version: 1, niveau: 1, description: "plante anormale sans classe confirmée → à surveiller"}
+croissance.surface.arrosage:
+  {version: 1, niveau: 1, description: "surface verte en baisse sur la fenêtre → stress hydrique possible, arrosage proposé",
+   parametres: [regles.surface_baisse, regles.surface_fenetre_h]}
+
+# --- niveau 2 : prévision (forecast.py) ----------------------------------------------------
+prevision.humidite.ventilation_preventive:
+  {version: 1, niveau: 2, description: "HR prévue à +6 h au-dessus du maximum de nuit → ventilation préventive",
+   parametres: [prevision.hr_max_nuit, prevision.ventilation_s]}
+prevision.anomalie_capteur:
+  {version: 1, niveau: 2, description: "mesure trop loin de la prévision → capteur suspect, alerte",
+   parametres: [prevision.ecart_sigma]}
+
+# --- décisions hors contrôleur -----------------------------------------------------------
+manuel.ui: {version: 1, niveau: manuel, description: "action manuelle de l'utilisateur (UI)"}
+agent.action: {version: 1, niveau: agent, description: "action proposée par l'agent, exécutée après validation"}
+agent.consigne: {version: 1, niveau: agent, description: "modification de recette proposée par l'agent, appliquée par le serveur après validation"}
+agent.plante: {version: 1, niveau: agent, description: "état de santé d'une plante proposé par l'agent"}
+agent.capture: {version: 1, niveau: agent, description: "capture immédiate demandée par l'agent (sans validation)"}

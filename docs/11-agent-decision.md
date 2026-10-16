@@ -3,7 +3,7 @@
 L'utilisateur doit pouvoir **dialoguer** avec la serre : demander pourquoi une action a eu lieu, ce qu'il faut faire pour une plante, ou demander une intervention.
 Choix retenu : **le contrôleur déterministe décide, un LLM explique et propose**.
 
-> Statut : **conception**. Dépend de [09](09-modele-gestion-serre.md) (modèle de serre) et [10](10-decisions-tracabilite.md) (journal de décisions).
+> Statut : **implémenté côté serveur** (G4, `backend/agent/`, §7) ; onglet Agent de l'UI à faire (doc 12). Dépend de [09](09-modele-gestion-serre.md) (modèle de serre) et [10](10-decisions-tracabilite.md) (journal de décisions).
 
 ## 1. Répartition des rôles
 
@@ -96,3 +96,33 @@ Les outils de proposition vérifient **avant** de créer la proposition : action
 - Jeu de questions de référence (≈ 30) rejouées sur un historique figé issu du simulateur : l'agent doit citer la **bonne décision et les bonnes preuves** (vérifiable automatiquement via les appels d'outils et les identifiants cités).
 - Tests de garde-fous : demandes hors limites (« pompe 10 min », « chauffage à 40 °C ») → l'outil refuse, aucune proposition créée.
 - Suivi en production : taux de propositions validées / rejetées, motif de rejet saisi dans l'UI.
+
+## 7. Implémentation et test sur PC
+
+| Fichier | Rôle |
+|---|---|
+| `backend/agent/config.py` | `AgentConfig` : modèle (`SERREIA_AGENT_MODEL`, défaut `claude-sonnet-5-5`), effort (`medium`), budgets de tokens par conversation et sur 24 h, expiration des propositions (2 h), durée max par défaut des actionneurs sans `duree_max_s` (4 h) |
+| `backend/agent/llm.py` | `ClaudeLLM` : streaming, cache du prompt système et de la conversation, repli serveur (`fallbacks: "default"`) si un classifieur refuse, toute panne de l'API → `AgentIndisponible` ; `ScriptedLLM` : LLM factice scripté pour la CI |
+| `backend/agent/prompts.py` | prompt système en français, stable (cache) : rôle, garde-fous, résumé de la serre, catalogue des règles |
+| `backend/agent/regles.yaml` | catalogue des règles (id, version, niveau, description, paramètres) ; un test vérifie que tout id de `edge/controller/` y figure |
+| `backend/agent/tools.py` | les 12 outils du §3, arguments validés (pydantic), une transaction par appel, refus explicites ; propositions = `Decision` `niveau: agent`, `type: manuelle`, règles `agent.action` / `agent.consigne` / `agent.plante` / `agent.capture` |
+| `backend/agent/consignes.py` | `proposer_consigne` validé : recette modifiée en base (ancienne valeur gardée), nouvelle `config_version` exportée ; consigne temporaire restaurée à l'échéance (ingestion, agent) |
+| `backend/agent/loop.py` | `Agent.chat()` : boucle d'outils, événements `conversation` / `texte` / `outil` / `proposition` / `fin` / `erreur`, journal `agent_journal`, budgets |
+| `backend/api/agent.py` | `POST /agent/chat` (SSE), `GET /agent/conversations`, `GET /agent/conversations/{id}` (messages, journal, propositions et leur statut) ; 503 sans agent |
+| `backend/agent/fixtures.py`, `questions.yaml`, `eval.py` | historique de référence (mildiou z1-A1, nuits humides, journée sombre), 12 questions de référence, score automatique ; `make agent-eval` avec Claude réel |
+| `backend/db/models.py` | tables `agent_conversation`, `agent_journal`, `agent_proposition` |
+
+Choix d'implémentation :
+- les propositions ne sont **pas publiées** à leur création (garde-fou 1) : elles sont écrites en base avec leurs actions `proposee` ; la validation passe par `POST /decisions/{id}/valider`, comme les propositions du contrôleur ;
+- `demander_capture` crée une décision née `validee` (ordre `camera:<id>`) publiée sur `serre/<zone>/decision` : jamais de message sur `cmd/` depuis le serveur ;
+- les références de preuves sont vérifiées (décision en base, `image_id` dans `vision_resultat`, série `mesure:<zone>/<type>/<debut>/<fin>` non vide) et converties en `PreuveVision` / `PreuveCapteur` ;
+- `proposer_consigne` : le contrat MQTT n'a pas d'ordre de consigne, le serveur modifie la recette et exporte la configuration ; son installation sur le Pi reste `make config-export PI_CONFIG=…` ;
+- aucune image n'est envoyée à l'API : le serveur ne stocke pas encore les images, l'agent ne voit que les `image_id` et les résultats du classifieur ;
+- les heures sont données à l'agent et rendues en heure locale de la serre ; l'heure courante précède chaque message utilisateur (le prompt système reste identique d'un message à l'autre).
+
+Lancer : `make api` (agent actif si le paquet `anthropic` et des identifiants sont présents ; `python -m backend.api --agent none` sinon), puis
+`curl -N -X POST localhost:8000/agent/chat -H 'Content-Type: application/json' -d '{"message": "Pourquoi la ventilation a tourné cette nuit ?"}'`.
+
+Tests : `tests/test_agent.py` (LLM scripté, aucun appel réseau) — outils de lecture sur l'historique, garde-fous (pompe 10 min, chauffage 40 °C, actionneur absent, pompe sans durée, référence inventée → refus, rien de créé), propositions, expiration, validation par l'API, consigne appliquée puis restaurée, boucle (journal, reprise de conversation, budget, LLM indisponible), SSE.
+
+Reste à faire : onglet Agent et cartes « Proposition » (doc 12) ; motif de rejet et taux de validation dans l'UI ; images transmises sur demande explicite quand le serveur les stockera (garde-fou 7) ; questions de référence portées à ~30 sur l'historique figé du scénario 2 (doc 16) ; mesure du coût réel par conversation.

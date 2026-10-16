@@ -23,7 +23,7 @@ dans la vue jeu ([13](13-interface-jeu-pixel-art.md)).
 | Scénarios scriptés (`sim --scenario`) | §2 ci-dessous | ⏳ |
 | API FastAPI, tableau de bord, journal des décisions | [12](12-interface-utilisateur.md) (G2) | ⏳ (API des décisions et de l'arbre faite, [10 §8](10-decisions-tracabilite.md#8-implémentation-et-test-sur-pc)) |
 | `Decision` / `Action` complètes, arbre des actions | [10](10-decisions-tracabilite.md) (G3) | ✅ hors UI ; caméras simulées et pannes `maladie:` / `valeur:` utilisables par les scénarios |
-| Agent (boucle Claude, outils, propositions) | [11](11-agent-decision.md) (G4) | ⏳ |
+| Agent (boucle Claude, outils, propositions) | [11](11-agent-decision.md) (G4) | ✔ serveur (`backend/agent/`), onglet UI ⏳ |
 | Vue jeu « serre vivante » | [13](13-interface-jeu-pixel-art.md) (J3) | ⏳ |
 
 ## 1. Principe

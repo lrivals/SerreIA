@@ -374,3 +374,61 @@ class LumiereJour(Base):
     dli_led: Mapped[float] = mapped_column(Float)
     dli_naturel: Mapped[float | None] = mapped_column(Float)
     couverture: Mapped[float] = mapped_column(Float)  # share of the day covered by lux data
+
+
+# --- conversational agent (docs/11) ----------------------------------------------------
+
+
+class AgentConversation(Base):
+    """One conversation with the agent; `messages` is the history in the format of the
+    Claude API (content blocks as returned, thinking included), replayed at each turn."""
+
+    __tablename__ = "agent_conversation"
+
+    id: Mapped[str] = mapped_column(String(40), primary_key=True)  # conv-<hex>
+    ts_debut: Mapped[datetime] = mapped_column(Ts)
+    ts_maj: Mapped[datetime] = mapped_column(Ts)
+    utilisateur: Mapped[str] = mapped_column(String(64))
+    modele: Mapped[str] = mapped_column(String(64))
+    titre: Mapped[str] = mapped_column(Text, default="")
+    messages: Mapped[list] = mapped_column(Json)
+
+
+class AgentJournal(Base):
+    """Full log of the agent (docs/11 §4.6): messages, tool calls with their arguments and
+    results, model and tokens of each API call. `type`: utilisateur | assistant |
+    appel_outil | resultat_outil | erreur."""
+
+    __tablename__ = "agent_journal"
+    __table_args__ = (Index("ix_agent_journal_conv_ts", "conversation_id", "ts"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    conversation_id: Mapped[str] = mapped_column(String(40))
+    ts: Mapped[datetime] = mapped_column(Ts, index=True)
+    type: Mapped[str] = mapped_column(String(16))
+    contenu: Mapped[dict] = mapped_column(Json)
+    modele: Mapped[str | None] = mapped_column(String(64))
+    tokens_entree: Mapped[int] = mapped_column(Integer, default=0)
+    tokens_sortie: Mapped[int] = mapped_column(Integer, default=0)
+    tokens_cache_lus: Mapped[int] = mapped_column(Integer, default=0)
+    tokens_cache_ecrits: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class AgentProposition(Base):
+    """What the agent proposed with a decision (docs/11 §3): its justification and
+    references, and for `proposer_consigne` the recipe change, applied by the server on
+    validation (`backend/agent/consignes.py`): previous value, end of a temporary change."""
+
+    __tablename__ = "agent_proposition"
+
+    decision_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    conversation_id: Mapped[str | None] = mapped_column(String(40), index=True)
+    outil: Mapped[str] = mapped_column(String(32))
+    justification: Mapped[str] = mapped_column(Text)
+    preuves_refs: Mapped[list] = mapped_column(Json)
+    # {recette_id, stade, grandeur, valeur, duree_h}
+    consigne: Mapped[dict | None] = mapped_column(Json)
+    ancienne: Mapped[dict | None] = mapped_column(Json)  # {"valeur": …} before the change
+    appliquee: Mapped[datetime | None] = mapped_column(Ts)
+    fin: Mapped[datetime | None] = mapped_column(Ts)  # temporary change: restored at `fin`
+    restauree: Mapped[datetime | None] = mapped_column(Ts)

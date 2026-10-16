@@ -75,9 +75,10 @@ def parse_label(label: str) -> tuple[str, str, str]:
 
 
 def _ordre_label(text: str) -> str:
-    """`Ordre.label()` ("capture cam", "plante z1-A1 isolee", "ventilo on 900 s") → label."""
+    """`Ordre.label()` ("capture cam", "plante z1-A1 isolee", "ventilo on 900 s") or a
+    recipe change of the agent ("consigne …") → label."""
     head, _, tail = text.partition(" ")
-    if head in ("capture", "plante"):
+    if head in ("capture", "plante", "consigne"):
         return f"{head}:{tail}"
     return f"cmd:{text}"
 
@@ -346,6 +347,63 @@ def stored_row(message: DecisionMsg) -> dict:
         ordres=[o.model_dump(mode="json") for o in message.ordres],
         statut=message.statut,
         expire=utc(message.expire) if message.expire else None,
+    )
+
+
+def decision_summary(d: m.Decision) -> dict:
+    """A decision in the lists of the API and of the agent."""
+    return dict(
+        id=d.id,
+        ts=utc(d.ts),
+        zone=d.zone,
+        emplacements=d.emplacements,
+        niveau=d.niveau,
+        origine=d.origine,
+        regle={"id": d.regle_id, "version": d.regle_version},
+        type=d.type,
+        statut=d.statut,
+        explication=d.explication,
+        actions=d.actions,
+        expire=utc(d.expire) if d.expire else None,
+    )
+
+
+def decision_record(s: Session, d: m.Decision) -> dict:
+    """Record of a decision (docs/12, "fiche décision"): evidence, orders, actions and the
+    commands that point to it."""
+    acts = s.scalars(select(m.Action).where(m.Action.decision_id == d.id).order_by(m.Action.id))
+    cmds = s.scalars(
+        select(m.Commande).where(m.Commande.decision_id == d.id).order_by(m.Commande.ts)
+    )
+    return dict(
+        decision_summary(d),
+        config_version=d.config_version,
+        preuves=d.preuves,
+        ordres=d.ordres or [],
+        actions_detail=[
+            dict(
+                id=a.id,
+                cible=a.cible,
+                label=a.label,
+                resultat=a.resultat,
+                commande=a.commande,
+                ts_debut=utc(a.ts_debut),
+                ts_fin=utc(a.ts_fin) if a.ts_fin else None,
+            )
+            for a in acts
+        ],
+        commandes=[
+            dict(
+                ts=utc(c.ts),
+                actionneur=c.actionneur,
+                action=c.action,
+                valeur=c.valeur,
+                duree_s=c.duree_s,
+                source=c.source,
+                raison=c.raison,
+            )
+            for c in cmds
+        ],  # fmt: skip
     )
 
 

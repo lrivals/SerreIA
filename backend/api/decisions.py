@@ -9,9 +9,16 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ..agent.consignes import apply_validated
 from ..db import models as m
 from ..db.session import utc
-from ..traceability import decision_message, publish_decision, reconcile
+from ..traceability import (
+    decision_message,
+    decision_record,
+    decision_summary,
+    publish_decision,
+    reconcile,
+)
 from .deps import Db, Now, Pub
 
 router = APIRouter(prefix="/decisions", tags=["decisions"])
@@ -20,23 +27,6 @@ router = APIRouter(prefix="/decisions", tags=["decisions"])
 class Reponse(BaseModel):
     utilisateur: str = "ui"
     commentaire: str | None = None
-
-
-def _summary(d: m.Decision) -> dict:
-    return dict(
-        id=d.id,
-        ts=utc(d.ts),
-        zone=d.zone,
-        emplacements=d.emplacements,
-        niveau=d.niveau,
-        origine=d.origine,
-        regle={"id": d.regle_id, "version": d.regle_version},
-        type=d.type,
-        statut=d.statut,
-        explication=d.explication,
-        actions=d.actions,
-        expire=utc(d.expire) if d.expire else None,
-    )
 
 
 @router.get("")
@@ -60,7 +50,7 @@ def list_decisions(
         q = q.where(m.Decision.type == type)
     if statut:
         q = q.where(m.Decision.statut == statut)
-    return [_summary(d) for d in s.scalars(q.order_by(m.Decision.ts.desc()).limit(limit))]
+    return [decision_summary(d) for d in s.scalars(q.order_by(m.Decision.ts.desc()).limit(limit))]
 
 
 @router.get("/{decision_id}")
@@ -70,40 +60,7 @@ def get_decision(decision_id: str, s: Db) -> dict:
     d = s.get(m.Decision, decision_id)
     if d is None:
         raise HTTPException(404, f"décision inconnue {decision_id}")
-    acts = s.scalars(select(m.Action).where(m.Action.decision_id == d.id).order_by(m.Action.id))
-    cmds = s.scalars(
-        select(m.Commande).where(m.Commande.decision_id == d.id).order_by(m.Commande.ts)
-    )
-    return dict(
-        _summary(d),
-        config_version=d.config_version,
-        preuves=d.preuves,
-        ordres=d.ordres or [],
-        actions_detail=[
-            dict(
-                id=a.id,
-                cible=a.cible,
-                label=a.label,
-                resultat=a.resultat,
-                commande=a.commande,
-                ts_debut=utc(a.ts_debut),
-                ts_fin=utc(a.ts_fin) if a.ts_fin else None,
-            )
-            for a in acts
-        ],
-        commandes=[
-            dict(
-                ts=utc(c.ts),
-                actionneur=c.actionneur,
-                action=c.action,
-                valeur=c.valeur,
-                duree_s=c.duree_s,
-                source=c.source,
-                raison=c.raison,
-            )
-            for c in cmds
-        ],  # fmt: skip
-    )
+    return decision_record(s, d)
 
 
 def _answer(s: Session, decision_id: str, now: datetime) -> m.Decision:
@@ -125,11 +82,13 @@ def _note(r: Reponse, verbe: str) -> str:
 @router.post("/{decision_id}/valider")
 def validate(decision_id: str, r: Reponse, s: Db, now: Now, pub: Pub) -> dict:
     """The controller runs the orders of the decision through safety.py, then publishes it
-    again (`executee` or `bloquee_securite`) with its commands."""
+    again (`executee` or `bloquee_securite`) with its commands. A setpoint change of the
+    agent is applied here, to the recipe (new `config_version`)."""
     d = _answer(s, decision_id, now)
     d.statut, d.explication = "validee", d.explication + _note(r, "validée")
+    apply_validated(s, d, now)  # recipe change proposed by the agent (docs/11 §3)
     publish_decision(pub, decision_message(d))
-    return _summary(d)
+    return decision_summary(d)
 
 
 @router.post("/{decision_id}/rejeter")
@@ -139,4 +98,4 @@ def reject(decision_id: str, r: Reponse, s: Db, now: Now, pub: Pub) -> dict:
     s.flush()
     reconcile(s, now)
     publish_decision(pub, decision_message(d))
-    return _summary(d)
+    return decision_summary(d)

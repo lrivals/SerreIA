@@ -32,6 +32,7 @@ from common.mqtt.schemas import (
 from edge.controller.config import capteur_id, resolve_emplacement
 
 from .. import traceability
+from ..agent import consignes
 from ..db import models as m
 from ..db.session import insert, utc
 
@@ -255,6 +256,7 @@ class Ingestor:
         if traced:
             traceability.sync_actions(s, traced)
         traceability.reconcile(s, self.clock())
+        consignes.restore_expired(s, self.clock())  # temporary setpoints of the agent
 
     def _clear(self) -> None:
         self.rows.clear()
