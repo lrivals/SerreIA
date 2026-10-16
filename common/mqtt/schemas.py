@@ -1,11 +1,13 @@
 """JSON payloads of the MQTT contract (docs/01-architecture.md §2)."""
 
+from datetime import UTC, datetime
 from typing import Annotated, Any, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 from .topics import CAPTURE, Actuator, TopicKind, parse_topic
 
+_EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 Confidence = Annotated[float, Field(ge=0.0, le=1.0)]
 Unit = Annotated[float, Field(ge=0.0, le=1.0)]
 
@@ -139,8 +141,68 @@ class Preuves(_Part):
     consignes: dict[str, Any] = Field(default_factory=dict)
 
 
+SanteEtat = Literal["sain", "a_surveiller", "malade", "isolee", "retiree"]
+ACTIONNEUR, CAMERA, PLANTE = "actionneur", "camera", "plante"
+
+
+class Ordre(_Part):
+    """Structured order of a decision (docs/10 §3): what runs once the decision is executed.
+
+    `cible`: "actionneur:<Actuator>" (action on | off | pwm, the future `Command`),
+    "camera:<id>" (action "capture", a `CaptureRequest`) or "plante:<emplacement>"
+    (action = new health state of the plant, applied by the server: not an MQTT command).
+    """
+
+    cible: str = Field(pattern=r"^(actionneur|camera|plante):[A-Za-z0-9_-]+$")
+    action: str
+    valeur: float | None = Field(default=None, ge=0, le=100)
+    duree_s: float | None = Field(default=None, gt=0)
+    texte: str = ""  # short text of Command.raison
+
+    @property
+    def kind(self) -> str:
+        return self.cible.partition(":")[0]
+
+    @property
+    def subject(self) -> str:
+        return self.cible.partition(":")[2]
+
+    @model_validator(mode="after")
+    def _check(self) -> "Ordre":
+        if self.kind == ACTIONNEUR:
+            Actuator(self.subject)  # ValueError for an unknown actuator
+            Command(ts=_EPOCH, action=self.action, valeur=self.valeur, duree_s=self.duree_s,
+                    source="ordre").validate_for(self.subject)  # fmt: skip
+        elif self.kind == CAMERA:
+            if self.action != "capture":
+                raise ValueError("une cible camera n'accepte que l'action 'capture'")
+        elif self.action not in SanteEtat.__args__:
+            raise ValueError(f"état de plante inconnu {self.action!r}")
+        return self
+
+    def label(self) -> str:
+        """Label: "ventilo on 900 s", "capture cam-z1-a", "plante z1-A1 malade"."""
+        if self.kind == CAMERA:
+            return f"capture {self.subject}"
+        if self.kind == PLANTE:
+            return f"plante {self.subject} {self.action}"
+        s = f"{self.subject} {self.action}"
+        if self.valeur is not None:
+            s += f" {self.valeur:g} %"
+        if self.duree_s is not None:
+            s += f" {self.duree_s:g} s"
+        return s
+
+
 DecisionStatut = Literal[
-    "proposee", "validee", "rejetee", "creee", "executee", "terminee", "bloquee_securite"
+    "proposee",
+    "validee",
+    "rejetee",
+    "expiree",
+    "creee",
+    "executee",
+    "terminee",
+    "bloquee_securite",
 ]
 
 
@@ -157,8 +219,12 @@ class Decision(_Message):
     config_version: int | None = None
     preuves: Preuves = Field(default_factory=Preuves)
     explication: str
-    actions: list[str] = Field(default_factory=list)  # e.g. "cmd:ventilo on 900 s", "alerte"
+    # Outcome labels: "cmd:ventilo on 900 s", "alerte", "bloquee:… (limite)", "capture:cam-z1-a",
+    # "plante:z1-A1 malade", "consigne:…", "proposee:<label of an ordre>" (docs/10 §3).
+    actions: list[str] = Field(default_factory=list)
+    ordres: list[Ordre] = Field(default_factory=list)  # what runs once the decision executes
     statut: DecisionStatut = "creee"
+    expire: AwareDatetime | None = None  # a `proposee` decision expires (docs/10 §4)
 
 
 RAISON_SEP = " | "
@@ -226,11 +292,13 @@ __all__ = [
     "Decision",
     "Detection",
     "NodeStatus",
+    "Ordre",
     "PreuveCapteur",
     "PreuvePrevision",
     "PreuveVision",
     "Preuves",
     "RegleRef",
+    "SanteEtat",
     "SensorReading",
     "VisionResult",
     "command_raison",

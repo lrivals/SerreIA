@@ -57,6 +57,14 @@ db-init:
 ingest:
 	$(PY) -m backend.ingestion
 
+# HTTP API (docs/12 §5): decisions, validation of the proposals, action tree (docs/10).
+api:
+	$(PY) -m backend.api
+
+# Action tree of the last 24 h in the terminal (docs/10 §6); ZONE=z1 for one zone.
+arbre:
+	$(PY) -m backend.traceability $(if $(ZONE),--zone $(ZONE))
+
 # Versioned serre.yaml rebuilt from the database (docs/09 §8), in data/serre_config/.
 # INSTALL=<path> installs it for a local controller (not over the tracked example),
 # PI_CONFIG=pi@serre.local:SerreIA/edge/controller/serre.yaml copies it to the Pi.
@@ -71,4 +79,4 @@ sim-demo:
 sim-live:
 	$(PY) -m sim --avec-controleur
 
-.PHONY: setup check-env cuda-torch test lint mlflow harvest harvest-all notebooks stack-up stack-down db-init ingest config-export sim-demo sim-live
+.PHONY: setup check-env cuda-torch test lint mlflow harvest harvest-all notebooks stack-up stack-down db-init ingest api arbre config-export sim-demo sim-live

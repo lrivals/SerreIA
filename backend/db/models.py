@@ -298,8 +298,8 @@ class NoeudStatus(Base):
 
 
 class Decision(Base):
-    """Minimal `Decision` of the MQTT contract (docs/10 §2), upserted by id (a decision
-    changes status). Not a hypertable: the separate `action` table comes with G3."""
+    """`Decision` of the MQTT contract (docs/10 §2), upserted by id: a decision changes
+    status (proposee → validee → executee → terminee…). Not a hypertable (updated rows)."""
 
     __tablename__ = "decision"
     __table_args__ = (Index("ix_decision_zone_ts", "zone", "ts"),)
@@ -317,7 +317,30 @@ class Decision(Base):
     preuves: Mapped[dict] = mapped_column(Json)
     explication: Mapped[str] = mapped_column(Text)
     actions: Mapped[list] = mapped_column(Json)
+    ordres: Mapped[list | None] = mapped_column(Json)
     statut: Mapped[str] = mapped_column(String(16))
+    expire: Mapped[datetime | None] = mapped_column(Ts)
+
+
+class Action(Base):
+    """One action of a decision (docs/10 §3), derived by `backend/traceability.py` from
+    the labels of the decision and the commands that point to it (`Command.raison`).
+    `resultat`: en_attente | confirmee | non_confirmee | bloquee | echec | proposee |
+    annulee (a proposal expired or rejected)."""
+
+    __tablename__ = "action"
+    __table_args__ = (Index("ix_action_zone_ts", "zone", "ts_debut"),)
+
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)  # act-<decision>-NN
+    decision_id: Mapped[str] = mapped_column(String(64), index=True)
+    zone: Mapped[str] = mapped_column(String(16))
+    type: Mapped[str] = mapped_column(String(16))  # routine | exceptionnelle | securite | manuelle
+    cible: Mapped[str] = mapped_column(String(64))  # actionneur:ventilo, alerte, camera:…, plante:…
+    label: Mapped[str] = mapped_column(Text)
+    commande: Mapped[dict | None] = mapped_column(Json)  # the Command, as published
+    resultat: Mapped[str] = mapped_column(String(16))
+    ts_debut: Mapped[datetime] = mapped_column(Ts)
+    ts_fin: Mapped[datetime | None] = mapped_column(Ts)
 
 
 # --- daily aggregates (backend/consumption.py) ---------------------------------------

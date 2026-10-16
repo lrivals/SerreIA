@@ -49,7 +49,7 @@
 | `serre/<zone>/cmd/capture` | controller / dashboard | 1 | non | capture d'image à la demande ([05 §3](05-edge-deploiement.md#3-service-caméra--edgecamera_servicepy)) |
 | `serre/<zone>/etat/<actionneur>` | ESP32 | 1 | oui | état réel de l'actionneur |
 | `serre/<noeud>/status` | ESP32 (LWT) | 1 | oui | `online` / `offline` |
-| `serre/<zone>/decision` | controller / backend | 1 | non | décision et ses preuves, publiée avant les commandes — cf. [10 §2](10-decisions-tracabilite.md#2-enregistrement-decision) (version minimale, [06 §6](06-capteurs-controle.md#6-implémentation-et-test-sur-pc)) |
+| `serre/<zone>/decision` | controller / backend | 1 | non | décision et ses preuves, publiée avant les commandes — cf. [10 §2](10-decisions-tracabilite.md#2-enregistrement-decision) ; le backend publie les décisions validées (`validee`), que le contrôleur exécute via `safety.py` ([10 §4](10-decisions-tracabilite.md#4-cycle-de-vie)) |
 
 `<zone>` : `z1`, `z2`… ; `<type>` : `temperature`, `humidite`, `co2`, `lux`, `ph`, `ec`, `temp_eau`, `niveau_cuve`, `pression` (hPa, BMP280), `presence` (nombre de cibles 0–3, HLK-LD2450), `humidite_sol` (%, sondes capacitives, avec `emplacement`). Plages physiques et unités : `common/mqtt/ranges.py`.
 `<actionneur>` : `pompe_nutri`, `pompe_ph_down`, `pompe_nutri_a`, `pompe_nutri_b`, `ventilo`, `led`, `brumisateur`, `chauffage`.

@@ -30,7 +30,7 @@ Conséquences :
   UI : carte « Proposition » [Valider] [Rejeter]
            │ valider
            ▼
-  backend ──► serre/<zone>/decision + serre/<zone>/cmd/<actionneur> ──► controller (Pi) ──► safety.py ──► ESP32
+  backend ──► serre/<zone>/decision (statut « validee », ordres) ──► controller (Pi) ──► safety.py ──► serre/<zone>/cmd/<actionneur> ──► ESP32
 ```
 
 - Modèle : **Claude** via l'API Anthropic, `claude-sonnet-5-5` par défaut (bon compromis coût / qualité pour du tool use), `claude-opus-5-5` en option pour les analyses longues ; identifiant du modèle dans la configuration du backend.

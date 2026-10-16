@@ -11,6 +11,7 @@ from common.mqtt import (
     CaptureRequest,
     Command,
     Decision,
+    Ordre,
     SensorReading,
     SensorType,
     TopicKind,
@@ -274,6 +275,42 @@ def test_decision_roundtrip():
         Decision.model_validate(with_(DECISION_EXAMPLE, id="007"))
     with pytest.raises(ValidationError):
         Decision.model_validate(with_(DECISION_EXAMPLE, statut="faite"))
+
+
+def test_proposed_decision_with_orders():
+    ordres = [
+        {"cible": "actionneur:ventilo", "action": "on", "duree_s": 900, "texte": "mildiou"},
+        {"cible": "camera:cam-z1-a", "action": "capture"},
+        {"cible": "plante:z1-A1", "action": "isolee"},
+    ]
+    payload = with_(DECISION_EXAMPLE, statut="proposee", ordres=ordres,
+                    expire="2026-10-12T04:31:00Z",
+                    actions=["proposee:ventilo on 900 s", "proposee:capture cam-z1-a",
+                             "proposee:plante z1-A1 isolee"])  # fmt: skip
+    message = decode(decision_topic("z1"), json.dumps(payload))
+    assert [o.label() for o in message.ordres] == [
+        "ventilo on 900 s", "capture cam-z1-a", "plante z1-A1 isolee"
+    ]  # fmt: skip
+    assert [f"proposee:{o.label()}" for o in message.ordres] == message.actions
+    assert message.expire.hour == 4 and message.ordres[0].kind == "actionneur"
+    for statut in ("validee", "rejetee", "expiree", "terminee"):
+        assert Decision.model_validate(with_(DECISION_EXAMPLE, statut=statut)).statut == statut
+
+
+@pytest.mark.parametrize(
+    "ordre",
+    [
+        {"cible": "actionneur:pompe_nutri", "action": "on"},  # a pump must be bounded
+        {"cible": "actionneur:ventilo", "action": "pwm"},  # pwm needs valeur
+        {"cible": "actionneur:arroseur", "action": "on"},  # unknown actuator
+        {"cible": "camera:cam-z1-a", "action": "on"},
+        {"cible": "plante:z1-A1", "action": "morte"},
+        {"cible": "serre:z1", "action": "on"},
+    ],
+)
+def test_invalid_orders(ordre):
+    with pytest.raises(ValidationError):
+        Ordre.model_validate(ordre)
 
 
 def test_command_raison_links_decision():

@@ -2,7 +2,7 @@
 
 Objectif : pour **chaque action** exécutée dans la serre, pouvoir répondre à « pourquoi ? » — quelle **classification photo** (image, classe, confiance), quelles **mesures capteurs** et quelle **règle ou modèle** l'ont produite — et visualiser l'ensemble sous forme d'**arbre** séparant routines et actions exceptionnelles.
 
-> Statut : **conception**. S'appuie sur le modèle de [09](09-modele-gestion-serre.md) et sur les niveaux de contrôle de [06 §4](06-capteurs-controle.md#4-stratégie-de-contrôle--edgecontroller).
+> Statut : **implémenté hors UI** (G3, voir §8) : contrat, contrôleur, règles « classification → action », table `action`, confirmation, cycle de vie, arbre et API. La fiche décision et la vue arbre React viendront avec G2. S'appuie sur le modèle de [09](09-modele-gestion-serre.md) et sur les niveaux de contrôle de [06 §4](06-capteurs-controle.md#4-stratégie-de-contrôle--edgecontroller).
 
 ## 1. Principe
 
@@ -56,8 +56,10 @@ Règle d'or : **aucune `Command` automatique sans `Decision`**. Le contrôleur c
     "consignes": {"recette": "tomate-standard", "stade": "floraison", "humidite": [55, 70]}
   },
   "explication": "HR > 90 % depuis 11,2 h à 17,8 °C et mildiou détecté sur z1-A1 (conf. 0,81, 3 images consécutives) → ventilation 15 min + alerte.",
-  "actions": ["act-…-01", "act-…-02"],
-  "statut": "executee"
+  "actions": ["cmd:ventilo on 900 s", "alerte"],
+  "ordres": [{"cible": "actionneur:ventilo", "action": "on", "duree_s": 900, "texte": "ventilation préventive mildiou"}],
+  "statut": "executee",
+  "expire": null
 }
 ```
 
@@ -71,7 +73,10 @@ Règle d'or : **aucune `Command` automatique sans `Decision`**. Le contrôleur c
 | `preuves.prevision` | sorties du modèle de niveau 2 utilisées |
 | `consignes` | plage de la recette à laquelle la mesure a été comparée |
 | `explication` | texte **généré de façon déterministe** par la règle (gabarit), pas par le LLM : il doit exister même hors ligne |
+| `actions` | libellés du résultat, un par action : `cmd:ventilo on 900 s`, `alerte`, `bloquee:pompe_nutri on 600 s (securite.cuve_vide)`, `capture:cam-z1-a`, `plante:z1-A1 malade`, `consigne:humidite max -10 pts 72 h`, `proposee:<ordre>` ; le serveur en dérive les `Action` (§3) |
+| `ordres` | ordres structurés (`Ordre`) : `cible` = `actionneur:<type>`, `camera:<id>` (action `capture`) ou `plante:<emplacement>` (action = nouvel `etat_sante`), `action`, `valeur`, `duree_s`, `texte`. Ce sont eux qu'exécute le contrôleur quand une décision `proposee` est validée |
 | `statut` | voir cycle de vie §4 |
+| `expire` | échéance d'une décision `proposee` (défaut : 2 h) |
 
 On ne stocke que **ce qui a fait basculer la décision** : c'est ce que l'UI affiche dans la fiche décision ([12](12-interface-utilisateur.md)).
 
@@ -84,10 +89,12 @@ On ne stocke que **ce qui a fait basculer la décision** : c'est ce que l'UI aff
 | `type` | `routine \| exceptionnelle \| securite \| manuelle` | voir §5 |
 | `cible` | `actionneur:ventilo` (z1) / `alerte` / `camera:cam-z1-a` / `plante:<id>` | une action peut ne pas être une commande MQTT (ex. « marquer la plante isolée ») |
 | `commande` | `{"action": "on", "duree_s": 900, "source": "controller", "raison": "dec-20261012-0231-z1-007"}` | `Command` existante ; le champ `raison` porte l'**id de décision** suivi du texte court |
-| `resultat` | `confirmee \| non_confirmee \| bloquee \| echec` | confirmée quand `serre/z1/etat/ventilo` reflète la commande dans les 10 s |
+| `resultat` | `en_attente \| confirmee \| non_confirmee \| bloquee \| echec \| proposee \| annulee` | confirmée quand `serre/z1/etat/ventilo` reflète la commande dans les 10 s ; une capture, quand un résultat vision de la caméra arrive dans les 5 min ; une action `plante:` est confirmée quand le serveur a mis à jour `plante.etat_sante` (`echec` si l'emplacement est vide) ; `annulee` : proposition expirée ou rejetée |
 | `ts_debut`, `ts_fin` | | `ts_fin` = échéance `duree_s` ou commande `off` |
 
 Le lien `Command.raison` ↔ `Decision.id` permet aussi à l'ingestion serveur de reconstituer la traçabilité à partir du seul flux MQTT, même si le message `decision` a été perdu.
+
+Les `Action` ne transitent pas par MQTT : `backend/traceability.py` les dérive après chaque lot ingéré (`sync_actions` : libellés de la décision + commandes qui la référencent), puis `reconcile` calcule `resultat` et `ts_fin` et fait avancer le statut des décisions (`executee` → `terminee`, `proposee` → `expiree`).
 
 ## 4. Cycle de vie
 
@@ -96,15 +103,16 @@ Le lien `Command.raison` ↔ `Decision.id` permet aussi à l'ingestion serveur d
              ▼                                      │
         proposee ──valider──► validee ──┐           │
              │                          │           │
-          rejeter                       ▼           │
+          rejeter / délai               ▼           │
              ▼              (controller) creee ──► safety.py ──ok──► executee ──► terminee
-          rejetee                                     │
+     rejetee / expiree                                │
                                                       └─refus──► bloquee_securite (+ alerte)
 ```
 
 - Les décisions du contrôleur naissent directement à l'état `creee` (pas de validation humaine, comme aujourd'hui).
-- Les décisions de l'agent et certaines décisions exceptionnelles configurées « avec validation » (ex. isoler une plante, traitement) naissent `proposee` et attendent l'utilisateur ; elles **expirent** après un délai (défaut 2 h).
+- Les décisions de l'agent et certaines décisions exceptionnelles configurées « avec validation » (ex. isoler une plante, traitement) naissent `proposee` et attendent l'utilisateur ; elles **expirent** après un délai (défaut 2 h, `regles.yaml` : `expiration_s`). L'alerte éventuelle part tout de suite ; les ordres attendent. Une proposition n'est faite qu'une fois tant que sa condition dure : rejetée, elle ne revient qu'après la fin puis le retour de la condition.
 - **Toute** décision passe par `safety.py` (niveau 0) avant exécution ; un refus est lui-même tracé (`bloquee_securite`) avec la limite en cause.
+- Mise en œuvre : l'API publie la décision avec le statut `validee` (ou `rejetee`) sur `serre/<zone>/decision` ; le contrôleur, abonné à ce topic, exécute ses `ordres` au tick suivant via `safety.check` et republie la **même** décision (`executee` ou `bloquee_securite`) suivie de ses commandes. Une action manuelle (`POST /actions/manuelle`) est une décision `manuelle` née `validee` : même chemin. Le serveur ne publie jamais directement sur `cmd/`.
 
 ## 5. Routines et actions exceptionnelles
 
@@ -131,7 +139,21 @@ Une classification ne déclenche d'action que si elle est **confirmée** : même
 | `sante: sain` mais `score_anomalie` > seuil | — | alerte `info` + recapture ; aucune action actionneur | auto |
 | `surface_verte_px` en baisse > 15 % / 48 h | stress hydrique possible (substrat sec, EC haute) | arrosage ponctuel ou vérification EC, alerte | proposée |
 
-Ces règles sont dans `edge/controller/rules.py` avec un identifiant stable (`maladie.mildiou.ventilation`) ; leurs seuils sont dans la recette ou un fichier `regles.yaml` éditable depuis l'UI.
+Ces règles sont dans `edge/controller/vision_rules.py` (la ventilation mildiou reste dans `risk.py`), avec un identifiant stable ; leurs seuils et le choix auto / proposée de chaque règle sont dans `edge/controller/regles.yaml` (`serre.yaml` : clé `regles`, chemin ou en ligne), à rendre éditable depuis l'UI (G2).
+
+| Ligne du tableau | Règle(s) | Validation par défaut |
+|---|---|---|
+| mildiou | `maladie.mildiou.ventilation` (`risk.py`), `maladie.mildiou.plante` (plante `malade`, consigne HR max −10 pts 72 h), `maladie.mildiou.isolement` (plante `isolee`) | auto, auto, proposée |
+| oïdium | `maladie.oidium.surveillance` | auto |
+| septoriose, alternariose, tache bactérienne | `maladie.taches.arrosage` : la seule aspersion de la serre est le brumisateur (utilisé dans les 24 h) → arrêt, arrosage au pied, inspection | proposée |
+| nuisible | `nuisible.brumisation` (brumisation seulement si HR < 50 % et sous le max de la recette) | proposée |
+| virus | `virus.isolement` | proposée |
+| sain mais `score_anomalie` élevé | `vision.anomalie.recapture` | auto |
+| surface verte en baisse | `croissance.surface.arrosage` : arrosage ponctuel en terre, vérification EC en hydro | proposée |
+| classe anormale sans règle, ou condition capteurs non remplie | `vision.anormal.surveillance` : plante `a_surveiller`, alerte `info` | auto |
+| espèce prédite ≠ espèce déclarée | `vision.espece.incoherence` : alerte seule | auto |
+
+La confirmation est calculée **par emplacement** : la détection d'une capture est rattachée à un emplacement par les régions de la caméra (`SerreCfg.emplacement_of`, même fonction que l'ingestion). Les recaptures sont des `CaptureRequest` sur `serre/<zone>/cmd/capture`, au plus une par `recapture_s` et par règle.
 
 ## 6. Arbre des actions
 
@@ -161,13 +183,18 @@ Serre « Maison »                                         [12/10 00:00 → 24:0
             └── ajout eau claire 20 s                            ✖ bloquée : cuve pleine
 ```
 
-Structure de données renvoyée par l'API (`GET /actions/arbre?zone=&debut=&fin=`) :
+Les routines sont agrégées **par règle** (nombre de cycles, d'actions confirmées, d'échecs, durée de marche cumulée dans la période) ; les autres groupes listent les décisions et leurs actions. Rendu texte : `python -m backend.traceability [--zone z1] [--debut … --fin …]` ou `make arbre`.
+
+Structure de données renvoyée par l'API (`GET /actions/arbre?zone=&debut=&fin=`, `backend/traceability.py:build_tree`) :
 
 ```json
 {
   "id": "serre", "label": "Serre « Maison »", "children": [
     {"id": "z1", "label": "z1 (terre)", "children": [
-      {"id": "z1/routine", "type": "groupe", "label": "Routines", "children": [ … ]},
+      {"id": "z1/routine", "type": "groupe", "label": "Routines", "children": [
+        {"id": "z1/routine/climat.temperature.ventilation", "type": "routine", "label": "climat.temperature.ventilation ventilo",
+         "cycles": 14, "actions": 28, "confirmees": 28, "echecs": 0, "duree_on_s": 12000, "decisions": ["dec-…"]}
+      ]},
       {"id": "z1/exceptionnelle", "type": "groupe", "children": [
         {"id": "dec-…-007", "type": "decision", "niveau": 1, "statut": "executee",
          "resume": "mildiou z1-A1 + HR>90 % 11 h",
@@ -182,7 +209,7 @@ Chaque nœud `decision` ouvre la fiche de décision (preuves image + capteurs, c
 
 ## 7. Évolution du contrat MQTT
 
-> Version minimale **implémentée** ([06 §6](06-capteurs-controle.md#6-implémentation-et-test-sur-pc)) : topic `decision`, schéma `Decision` (sans `Action` séparée : `actions` est une liste de libellés `cmd:ventilo on 900 s`, `alerte`, `bloquee:…`), convention `raison`, publication par `edge/controller/service.py` avant chaque commande. Côté serveur (G1, [09 §7](09-modele-gestion-serre.md#7-persistance)) : l'ingestion écrit la table `decision` (forme minimale, upsert par id) et relie chaque `commande` à sa décision via `raison` (`commande.decision_id`). Restent pour G3 : table `action`, confirmation par `etat/`, cycle de vie complet, arbre.
+> **Implémenté** : topic `decision`, schéma `Decision` avec `ordres` (`Ordre`) et `expire`, convention `raison`, publication par `edge/controller/service.py` avant chaque commande, abonnement du contrôleur aux décisions `validee` / `rejetee`. Les `Action` restent côté serveur (dérivées des libellés et des commandes, §3) : le contrat n'a pas de message `Action`.
 
 | Topic | Émetteur | QoS | Retain | Schéma |
 |---|---|---|---|---|
@@ -191,3 +218,22 @@ Chaque nœud `decision` ouvre la fiche de décision (preuves image + capteurs, c
 - À ajouter dans `common/mqtt/topics.py` (`TopicKind.DECISION`, `decision_topic`, `SUBSCRIPTIONS`) et `common/mqtt/schemas.py` (modèle pydantic `Decision`, sous-modèles `PreuveVision`, `PreuveCapteur`), avec tests dans `tests/test_mqtt_contract.py`.
 - Convention sur `Command.raison` : `"<decision_id> | <texte court>"` — compatible avec le schéma actuel (champ texte libre).
 - Les preuves image référencent `image_id` (l'image elle-même transite par l'upload serveur, jamais par MQTT).
+
+## 8. Implémentation et test sur PC
+
+| Fichier | Rôle |
+|---|---|
+| `common/mqtt/schemas.py` | `Decision` (`ordres`, `expire`, statut `expiree`), `Ordre` (cible actionneur / caméra / plante, validé comme une `Command`) |
+| `edge/controller/vision_rules.py`, `regles.yaml` | règles §5 : confirmation par emplacement, contrôle d'espèce, propositions |
+| `edge/controller/decisions.py` | `Proposal` : `captures`, `plantes`, `consigne` (changement temporaire de consigne), `validation`, `key` (verrou : une fois tant que la condition dure) |
+| `edge/controller/service.py` | décisions `proposee` (+ expiration), exécution des décisions `validee` reçues, `CaptureRequest`, consignes temporaires (`ZoneState.consignes`) |
+| `backend/db/models.py` | table `action`, colonnes `decision.ordres` et `decision.expire` |
+| `backend/traceability.py` | `sync_actions`, `reconcile` (appelés par l'ingestion après chaque lot), `build_tree`, `render_text`, CLI |
+| `backend/api/` | FastAPI (`python -m backend.api`, `make api`) : `GET /decisions`, `GET /decisions/{id}` (fiche : preuves, ordres, actions, commandes), `POST /decisions/{id}/valider` et `/rejeter` (409 si la décision n'est plus `proposee` ou a expiré), `POST /actions/manuelle`, `GET /actions/arbre`. Sans broker (`--mqtt none`) : lecture seule |
+| `sim/nodes.py`, `sim/faults.py` | caméras simulées (un `VisionResult` toutes les 10 min et à la demande), pannes `maladie:z1-A1/tomate/maladie/mildiou@15-600` et `valeur:z1/humidite=92@0-600` |
+
+Scénario de démonstration (critère G3) : `python -m backend.ingestion --sim --duree-h 3 --panne valeur:z1/humidite=92@0-180 --panne maladie:z1-A1/tomate/maladie/mildiou@15-180 --db sqlite:///g3.db`, puis `python -m backend.traceability --db sqlite:///g3.db --debut … --fin …`.
+
+Tests : `tests/test_vision_rules.py` (une ligne du §5 par test), `test_decision_lifecycle.py` (proposée, validée, rejetée, expirée, sécurité), `test_traceability.py` (actions, confirmation, plantes, arbre), `test_api.py`, `test_traceability_sim.py` (critère G3 : simulateur + contrôleur + ingestion + API, décision mildiou avec preuves vision et capteurs, isolement validé par l'API puis exécuté).
+
+Reste à faire : fiche décision et vue arbre React (G2) ; édition de `regles.yaml` depuis l'UI et export avec `serre.yaml` ; lien Grad-CAM dans `PreuveVision` quand le service caméra le produira ; seuil `classe_conf_min` calibré (doc 03) ; Alembic pour les nouvelles colonnes sur une base existante.

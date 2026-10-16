@@ -130,7 +130,9 @@ Préfixe `/api`. Schémas pydantic partagés avec `common/` quand ils existent (
 | Agent | `POST /agent/chat` (SSE), `GET /agent/conversations`, `GET /agent/conversations/{id}` |
 | Temps réel | `WS /ws/live` : messages `{kind, zone, subject, payload}` relayés depuis MQTT (capteur, vision, etat, status, alerte, decision) |
 
-`POST /decisions/{id}/valider` et `POST /actions/manuelle` sont les **seuls** points d'entrée qui publient sur `serre/<zone>/cmd/<actionneur>` depuis le serveur ; ils construisent la `Command` via `common.mqtt` (`cmd_topic`, `encode`, `Command.validate_for`).
+`POST /decisions/{id}/valider` et `POST /actions/manuelle` sont les **seuls** points d'entrée qui agissent sur la serre depuis le serveur. Ils ne publient pas de `Command` : ils publient la `Decision` (statut `validee`, `ordres` structurés) sur `serre/<zone>/decision`, et le contrôleur l'exécute via `safety.py` puis émet les commandes ([10 §4](10-decisions-tracabilite.md#4-cycle-de-vie)).
+
+> Déjà implémentés (G3, `backend/api/`, `python -m backend.api`) : `GET /decisions`, `GET /decisions/{id}`, `POST /decisions/{id}/valider`, `POST /decisions/{id}/rejeter`, `GET /actions/arbre`, `POST /actions/manuelle`, sans le préfixe `/api` pour l'instant ([10 §8](10-decisions-tracabilite.md#8-implémentation-et-test-sur-pc)).
 
 ## 4. Organisation du dépôt (cible)
 

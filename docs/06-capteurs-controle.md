@@ -127,7 +127,7 @@ Tout se teste sans électronique : le simulateur publie sur les mêmes topics qu
 
 - Nouveaux types de capteurs : `pression` (hPa), `presence` (nombre de cibles 0–3) et `humidite_sol` (%). Ce dernier porte le champ optionnel `emplacement` de `SensorReading`, une mesure par sonde.
 - Nouveaux actionneurs : `pompe_nutri_a`, `pompe_nutri_b` (EC). Ce sont des pompes, donc `duree_s` est obligatoire.
-- Topic `serre/<zone>/decision` et schéma `Decision`, version minimale de [10 §2](10-decisions-tracabilite.md#2-enregistrement-decision) : preuves capteurs, vision, prévision et consignes, `regle` versionnée, `config_version`, `explication`, `statut`. `Command.raison` vaut `"<decision_id> | <texte>"` (`command_raison`, `parse_raison`).
+- Topic `serre/<zone>/decision` et schéma `Decision` de [10 §2](10-decisions-tracabilite.md#2-enregistrement-decision) : preuves capteurs, vision, prévision et consignes, `regle` versionnée, `config_version`, `explication`, `statut`, `ordres` structurés et `expire` (décisions proposées). `Command.raison` vaut `"<decision_id> | <texte>"` (`command_raison`, `parse_raison`).
 - `ranges.py` : plages physiques et unités par type, la même table que le firmware.
 
 ### Contrôleur (`edge/controller/`, `python -m edge.controller`)
@@ -141,8 +141,9 @@ Tout se teste sans électronique : le simulateur publie sur les mêmes topics qu
 | `safety.py` | niveau 0 : `check()` sur chaque ordre, `watch()` pour les limites dures. Ajout : alerte « capteur figé » (même valeur pendant 30 min) |
 | `rules.py` | niveau 1 : règles à id stable (`climat.temperature.ventilation`, `ph.dosage`, `sol.arrosage`, `presence.intrusion`…) |
 | `risk.py` | indice de risque mildiou, règle `maladie.mildiou.ventilation` (preuves vision si confirmée sur 3 captures) |
+| `vision_rules.py`, `regles.yaml` | règles « classification → action » de [10 §5](10-decisions-tracabilite.md#5-routines-et-actions-exceptionnelles) : confirmation par emplacement, contrôle d'espèce, recaptures, état des plantes, propositions à valider |
 | `forecast.py` | niveau 2 : GRU (torch) → ONNX (onnxruntime sur le Pi), ventilation préventive, anomalie capteur (écart à la prévision > 4 σ) |
-| `decisions.py`, `service.py` | arbitrage, `Decision` puis `Command`, alertes verrouillées tant que la condition dure, puis info de fin |
+| `decisions.py`, `service.py` | arbitrage, `Decision` puis `Command`, alertes verrouillées tant que la condition dure, puis info de fin ; cycle de vie de [10 §4](10-decisions-tracabilite.md#4-cycle-de-vie) : décisions `proposee` (expiration), exécution des décisions `validee` reçues sur `serre/+/decision` |
 | `edge/systemd/serreia-controller.service` | service du Pi |
 
 Choix d'implémentation :
@@ -159,8 +160,8 @@ Choix d'implémentation :
 |---|---|
 | `weather.py` | météo synthétique : saison, jour, soleil, nuages, pression (fronts) |
 | `model.py` | `ZoneModel` du 1er ordre : T°, HR, CO₂, lux, sol par emplacement, pH, EC, T° eau, niveau de cuve, présence. `step()` sert d'API pour le niveau 3 |
-| `nodes.py` | nœuds émulés : bruit, `qualite`, présence au changement, nœud actionneurs (refus sans `duree_s`, échéance, flotteur local) |
-| `faults.py` | `fige:z1/temperature@30-90`, `aberrant:z1/humidite@60`, `deconnexion:esp32-02@10-40`, `cuve_vide:z2@120` |
+| `nodes.py` | nœuds émulés : bruit, `qualite`, présence au changement, nœud actionneurs (refus sans `duree_s`, échéance, flotteur local), caméras (`VisionResult` sans image toutes les 10 min et sur `cmd/capture`) |
+| `faults.py` | `fige:z1/temperature@30-90`, `aberrant:z1/humidite@60`, `deconnexion:esp32-02@10-40`, `cuve_vide:z2@120`, `valeur:z1/humidite=92@0-240` (valeur forcée), `maladie:z1-A1/tomate/maladie/mildiou@30-180` (classe vue par la caméra) |
 | `simulation.py` | disposition de `serre.yaml` (z1 terre : esp32-01, 02 ; z2 hydro : esp32-03, 05 ; esp32-04 actionneurs) |
 | `dataset.py` | historique simulé (pas de 60 s, sans MQTT) pour entraîner le GRU |
 
@@ -193,4 +194,4 @@ Reste à faire :
 - compiler et flasher le firmware ;
 - entraîner le GRU (simulateur, puis plusieurs semaines de données réelles) ;
 - brancher l'API météo (entrée `t_ext`, absente au runtime pour l'instant) ;
-- ingérer `decision` côté serveur (G3) et construire le niveau 3.
+- construire le niveau 3 (la traçabilité côté serveur est faite : [10 §8](10-decisions-tracabilite.md#8-implémentation-et-test-sur-pc)).

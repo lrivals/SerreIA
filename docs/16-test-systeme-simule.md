@@ -21,8 +21,8 @@ dans la vue jeu ([13](13-interface-jeu-pixel-art.md)).
 | Contrôleur `edge/controller/` (sécurité, règles, risque, décisions) | [06 §6](06-capteurs-controle.md#6-implémentation-et-test-sur-pc) | ✅ |
 | Ingestion MQTT → base, consommation | [09 §7](09-modele-gestion-serre.md#7-persistance) | ✅ |
 | Scénarios scriptés (`sim --scenario`) | §2 ci-dessous | ⏳ |
-| API FastAPI, tableau de bord, journal des décisions | [12](12-interface-utilisateur.md) (G2) | ⏳ |
-| `Decision` / `Action` complètes, arbre des actions | [10](10-decisions-tracabilite.md) (G3) | ⏳ |
+| API FastAPI, tableau de bord, journal des décisions | [12](12-interface-utilisateur.md) (G2) | ⏳ (API des décisions et de l'arbre faite, [10 §8](10-decisions-tracabilite.md#8-implémentation-et-test-sur-pc)) |
+| `Decision` / `Action` complètes, arbre des actions | [10](10-decisions-tracabilite.md) (G3) | ✅ hors UI ; caméras simulées et pannes `maladie:` / `valeur:` utilisables par les scénarios |
 | Agent (boucle Claude, outils, propositions) | [11](11-agent-decision.md) (G4) | ⏳ |
 | Vue jeu « serre vivante » | [13](13-interface-jeu-pixel-art.md) (J3) | ⏳ |
 

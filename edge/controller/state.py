@@ -63,6 +63,8 @@ class ZoneState:
     last_on: dict[str, datetime] = field(default_factory=dict)  # last "on" sent per actuator
     owner: dict[str, str] = field(default_factory=dict)  # rule that switched an actuator on
     rule_fired: dict[str, datetime] = field(default_factory=dict)  # last decision per rule id
+    # Temporary setpoint changes decided by a rule: name -> (delta, until), docs/10 §5.
+    consignes: dict[str, tuple[float, datetime]] = field(default_factory=dict)
     vision: deque[VisionResult] = field(default_factory=deque)
     spells: dict[float, Spell] = field(default_factory=dict)  # humidity threshold -> spell
     dli: float = 0.0  # mol/m², measured light of the current local day

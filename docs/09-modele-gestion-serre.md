@@ -196,8 +196,9 @@ parce que la configuration est en retard) :
   noeud_status(ts, noeud, status)              (ts = heure de réception : le payload n'en a pas)
 
 Tables classiques :
-  decision(id, ts, zone, …, preuves, actions, statut)   forme minimale du contrat, upsert par id ;
-                                                        table action séparée → G3 (doc 10)
+  decision(id, ts, zone, …, preuves, actions, ordres, statut, expire)   upsert par id (doc 10 §2)
+  action(id, decision_id, zone, type, cible, label, commande, resultat, ts_debut, ts_fin)
+                                                        dérivée des décisions et commandes (doc 10 §3)
   consommation_jour(jour, actionneur_id, zone, type, duree_on_s, kwh, litres, ml, dli, cout)
   lumiere_jour(jour, zone, dli_total, dli_led, dli_naturel, couverture)
   config_export(version, ts, sha256, contenu)          versions exportées vers le Pi (§8)
@@ -207,7 +208,7 @@ Code : `backend/db/models.py` (SQLAlchemy 2, types portables : les tests tournen
 
 Les capteurs déclarés dans `serre.yaml` (§4) sont créés par le seed. Un canal inconnu (capteur non déclaré) est créé par l'ingestion au premier message (`<noeud>-<type>[-<emplacement>]`, sans `materiel`) et relié à son emplacement (sondes de sol) ; il n'apparaît pas dans l'export tant qu'il n'est pas déclaré.
 
-L'ingestion (`backend/ingestion/`, `python -m backend.ingestion`) s'abonne aux `SUBSCRIPTIONS` de `common/mqtt/topics.py`, valide avec `decode` et écrit dans ces tables par lots ; les messages invalides sont comptés et journalisés, les doublons (redélivrance QoS 1, retain rejoué) ignorés. `Command.raison` donne `commande.decision_id` (doc 10 §3). Les résultats vision sont rattachés à un emplacement par les `camera_region` (centre de la bbox, ou seul emplacement visible en phase 1).
+L'ingestion (`backend/ingestion/`, `python -m backend.ingestion`) s'abonne aux `SUBSCRIPTIONS` de `common/mqtt/topics.py`, valide avec `decode` et écrit dans ces tables par lots ; les messages invalides sont comptés et journalisés, les doublons (redélivrance QoS 1, retain rejoué) ignorés. `Command.raison` donne `commande.decision_id` (doc 10 §3) ; après chaque lot, `backend/traceability.py` dérive les `action`, les confirme par `etat_actionneur` et applique les changements d'`etat_sante` décidés (doc 10 §3–4). Les résultats vision sont rattachés à un emplacement par les `camera_region` (centre de la bbox, ou seul emplacement visible en phase 1).
 
 La consommation n'est **pas** un agrégat continu TimescaleDB : la durée d'un état demande une fonction fenêtre, interdite dans un continuous aggregate. Elle est recalculée toutes les heures par l'ingestion (jour courant et veille) ou à la demande (`python -m backend.consumption --jour …`).
 
