@@ -26,6 +26,14 @@ Choix structurants :
 | 06 | [Capteurs et contrôle](docs/06-capteurs-controle.md) | Électronique, firmware ESP32, stratégie de contrôle, simulateur |
 | 07 | [Feuille de route](docs/07-roadmap.md) | Étapes, critères de validation, risques |
 | 08 | [Environnement](docs/08-environnement.md) | Installation, dépendances, conventions |
+| 09 | [Modèle de gestion de serre](docs/09-modele-gestion-serre.md) | Zones, emplacements, plantes, équipements, persistance, configuration exportée |
+| 10 | [Décisions et traçabilité](docs/10-decisions-tracabilite.md) | `Decision` / `Action`, cycle de vie, arbre des actions |
+| 11 | [Agent de décision](docs/11-agent-decision.md) | Agent LLM qui explique et propose, outils, garde-fous |
+| 12 | [Interface utilisateur et API](docs/12-interface-utilisateur.md) | FastAPI, écrans React, tests |
+| 13 | [Vue jeu pixel art](docs/13-interface-jeu-pixel-art.md) | Serre animée, jardinier, mode construction |
+| 14 | [Résultats phases 1 et 2](docs/14-resultats-phase1.md) | Analyse du classifieur et du détecteur |
+| 15 | [Améliorations de la détection](docs/15-ameliorations-detection.md) | Plan de travail sur le pipeline deux étages |
+| 16 | [Test système simulé](docs/16-test-systeme-simule.md) | Scénarios sans images : journée capteurs, mildiou et agent, vus dans l'UI |
 | — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
 ## État actuel (16/10/2026)
@@ -40,6 +48,7 @@ Choix structurants :
 - ✅ **Base de la serre et ingestion** (G1 + « en parallèle », docs 07/09) : schéma PostgreSQL/TimescaleDB (`backend/db/`), seed depuis `serre.yaml`, ingestion MQTT → base (`backend/ingestion/`), consommation journalière estimée (kWh, L, DLI, €), stack Docker TimescaleDB + Grafana avec dashboard « Serre » — cf. [09 §7](docs/09-modele-gestion-serre.md#7-persistance). Testé sur PC (SQLite, simulateur intégré) ; dashboard Grafana à vérifier sur la stack Docker.
 - ✅ **Modèle de serre complet** (doc 09, hors UI) : contenants, capteurs déclarés, caméras et régions, contrôles de cohérence, intrants des pompes doseuses, export versionné de `serre.yaml` vers le Pi (`make config-export`) — cf. [09 §8](docs/09-modele-gestion-serre.md#8-configuration-exportée-vers-le-contrôleur).
 - ⏳ API FastAPI, interface React, traçabilité complète, agent (G2–G4) : à écrire.
+- 📝 **Test système simulé** (doc 16) : scénarios « journée capteurs » et « mildiou et agent » décrits, à implémenter et jouer après G2–G4 et J3 — cf. [16](docs/16-test-systeme-simule.md).
 
 ## Démarrage rapide
 

@@ -15,6 +15,7 @@
 | **G3 — Traçabilité des décisions** | 2 semaines | `Decision` / `Action`, topic `decision` dans `common/mqtt/`, journal, fiche décision, arbre des actions ([10](10-decisions-tracabilite.md)) | une décision du simulateur (vision + capteurs) visible dans l'UI avec ses preuves et ses actions |
 | **G4 — Agent** | 1–2 semaines | boucle Claude + outils, propositions validables, garde-fous ([11](11-agent-decision.md)) | jeu de questions de référence réussi, aucune proposition hors limites |
 | **J1–J5 — Vue jeu pixel art** | 3–5 semaines | serre construite et animée en pixel art, jardinier piloté par les événements réels, stats en bulles ([13](13-interface-jeu-pixel-art.md)) | scénario démo mildiou joué de bout en bout dans la vue jeu |
+| **T1 — Test système simulé** | 1 semaine | scénarios rejoués par le simulateur, sans images : « journée capteurs » et « mildiou et agent », vus dans l'UI et la vue jeu ([16](16-test-systeme-simule.md)) | `tests/test_scenarios.py` vert, dialogues de référence réussis, journal de test rempli |
 | **Ensuite** | — | nœud solution (pH/EC), PatchCore, suivi de croissance, apprentissage actif, prévision GRU | voir docs 04, 05, 06 |
 
 ## Premier lot de développement
