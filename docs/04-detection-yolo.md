@@ -82,6 +82,8 @@ python -m vision.eval.two_stage --detector runs/<yolo_run>/best.pt --classifier 
 - `vision/eval/two_stage.py` : YOLO → crops (marge 10 %) → classifieur de la phase 1 (même transformation d'évaluation) ; une scène est « plante anormale » si une feuille dépasse `p_anormal ≥ 0,5`. Évaluation dès maintenant sur **PlantDoc TEST** (labels VOC → `sante` par la taxonomie ; le classifieur n'a jamais vu PlantDoc) : rappel et précision des feuilles (IoU ≥ 0,5), santé des feuilles appariées, rappel « plante anormale » et faux positifs par image. Rapport dans `reports/<clf_run>/two_stage_test.{json,png}`.
 - Notebook Colab : `notebooks/05_detection.ipynb`.
 
+Premiers résultats (run `a604f044`) : [14](14-resultats-phase1.md) §8 ; plan d'amélioration : [15](15-ameliorations-detection.md).
+
 ## 4. Anomalies non vues — `anomalib` / PatchCore
 Pour les problèmes absents des datasets (carences N/K/Mg, brûlures de lumière, stress hydrique, étiolement) :
 - entraîner **PatchCore** uniquement sur des images **saines de notre serre**, par espèce ;

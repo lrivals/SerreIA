@@ -26,7 +26,7 @@
 6. ✅ `vision/train/train_classifier.py` + `configs/clf_effnet_b0.yaml` (+ `configs/ablations/`)
 7. ✅ `vision/eval/cross_domain_eval.py`, `gradcam.py` (+ `vision/export/to_onnx.py`) — entraînements réels faits (run principal + ablations A–E, analyse [14](14-resultats-phase1.md)) ; remplacement de fond encore à tester faute de `data/backgrounds/`
 8. ✅ Notebooks Colab `notebooks/01–04` (générés par `tools/notebooks/build.py`) et données archivées sur Google Drive (`tools/get_datasets.sh`, [data-drive](data-drive.md))
-9. ✅ Phase 2 ([04](04-detection-yolo.md)) : `vision/labeling/` (jeu `data/yolo/`, pseudo-labels Grad-CAM + SAM 2, Label Studio), `vision/train/train_yolo.py` + `configs/yolo_v8n.yaml`, `vision/eval/two_stage.py`, `vision/anomaly/patchcore.py`, `vision/growth/`, notebook `05_detection` ; extra `detection` (ultralytics, sam2, scipy). Code testé sur données synthétiques ; entraînement du détecteur à lancer.
+9. ✅ Phase 2 ([04](04-detection-yolo.md)) : `vision/labeling/` (jeu `data/yolo/`, pseudo-labels Grad-CAM + SAM 2, Label Studio), `vision/train/train_yolo.py` + `configs/yolo_v8n.yaml`, `vision/eval/two_stage.py`, `vision/anomaly/patchcore.py`, `vision/growth/`, notebook `05_detection` ; extra `detection` (ultralytics, sam2, scipy). Détecteur entraîné (run `a604f044`, YOLOv8n : mAP@0.5 val 0,888, test 0,956) et deux étages évalués sur PlantDoc TEST (42 % de faux positifs sur images saines), analyse [14](14-resultats-phase1.md) §8, plan d'amélioration [15](15-ameliorations-detection.md) ; pipeline sur photos réelles de la serre encore à évaluer.
 
 Les étapes G1–G4 peuvent démarrer en parallèle de la vision : elles ne dépendent que du contrat MQTT et du simulateur.
 
