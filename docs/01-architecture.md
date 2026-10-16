@@ -17,7 +17,7 @@
   │  • mosquitto (broker)        │                                        │
   │  • camera_service (vision)   │                                        │
   │  • controller (règles/ML)    │                                        │
-  │  • sensor_bridge (validation)│                                        │
+  │  • vision_alerts (lissage)   │                                        │
   └──────────────┬───────────────┘                                        │
                  │ MQTT (bridge) + upload images                          │
                  ▼                                                        │
@@ -46,13 +46,13 @@
 | `serre/<zone>/vision/<camera_id>` | camera_service | 1 | non | résultat d'inférence |
 | `serre/<zone>/alerte` | controller | 1 | non | alerte consolidée |
 | `serre/<zone>/cmd/<actionneur>` | controller / dashboard | 1 | non | commande |
+| `serre/<zone>/cmd/capture` | controller / dashboard | 1 | non | capture d'image à la demande ([05 §3](05-edge-deploiement.md#3-service-caméra--edgecamera_servicepy)) |
 | `serre/<zone>/etat/<actionneur>` | ESP32 | 1 | oui | état réel de l'actionneur |
 | `serre/<noeud>/status` | ESP32 (LWT) | 1 | oui | `online` / `offline` |
-| `serre/<zone>/decision` *(proposé)* | controller / backend | 1 | non | décision et ses preuves — cf. [10 §7](10-decisions-tracabilite.md#7-évolution-proposée-du-contrat-mqtt), pas encore dans `common/mqtt/` |
+| `serre/<zone>/decision` | controller / backend | 1 | non | décision et ses preuves, publiée avant les commandes — cf. [10 §2](10-decisions-tracabilite.md#2-enregistrement-decision) (version minimale, [06 §6](06-capteurs-controle.md#6-implémentation-et-test-sur-pc)) |
 
-`<zone>` : `z1`, `z2`… ; `<type>` : `temperature`, `humidite`, `co2`, `lux`, `ph`, `ec`, `temp_eau`, `niveau_cuve`.
-Types **proposés** pour le matériel retenu ([06 §1.2](06-capteurs-controle.md#12-capteurs-bom)), pas encore dans `SensorType` de `common/mqtt/topics.py` : `pression` (hPa, BMP280), `presence` (nombre de cibles 0–3, HLK-LD2450), `humidite_sol` (%, sondes capacitives).
-`<actionneur>` : `pompe_nutri`, `pompe_ph_down`, `ventilo`, `led`, `brumisateur`, `chauffage`.
+`<zone>` : `z1`, `z2`… ; `<type>` : `temperature`, `humidite`, `co2`, `lux`, `ph`, `ec`, `temp_eau`, `niveau_cuve`, `pression` (hPa, BMP280), `presence` (nombre de cibles 0–3, HLK-LD2450), `humidite_sol` (%, sondes capacitives, avec `emplacement`). Plages physiques et unités : `common/mqtt/ranges.py`.
+`<actionneur>` : `pompe_nutri`, `pompe_ph_down`, `pompe_nutri_a`, `pompe_nutri_b`, `ventilo`, `led`, `brumisateur`, `chauffage`.
 
 ### Schémas JSON
 
@@ -60,7 +60,7 @@ Types **proposés** pour le matériel retenu ([06 §1.2](06-capteurs-controle.md
 ```json
 { "ts": "2026-10-12T14:03:00Z", "noeud": "esp32-01", "valeur": 23.4, "unite": "°C", "qualite": "ok" }
 ```
-`qualite` ∈ `ok | suspect | erreur` (le firmware marque les valeurs hors plage physique).
+`qualite` ∈ `ok | suspect | erreur` (le firmware marque les valeurs hors plage physique). Sondes de sol : champ optionnel `"emplacement": "z1-A1"`.
 
 **Résultat vision**
 ```json
@@ -85,9 +85,15 @@ En phase 1 (classifieur seul), `detections` contient un seul élément avec `bbo
 
 **Commande**
 ```json
-{ "ts": "...", "action": "on", "duree_s": 30, "source": "controller", "raison": "pH 6.9 > consigne 6.2" }
+{ "ts": "...", "action": "on", "duree_s": 30, "source": "controller", "raison": "dec-20261012-1403-z2-001 | pH 6.9 > consigne 6.2" }
 ```
+`raison` : `"<id de décision> | <texte court>"` quand la commande vient d'une décision (contrôleur), texte libre sinon.
 `action` ∈ `on | off | pwm` (avec `"valeur": 0-100`). `duree_s` est **obligatoire** pour les pompes : l'ESP32 coupe d'office à l'échéance.
+
+**Capture à la demande** (`cmd/capture`) : `camera` absent ou `null` = toutes les caméras de la zone.
+```json
+{ "ts": "...", "source": "dashboard", "camera": "cam-z1-a" }
+```
 
 **Alerte**, **état d'actionneur**, **status**
 ```json
@@ -110,25 +116,29 @@ SerreIA/
 │   └── yolo/                  # jeu de détection, généré par build_yolo_dataset (doc 04)
 ├── configs/                   # YAML d'entraînement / d'export
 ├── common/
-│   └── mqtt/                  # contrat MQTT partagé : topics.py, schemas.py (pydantic)
+│   └── mqtt/                  # contrat MQTT partagé : topics.py, schemas.py (pydantic), ranges.py
 ├── vision/
 │   ├── datasets/              # taxonomy.yaml/.py, prepare.py, near_duplicates.py, build_index.py, dataset.py, augment.py
 │   ├── models/                # multihead.py
 │   ├── train/                 # train_classifier.py, train_yolo.py
 │   ├── eval/                  # cross_domain_eval.py, gradcam.py, ablation_report.py, two_stage.py
-│   ├── labeling/              # yolo_format.py, build_yolo_dataset.py, pseudo_labels.py (Grad-CAM + SAM 2), label_studio.py
+│   ├── labeling/              # yolo_format.py, build_yolo_dataset.py, pseudo_labels.py (Grad-CAM + SAM 2), label_studio.py, active_learning.py
 │   ├── anomaly/               # patchcore.py (anomalies non vues, doc 04 §4)
 │   ├── growth/                # canopy.py, curve.py (suivi de croissance, doc 04 §5)
-│   └── export/                # to_onnx.py, hailo/ (scripts DFC)
-├── edge/                      # services Raspberry Pi
-│   ├── camera_service.py
-│   ├── sensor_bridge.py
-│   ├── controller/            # rules.py, safety.py, forecast.py
-│   └── systemd/               # unités de service
-├── backend/                   # FastAPI, schéma DB, ingestion MQTT → DB, agent (docs 09–12)
+│   └── export/                # to_onnx.py, yolo_onnx.py, calibration.py, package.py, evaluate_backend.py, hailo/ (scripts DFC)
+├── edge/                      # services Raspberry Pi (doc 05)
+│   ├── camera_service.py      # + cameras.py, archive.py, publisher.py, config.py / config.yaml
+│   ├── vision/                # backends ONNX / Hailo, détecteur, classifieur, pipeline (sans torch)
+│   ├── models/                # bundles de modèles + lien current (non versionné)
+│   ├── controller/            # contrôleur (doc 06) : service.py, safety.py, rules.py, risk.py, forecast.py,
+│   │                          #   serre.yaml, recettes.yaml ; vision_alerts.py (doc 05)
+│   ├── systemd/               # unités de service, watchdog
+│   └── deploy.sh              # mise à jour du Pi
+├── backend/                   # db/ (schéma, seed), ingestion/ (MQTT → DB), consumption.py,
+│                              #   docker-compose.yml + grafana/ ; à venir : API FastAPI, agent (docs 09–12)
 ├── frontend/                  # interface React + Vite (doc 12)
-├── firmware/                  # ESP32 (PlatformIO)
-├── sim/                       # simulateur de capteurs / serre
+├── firmware/                  # ESP32-C6 (PlatformIO) : un env par nœud, lib/serre_logic testée sur PC
+├── sim/                       # simulateur : météo, modèle de zone, nœuds émulés, pannes (doc 06 §5)
 ├── tests/                     # test_mqtt_contract.py, …
 └── pyproject.toml
 ```

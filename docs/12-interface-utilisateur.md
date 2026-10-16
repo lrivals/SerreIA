@@ -63,7 +63,7 @@ Fonctions :
 - déplacer une plante (clôture l'affectation, [09 §1](09-modele-gestion-serre.md#1-hiérarchie)) ;
 - **éditeur de régions caméra** : sur la dernière image de la caméra, dessiner le rectangle de chaque emplacement ;
 - contrôles de cohérence affichés en bandeau (emplacement hydro sans capteur pH/EC, recettes incompatibles dans une zone, espèce hors taxonomie) ;
-- bouton **« Publier la configuration »** → nouvelle `config_version` envoyée au Pi, avec un diff par rapport à la précédente.
+- bouton **« Publier la configuration »** → nouvelle `config_version` envoyée au Pi, avec un diff par rapport à la précédente. Le backend existe déjà (`backend/config/export.py`, [09 §8](09-modele-gestion-serre.md#8-configuration-exportée-vers-le-contrôleur)) : validation, versionnement selon le contenu, table `config_export`, installation atomique ou rsync. L'API n'aura qu'à l'appeler ; le diff se calcule entre deux lignes de `config_export`. Les contrôles de cohérence du bandeau sont ceux de `edge/controller/coherence.py`.
 
 ### 2.2 Équipements
 Tableaux capteurs / actionneurs / caméras / nœuds ESP32 :
@@ -120,7 +120,7 @@ Préfixe `/api`. Schémas pydantic partagés avec `common/` quand ils existent (
 | Plantes | `GET/POST /plantes`, `PATCH /plantes/{id}`, `POST /plantes/{id}/deplacer`, `GET /plantes/{id}/historique` |
 | Contenants, recettes | `/contenants`, `/recettes` (CRUD) |
 | Équipements | `/capteurs`, `/actionneurs`, `/cameras` (CRUD), `PUT /cameras/{id}/regions` |
-| Configuration | `GET /config/diff`, `POST /config/publier` → `config_version` |
+| Configuration | `GET /config/diff`, `POST /config/publier` → `config_version` (`backend.config.export.export`) |
 | Mesures | `GET /mesures?zone=&type=&debut=&fin=&agregat=` |
 | Vision | `GET /vision?emplacement=&debut=&fin=`, `GET /images/{image_id}` (+ `?gradcam=1`) |
 | Décisions | `GET /decisions?…`, `GET /decisions/{id}`, `POST /decisions/{id}/valider`, `POST /decisions/{id}/rejeter` |
@@ -152,7 +152,9 @@ frontend/
     └── game/            # vue jeu pixel art (Phaser), voir doc 13
 ```
 
-Dépendances Python à ajouter à l'extra `backend` de `pyproject.toml` : `sqlalchemy`, `alembic`, `anthropic`, `sse-starlette` (en plus de `fastapi`, `uvicorn`, `psycopg` déjà présents).
+Déjà en place (G1) : `backend/db/` (`models.py`, `session.py`, `timescale.sql`, `seed.py` — sans Alembic pour l'instant), `backend/ingestion/` (`mqtt_ingest.py`, `__main__.py`), `backend/consumption.py`, `backend/docker-compose.yml` et `backend/grafana/` ; voir [09 §7](09-modele-gestion-serre.md#7-persistance).
+
+Dépendances Python à ajouter à l'extra `backend` de `pyproject.toml` : `alembic`, `anthropic`, `sse-starlette` (en plus de `sqlalchemy`, `psycopg`, `fastapi`, `uvicorn` déjà présents).
 
 ## 5. Développement sans matériel
 

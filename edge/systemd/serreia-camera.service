@@ -1,0 +1,22 @@
+# Service caméra (docs/05 §3, §6). Installation : edge/deploy.sh (ou voir README.md).
+[Unit]
+Description=SerreIA - service caméra (capture, inférence, MQTT)
+After=network-online.target mosquitto.service
+Wants=network-online.target mosquitto.service
+
+[Service]
+Type=notify
+User=serre
+WorkingDirectory=/home/serre/SerreIA
+ExecStart=/home/serre/SerreIA/.venv/bin/python -m edge.camera_service --config edge/config.yaml --backend hailo
+Restart=always
+RestartSec=10
+# Le service notifie WATCHDOG=1 au moins toutes les 5 s (edge/sdnotify.py).
+WatchdogSec=120
+TimeoutStartSec=180
+Environment=PYTHONUNBUFFERED=1
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

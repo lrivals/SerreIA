@@ -1,10 +1,12 @@
 """ONNX export of the classifier, checked against PyTorch (docs/03 §1, docs/05 §2).
 
 python -m vision.export.to_onnx --run <mlflow_run_id> [--n 256]
-Fixed input 1x3xSxS, opset 17, outputs espece / sante / classe in that order.
+Fixed input 1x3xSxS, opset 17, outputs espece / sante / classe in that order. Writes next to
+the ONNX a `<model>.json` (input size, LabelSpace, output order) read by the edge.
 """
 
 import argparse
+import json
 import logging
 from pathlib import Path
 
@@ -37,6 +39,14 @@ def export_onnx(model: nn.Module, path: Path, size: int) -> None:
         dynamo=False,
     )
     onnx.checker.check_model(onnx.load(str(path)))
+
+
+def write_meta(path: Path, labels, size: int) -> Path:
+    """Sidecar of the ONNX: what the edge needs without torch (edge/vision/bundle.py)."""
+    meta = {"size": size, "input": "image", "outputs": list(HEADS), "labels": labels.to_dict()}
+    out = path.with_suffix(".json")
+    out.write_text(json.dumps(meta, indent=1, ensure_ascii=False))
+    return out
 
 
 @torch.no_grad()
@@ -73,7 +83,10 @@ def export_and_check(ckpt: Path, n: int = 256, out: Path | None = None) -> dict[
     model, labels, cfg = load_checkpoint(ckpt)
     out = out or ckpt.parent / "model.onnx"
     export_onnx(model, out, cfg["data"]["size"])
+    write_meta(out, labels, cfg["data"]["size"])
     log.info("export : %s", out)
+    if n <= 0:
+        return {}
 
     df = load_index(resolve(cfg["data"]["index"]), ["val"], cfg["data"]["sources"])
     df = stratified_subset(df, n, cfg["seed"])
@@ -92,12 +105,15 @@ def main() -> None:
     g.add_argument("--run", help="identifiant de run MLflow (runs/<id>/best.pt)")
     g.add_argument("--checkpoint", type=Path)
     parser.add_argument("--out", type=Path, default=None, help="défaut : <run>/model.onnx")
-    parser.add_argument("--n", type=int, default=256, help="images val pour la comparaison")
+    parser.add_argument("--n", type=int, default=256,
+                        help="images val pour la comparaison (0 : export seul)")  # fmt: skip
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
     ckpt = RUNS_DIR / args.run / "best.pt" if args.run else args.checkpoint
     res = export_and_check(ckpt, args.n, args.out)
+    if not res:
+        return
     for k, v in res.items():
         print(f"{k:24s} {v:.6f}")
     worst = res["worst_disagree_pts"]

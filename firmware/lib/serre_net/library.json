@@ -1,0 +1,10 @@
+{
+  "name": "serre_net",
+  "version": "0.1.0",
+  "description": "Socle reseau des noeuds SerreIA : Wi-Fi, MQTT (LWT), NTP, OTA, watchdog",
+  "frameworks": "arduino",
+  "platforms": "espressif32",
+  "dependencies": [
+    {"name": "serre_logic"}
+  ]
+}

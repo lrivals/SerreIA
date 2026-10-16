@@ -1,0 +1,7 @@
+{
+  "name": "serre_logic",
+  "version": "0.1.0",
+  "description": "Logique pure des noeuds SerreIA (plages, radar, commandes, mode degrade), testable sur PC",
+  "frameworks": "*",
+  "platforms": "*"
+}

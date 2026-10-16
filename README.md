@@ -28,21 +28,28 @@ Choix structurants :
 | 08 | [Environnement](docs/08-environnement.md) | Installation, dépendances, conventions |
 | — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
-## État actuel (12/10/2026)
+## État actuel (16/10/2026)
 
 - ✅ Données rangées (`data/plantvillage`, `data/ccmt`, `data/plantdoc`), taxonomie unifiée et **`data/index.parquet`** généré : 88 135 images, 16 espèces, 56 classes, splits groupés sans fuite (détail dans [02-donnees](docs/02-donnees.md)).
-- ⚠️ GPU NVIDIA RTX 1000 Ada (6 Go) présent, mais le driver ne répond pas (`nvidia-smi`) → voir [08-environnement](docs/08-environnement.md).
+- ⚠️ GPU NVIDIA RTX 1000 Ada (6 Go) présent, mais aucun driver installé (`nvidia-smi`) : installer `nvidia-driver-595-open` puis `make cuda-torch` → voir [08-environnement](docs/08-environnement.md). État du poste : `make check-env`.
 - ✅ Squelette du dépôt, `pyproject.toml` et **contrat MQTT** (`common/mqtt/`, testé) en place — cf. [01-architecture](docs/01-architecture.md).
 - ✅ **Classifieur phase 1** écrit (dataset, augmentations + remplacement de fond, modèle multi-têtes, entraînement MLflow, évaluation cross-domain, Grad-CAM, export ONNX) et testé sur CPU — cf. [03-classifieur](docs/03-classifieur.md). **Notebooks Colab** (`notebooks/`, données servies par Google Drive) pour lancer les entraînements et les ablations A–E sur GPU ; reste à constituer `data/backgrounds/`.
 - ✅ Données archivées sur **Google Drive** (`tools/get_datasets.sh`, rclone) — cf. [data-drive](docs/data-drive.md).
-- ⏳ Edge, backend, simulateur et firmware : à écrire.
+- ✅ **Edge** (doc 05) écrit et testé sur PC : bundle de modèles, calibration et scripts Hailo, service caméra (ONNX Runtime, mode sans broker), alertes vision lissées, apprentissage actif, systemd — cf. [05-edge-deploiement §7](docs/05-edge-deploiement.md#7-implémentation-et-test-sur-pc). HEF / HailoRT / picamera2 à valider sur le Pi.
+- ✅ **Capteurs et contrôle** (doc 06) écrits et testés sur PC : contrat MQTT étendu (dont le topic `decision`), contrôleur (sécurité, règles, risque, prévision GRU), simulateur MQTT avec pannes injectables, firmware des 4 nœuds XIAO ESP32-C6 — cf. [06 §6](docs/06-capteurs-controle.md#6-implémentation-et-test-sur-pc). Firmware à compiler et flasher, GRU à entraîner.
+- ✅ **Base de la serre et ingestion** (G1 + « en parallèle », docs 07/09) : schéma PostgreSQL/TimescaleDB (`backend/db/`), seed depuis `serre.yaml`, ingestion MQTT → base (`backend/ingestion/`), consommation journalière estimée (kWh, L, DLI, €), stack Docker TimescaleDB + Grafana avec dashboard « Serre » — cf. [09 §7](docs/09-modele-gestion-serre.md#7-persistance). Testé sur PC (SQLite, simulateur intégré) ; dashboard Grafana à vérifier sur la stack Docker.
+- ✅ **Modèle de serre complet** (doc 09, hors UI) : contenants, capteurs déclarés, caméras et régions, contrôles de cohérence, intrants des pompes doseuses, export versionné de `serre.yaml` vers le Pi (`make config-export`) — cf. [09 §8](docs/09-modele-gestion-serre.md#8-configuration-exportée-vers-le-contrôleur).
+- ⏳ API FastAPI, interface React, traçabilité complète, agent (G2–G4) : à écrire.
 
 ## Démarrage rapide
 
 Disponible dès maintenant :
 ```bash
 uv sync                                                # dépendances de base + dev
-uv run pytest                                          # tests (contrat MQTT, taxonomie, index)
+make setup                                             # poste complet (vision, notebook, backend, controle)
+make check-env                                         # diagnostic : driver, torch/CUDA, extras, outils
+make test                                              # tests (contrat MQTT, taxonomie, index…)
+make lint                                              # ruff format + check
 ```
 
 Classifieur (phase 1) :
@@ -53,7 +60,31 @@ uv run python -m vision.train.train_classifier --config configs/clf_effnet_b0.ya
 uv run python -m vision.eval.cross_domain_eval --run <run_id>
 uv run python -m vision.eval.gradcam --run <run_id>
 uv run python -m vision.export.to_onnx --run <run_id>
-uv run mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db   # suivi des expériences
+make mlflow                                            # suivi des expériences (mlruns/mlflow.db)
+```
+
+Edge, sur PC sans Pi ni broker (doc 05 §7) :
+```bash
+uv sync --extra vision --extra detection --extra edge
+uv run python -m vision.export.package --classifier <run_id> --version clf-effb0-v1
+uv run python -m edge.camera_service --once --mqtt none     # images de data/plantdoc/test
+uv run python -m edge.controller.vision_alerts --replay edge/archive
+```
+
+Contrôle et simulateur, sur PC sans broker (doc 06 §6) :
+```bash
+uv sync --extra controle
+uv run python -m sim --mqtt none --avec-controleur --accel 0 --duree-h 2 --debut 2026-07-15T06:00
+uv run python -m sim --mqtt none --avec-controleur --accel 0 --duree-h 3 --panne cuve_vide:z2@30
+```
+
+Base, ingestion et dashboard (doc 09 §7) :
+```bash
+uv sync --extra backend --extra controle
+uv run python -m backend.ingestion --sim --duree-h 24 --debut 2026-07-15T00:00 --db sqlite:///serreia.db
+uv run python -m backend.consumption --jour 2026-07-15 --db sqlite:///serreia.db
+make stack-up && make db-init && make sim-demo         # TimescaleDB + Grafana (localhost:3000, admin / serreia)
+make ingest                                            # ingestion du broker en continu
 ```
 
 Notebooks (`notebooks/`, ouvrables dans Colab via leur badge) :

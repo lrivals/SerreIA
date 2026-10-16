@@ -35,16 +35,30 @@ detection = [  # phase 2 (docs/04): YOLO, SAM 2 pseudo-labels, growth curves
     "sam2",
     "scipy",
 ]
+edge = [  # Pi services (docs/05); picamera2 and hailo_platform come from apt (hailo-all)
+    "numpy>=2",
+    "opencv-python-headless",
+    "onnxruntime",
+    "pyyaml",
+]
+controle = [  # controller and simulator (docs/06); torch (vision extra) only to train the GRU
+    "numpy>=2",
+    "pandas",
+    "pyyaml",
+    "onnxruntime",
+]
 notebook = [
     "ipykernel",
     "nbclient",
     "nbformat",
     "ipywidgets",
 ]
-backend = [
+backend = [  # server (docs/09, 12): database, MQTT ingestion, API
+    "sqlalchemy>=2",
+    "psycopg[binary]",
+    "pyyaml",
     "fastapi",
     "uvicorn",
-    "psycopg",
 ]
 
 [dependency-groups]

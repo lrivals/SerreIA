@@ -1,8 +1,9 @@
-# 14 — Résultats de la phase 1 : analyse et pistes d'amélioration
+# 14 — Résultats des phases 1 et 2 : analyse et pistes d'amélioration
 
 **But** : faire le point sur les premiers résultats réels du classifieur (notebooks
-`01_donnees` à `04_ablations`, exécutés sur Colab A100 les 12–13/10/2026), en tirer ce qu'ils
-disent vraiment et prioriser la suite. Les chiffres viennent des sorties enregistrées dans les
+`01_donnees` à `04_ablations`, exécutés sur Colab A100 les 12–13/10/2026), puis du détecteur
+YOLO et du pipeline deux étages (`05_detection`, §8), en tirer ce qu'ils disent vraiment et
+prioriser la suite. Les chiffres viennent des sorties enregistrées dans les
 notebooks ; les définitions des métriques sont celles de [03](03-classifieur.md) §4
 (`vision/eval/metrics.py`).
 
@@ -184,3 +185,88 @@ ne mesurent pas ce qui compte :
 12. **Données réelles** : quelques centaines d'images de la serre étiquetées (apprentissage
     actif, [07](07-roadmap.md)) valent plus que toute ablation supplémentaire — elles servent à
     la fois de val de sélection (point 6) et de test final.
+
+## 8. Phase 2 — détection YOLO et deux étages (`05_detection`)
+
+Run YOLO `a604f044` (YOLOv8n COCO, 640 px, 100 epochs, teinte LED 30 %, 30 min sur A100),
+classe unique `feuille`, jeu `data/yolo/` de [04](04-detection-yolo.md) §2 ; deux étages
+évalués sur PlantDoc TEST avec le classifieur `96f8b511`.
+
+### 8.1 Résumé
+- **Critère de la feuille de route atteint** ([07](07-roadmap.md) : mAP@0.5 ≥ 0,6) : 0,888 en
+  val, 0,956 en test. Mais le chiffre test est **flatté** (§8.3), et le second critère
+  (« pipeline de bout en bout sur des photos réelles ») n'est pas évaluable sans images de la serre.
+- **Le détecteur n'est pas le maillon faible** : rappel feuille 0,92 en bout de chaîne.
+- **Le biais « anormal » de la phase 1 se propage à l'image** : 42 % des images saines sont
+  signalées « plante anormale », pour 98 % de rappel sur les malades.
+- **Le classifieur évalué n'est pas le bon** : `96f8b511` est l'ablation E (ConvNeXt-Nano),
+  choisie parce que c'est le `best.pt` le plus récent, pas le run principal EfficientNet-B0
+  `1e8dfc9c` retenu pour Hailo (§4.1).
+
+### 8.2 Détecteur
+
+| jeu | images | boîtes | P | R | mAP@0.5 | mAP@0.5:0.95 |
+|---|---|---|---|---|---|---|
+| val (PlantDoc + PV) | 420 | 949 | 0,797 | 0,834 | 0,888 | 0,675 |
+| test (PlantDoc + PV) | 422 | 637 | 0,891 | 0,901 | 0,956 | 0,778 |
+
+Inférence 3,2 ms/image (A100, fusionné, 3,1 M paramètres, 8,6 GFLOPs).
+
+- **Courbes** : mAP@0.5 plafonne vers l'epoch 60–70 (≈ 0,89), mAP@0.5:0.95 monte encore
+  doucement jusqu'à 0,67. Les pertes train **et val** baissent toujours à l'epoch 100 : pas de
+  surapprentissage, un peu de marge avec plus d'epochs ou un modèle plus gros. La marche à
+  l'epoch 90 est `close_mosaic` (pertes −0,05, rappel val −0,03, mAP inchangée).
+- **PR test** : précision ≈ 1 jusqu'à un rappel de 0,8, puis chute franche au-delà de 0,95 —
+  les dernières feuilles manquées sont des cas difficiles (petites, occultées, empilées).
+
+### 8.3 Lecture
+- **Test plus facile que val, et pas pour de bonnes raisons.** PlantDoc TEST a **1,9 boîte par
+  image** contre 3,3 en val et 3,6 en train : moins de scènes denses, des feuilles plus grandes.
+  S'y ajoutent les 185 images PlantVillage (une feuille sur fond gris, boîte tirée du masque),
+  quasi triviales, qui pèsent 29 % des boîtes test. Le +0,07 de mAP val → test vient de là, pas
+  d'une généralisation. Le chiffre à suivre est la mAP **PlantDoc seule**, non rapportée.
+- **La précision mesurée est sous-estimée.** En bout de chaîne, précision feuille 0,71 pour
+  rappel 0,92 (seuil 0,25, IoU 0,5). Sur la planche d'exemples, beaucoup de « faux positifs »
+  sont de vraies feuilles **non annotées** dans PlantDoc (`e33155.jpg`, `prunsero_leaf2.jpg`) :
+  PlantDoc n'annote que les feuilles porteuses du label, pas toutes les feuilles. Inversement,
+  le détecteur apprend en partie à **ignorer** des feuilles visibles, ce qui sera pénalisant en
+  serre où chaque image contient des dizaines de feuilles.
+- **Domaine encore loin de la serre** : feuilles isolées sur fond blanc, photos de banques
+  d'images (filigranes « alamy », « shutterstock »), diapositives (`Bacterial Spot and
+  Speck`). Aucune vue de canopée dense ni sous LED réelle.
+
+### 8.4 Deux étages sur PlantDoc TEST
+
+| métrique | valeur |
+|---|---|
+| images (anormales / saines) | 236 (146 / 90) |
+| détection : rappel / précision feuille | 0,918 / 0,708 |
+| feuilles appariées : exactitude `sante` | 0,855 |
+| feuilles appariées : rappel anormal | 0,963 |
+| **image : rappel « plante anormale »** | **0,979** |
+| **image : faux positifs sur images saines** | **0,422** |
+
+- **Exactitude `sante` meilleure sur crops détectés (0,855) que sur crops de vérité en phase 1
+  (≈ 0,75 pour E sur tout PlantDoc).** Trois explications possibles, non séparées : la marge de
+  10 % autour de la boîte (plus de contexte), le sous-ensemble TEST (une partie de PlantDoc
+  seulement), et un biais de sélection (seules les feuilles bien détectées sont appariées). À
+  isoler avant d'en conclure quoi que ce soit (§8.5, point 3).
+- **Agrégation par le max** : une image est « anormale » dès qu'**une** feuille dépasse
+  p = 0,5. Avec un classifieur à spécificité ~0,5 et plusieurs feuilles par image, le taux de
+  fausses alertes croît mécaniquement avec le nombre de feuilles détectées ; il serait encore
+  plus haut en serre. Sur la planche, les fausses alertes viennent de feuilles saines à reflets,
+  nervures marquées ou taches d'ombre (`P1200665`, `blueberry-leaves-normal`), comme les faux
+  positifs Grad-CAM de la phase 1 (§3.3).
+- **Pour la phase 3, 42 % de fausses alertes est inutilisable** : à une capture toutes les 10 min
+  par caméra (`periode_s` de `edge/config.yaml`), cela fait des dizaines d'alertes par jour sur
+  une serre saine.
+
+### 8.5 Pistes d'amélioration
+Plan détaillé dans [15](15-ameliorations-detection.md). En bref :
+- **P0, mesurer juste** : évaluer le classifieur retenu `1e8dfc9c`, mAP PlantDoc seule,
+  boîtes de vérité pour séparer détecteur et classifieur, courbe faux positifs / rappel image.
+- **P1, décision image** : une seule règle hors ligne et sur le Pi (aujourd'hui 0,5 sur une
+  capture contre 0,6 sur 3 captures dans `edge/controller/vision_alerts.py`), agrégation des
+  feuilles, crops inexploitables écartés, calibration.
+- **P2, données et modèle** : compléter les annotations PlantDoc, images de la serre, moins de
+  PlantVillage ; ensuite seulement `yolov8s` / résolution plus haute.

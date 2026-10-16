@@ -1,0 +1,41 @@
+# Configuration du service caméra (docs/05 §3), chargée par edge/config.py.
+# Prête pour un test sur PC : caméra « dossier » sur PlantDoc test, ONNX Runtime, sans LED.
+# Chemins relatifs : depuis la racine du dépôt.
+
+noeud: pi-serre               # id MQTT du Pi (status, LWT)
+periode_s: 600                # une capture toutes les 10 min par caméra
+erreurs_avant_alerte: 3       # échecs consécutifs avant une alerte warning
+
+mqtt:
+  host: localhost
+  port: 1883
+
+led:
+  mode: aucun                 # aucun | couper (LED éteintes 2 s avant la capture, puis état restauré)
+  attente_s: 2
+
+archive:
+  dir: edge/archive
+  retention_jours: 7
+  cote_max_px: 1920
+
+upload:
+  url: null                   # ex. http://serveur:8000/api/vision/captures ; null : pas d'upload
+
+modeles:
+  dir: edge/models/current    # bundle créé par `python -m vision.export.package`
+  backend: onnx               # onnx (PC, Pi sans Hailo) | hailo (HEF)
+  patchcore: true             # si le bundle en contient
+  device: cpu
+
+seuils:
+  conf_detection: 0.25
+  marge_crop: 0.1
+
+cameras:
+  - id: cam-z1-a
+    zone: z1
+    source: folder:data/plantdoc/test     # Pi : csi:0 ; webcam : usb:0
+    resolution: null                      # (largeur, hauteur), ex. [2304, 1296] pour le Module 3
+    wb_roi: null                          # [x0, y0, x1, y1] de la mire grise
+    plantes: []                           # ex. [{id: tomate-1, roi: [0, 0, 1152, 1296], px_per_cm: 12.5}]

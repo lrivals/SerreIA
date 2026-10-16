@@ -1,0 +1,61 @@
+# Recettes de culture : consignes par espèce et par stade (docs/09 §6), lues par
+# edge/controller/recipes.py. Plages [min, max] ; ph / ec : zones hydro uniquement ;
+# humidite_sol : emplacements en terre / substrat (sondes capacitives, %).
+
+tomate-standard:
+  espece: tomate
+  stades:
+    semis:
+      temperature: {jour: [20, 25], nuit: [18, 20]}
+      humidite: [65, 80]
+      photoperiode_h: 16
+      dli_cible: 12
+      humidite_sol: [55, 75]
+    croissance:
+      temperature: {jour: [20, 26], nuit: [16, 18]}
+      humidite: [60, 75]
+      co2_max: 1200
+      photoperiode_h: 16
+      dli_cible: 20
+      ph: [5.8, 6.3]
+      ec: [2.0, 3.0]
+      humidite_sol: [45, 70]
+    floraison:
+      temperature: {jour: [21, 27], nuit: [16, 19]}
+      humidite: [55, 70]
+      photoperiode_h: 14
+      dli_cible: 25
+      ph: [5.8, 6.3]
+      ec: [2.5, 3.5]
+      humidite_sol: [45, 70]
+    fructification:
+      temperature: {jour: [21, 27], nuit: [16, 19]}
+      humidite: [55, 70]
+      photoperiode_h: 14
+      dli_cible: 25
+      ph: [5.8, 6.3]
+      ec: [2.5, 3.5]
+      humidite_sol: [40, 65]
+
+laitue-hydro:
+  espece: laitue
+  stades:
+    croissance:
+      temperature: {jour: [16, 22], nuit: [12, 16]}
+      humidite: [50, 70]
+      photoperiode_h: 16
+      dli_cible: 14
+      ph: [5.6, 6.2]
+      ec: [1.0, 1.6]
+
+basilic-standard:
+  espece: basilic
+  stades:
+    croissance:
+      temperature: {jour: [20, 27], nuit: [16, 20]}
+      humidite: [50, 70]
+      photoperiode_h: 16
+      dli_cible: 15
+      ph: [5.8, 6.5]
+      ec: [1.0, 1.6]
+      humidite_sol: [40, 65]

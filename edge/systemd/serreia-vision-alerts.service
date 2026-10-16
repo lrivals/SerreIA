@@ -1,0 +1,18 @@
+# Lissage et fusion des alertes vision (docs/05 §4), partie du controller.
+[Unit]
+Description=SerreIA - alertes vision (lissage, fusion capteurs)
+After=network-online.target mosquitto.service
+Wants=network-online.target mosquitto.service
+
+[Service]
+Type=notify
+User=serre
+WorkingDirectory=/home/serre/SerreIA
+ExecStart=/home/serre/SerreIA/.venv/bin/python -m edge.controller.vision_alerts
+Restart=always
+RestartSec=10
+WatchdogSec=60
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

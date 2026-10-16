@@ -59,7 +59,48 @@ déploiement HEF ◄── export ◄── ré-entraînement (RTX) ◄── in
 - C'est ainsi qu'on ajoute **fraise, salades et aromatiques** : nouvelles entrées de taxonomie, puis annotation, puis ré-entraînement.
 
 ## 6. Exploitation
-- Services systemd : `mosquitto`, `camera_service`, `sensor_bridge`, `controller`, avec redémarrage automatique.
+- Services systemd : `mosquitto`, `camera_service`, `vision_alerts`, `controller` (la validation des mesures est faite par le firmware, [06 §3](06-capteurs-controle.md#3-firmware-esp32--firmware-platformio-arduino-ou-esp-idf)), avec redémarrage automatique.
 - Watchdog matériel du Pi activé.
 - Logs : journald + envoi des erreurs au serveur.
 - Mises à jour : `git pull` + `uv sync` + redémarrage des services ; HEF copiés dans `edge/models/` avec un lien symbolique `current`.
+
+## 7. Implémentation et test sur PC
+
+Sans Pi ni Hailo, tout tourne sur PC : les modèles passent par **ONNX Runtime** derrière la même interface que HailoRT (`edge/vision/backends.py`), et `--mqtt none` remplace le broker (messages journalisés et archivés).
+
+| Fichier | Rôle |
+|---|---|
+| `vision/export/to_onnx.py` | ONNX du classifieur + `clf.json` (taille, labels, ordre des sorties) |
+| `vision/export/yolo_onnx.py` | ONNX du détecteur (sans NMS) et vérification contre Ultralytics |
+| `vision/export/package.py` | bundle `edge/models/<version>/` (`manifest.json`), lien `current`, `--add-hef` |
+| `vision/export/calibration.py` | jeu de calibration INT8 (serre d'abord, puis `val`) |
+| `vision/export/hailo/` | `compile_clf.py`, `clf.alls`, `compile_yolo.sh` (Docker Hailo AI SW Suite, x86) |
+| `vision/export/evaluate_backend.py` | écart ONNX / INT8 (émulateur DFC ou HEF) et porte anti-régression (§5) |
+| `edge/vision/` | backends ONNX / Hailo, YOLO (letterbox, NMS), classifieur, balance des blancs, pipeline → `VisionResult` |
+| `edge/camera_service.py` | planification, `cmd/capture`, LED, inférence, publication, archive (`edge/archive.py`) |
+| `edge/controller/vision_alerts.py` | lissage N = 3, fusion humidité, niveaux `info` / `warning` / `critique` ; caméra ne voyant que des espèces hors taxonomie (`--config serre.yaml`, [09 §2](09-modele-gestion-serre.md#2-plante)) : lissage sur `score_anomalie`, plafonné à `warning` |
+| `vision/labeling/active_learning.py` | sélection ≤ 50 captures incertaines → tâches Label Studio |
+| `edge/systemd/`, `edge/deploy.sh` | services, watchdog, mise à jour |
+
+Écarts au texte ci-dessus :
+- le contrat `Command` n'a pas de couleur : l'éclairage maîtrisé implémente « couper » (LED éteintes, puis état retenu `etat/led` restauré) ; sans état connu, les LED ne sont pas touchées ;
+- le niveau « attention » est `warning` dans le contrat ;
+- `score_anomalie` = score PatchCore ramené dans [0, 1] par `min(1, s / 2·seuil)` (seuil calibré ↦ 0,5) ; 0 sans banque pour l'espèce.
+
+```bash
+uv sync --extra vision --extra detection --extra edge
+
+# 1. Bundle depuis un run (checkpoint rapatrié : make harvest-all) ; YOLO et PatchCore optionnels
+python -m vision.export.package --classifier <run_id> --version clf-effb0-v1 \
+    [--detector runs/<yolo_run>/best.pt] [--patchcore tomate=runs/patchcore/tomate.pt]
+
+# 2. Service caméra sur PlantDoc test (edge/config.yaml), une capture puis sortie
+python -m edge.camera_service --once --mqtt none        # JSON dans le journal, JPEG + JSON dans edge/archive/
+python -m edge.camera_service --mqtt none               # en boucle (période de config.yaml)
+
+# 3. Alertes et apprentissage actif sur l'archive produite
+python -m edge.controller.vision_alerts --replay edge/archive
+python -m vision.labeling.active_learning --archive edge/archive --days 0
+
+# 4. Plus tard : compilation Hailo (vision/export/hailo/README.md), puis sur le Pi --backend hailo
+```

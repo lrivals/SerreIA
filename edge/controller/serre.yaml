@@ -1,0 +1,98 @@
+# Configuration de la serre exportée vers le contrôleur (docs/09 §8), lue par
+# edge/controller/config.py et rechargée à chaud. Cet exemple correspond au simulateur
+# (sim/) : z1 en terre (nœuds esp32-01 air, esp32-02 sol), z2 en hydro NFT (esp32-03
+# solution, esp32-05 air). Heures locales (fuseau) ; chemins relatifs à la racine du dépôt.
+# Le fichier décrit tout le modèle de serre (docs/09) : `python -m backend.db.seed` le charge
+# en base, `python -m backend.config.export` le régénère depuis la base (recettes en ligne).
+
+config_version: 1
+nom: Maison
+fuseau: Europe/Paris
+tarif_kwh: 0.25
+recettes: edge/controller/recettes.yaml
+
+zones:
+  - id: z1
+    nom: terre
+    jour_debut: "06:00"
+    presence_autorisee: [{debut: "07:00", fin: "21:00"}]
+    emplacements:
+      - id: z1-A1
+        mode_culture: terre
+        contenant: {type: pot, volume_l: 11, materiau: plastique, drainage: true}
+        plante: {id: tomate-1, espece: tomate, variete: Cœur de bœuf, recette: tomate-standard,
+                 stade: floraison, prioritaire: true, date_semis: 2026-03-01, date_plantation: 2026-04-20}
+      - id: z1-A2
+        mode_culture: terre
+        contenant: {type: pot, volume_l: 3, materiau: terre_cuite, drainage: true}
+        plante: {id: basilic-1, espece: basilic, recette: basilic-standard, stade: croissance}
+  - id: z2
+    nom: hydro NFT
+    jour_debut: "06:00"
+    cuve: cuve-z2
+    emplacements:
+      - id: z2-A1
+        mode_culture: hydro_nft
+        contenant: {type: canal_NFT}
+        plante: {id: laitue-1, espece: laitue, recette: laitue-hydro, stade: croissance}
+
+cuves:
+  - {id: cuve-z2, volume_l: 60}
+
+actionneurs:
+  # z1
+  - {id: ventilo-z1, zone: z1, type: ventilo, commande: pwm, puissance_w: 40}
+  - {id: chauffage-z1, zone: z1, type: chauffage, puissance_w: 1500}
+  - {id: brumisateur-z1, zone: z1, type: brumisateur, duree_s: 60, delai_min_s: 600, puissance_w: 30}
+  - {id: led-z1, zone: z1, type: led, commande: pwm, puissance_w: 240, ppfd_max: 450}
+  - {id: arrosage-z1, zone: z1, type: pompe_nutri, duree_s: 45, duree_max_s: 120, delai_min_s: 3600, puissance_w: 20,
+     debit_l_h: 120}
+  # z2
+  - {id: ventilo-z2, zone: z2, type: ventilo, commande: pwm, puissance_w: 40}
+  - {id: led-z2, zone: z2, type: led, commande: pwm, puissance_w: 240, ppfd_max: 450}
+  - {id: pompe-nft-z2, zone: z2, type: pompe_nutri, duree_s: 900, duree_max_s: 1800, delai_min_s: 1800, puissance_w: 25,
+     debit_l_h: 300}
+  - {id: ph-down-z2, zone: z2, type: pompe_ph_down, impulsion_s: 2, duree_max_s: 10, melange_s: 600,
+     debit_ml_min: 60}
+  - {id: nutri-a-z2, zone: z2, type: pompe_nutri_a, impulsion_s: 3, duree_max_s: 15, melange_s: 900,
+     debit_ml_min: 60}
+  - {id: nutri-b-z2, zone: z2, type: pompe_nutri_b, impulsion_s: 3, duree_max_s: 15, melange_s: 900,
+     debit_ml_min: 60}
+
+# Capteurs (un matériel = un canal par mesure, id du canal : <noeud>-<mesure>[-<emplacement>]).
+capteurs:
+  # z1 : air (esp32-01), sol (esp32-02, une sonde par emplacement)
+  - {id: sht41-z1, modele: SHT41, noeud: esp32-01, zone: z1, mesures: [temperature, humidite]}
+  - {id: bmp280-z1, modele: BMP280, noeud: esp32-01, zone: z1, mesures: [pression]}
+  - {id: gy302-z1, modele: GY-302, noeud: esp32-01, zone: z1, mesures: [lux]}
+  - {id: scd41-z1, modele: SCD41, noeud: esp32-01, zone: z1, mesures: [co2]}
+  - {id: ld2450-z1, modele: HLK-LD2450, noeud: esp32-01, zone: z1, mesures: [presence]}
+  - {id: sol-z1-A1, modele: capacitif-sol, noeud: esp32-02, zone: z1, mesures: [humidite_sol],
+     emplacement: z1-A1}
+  - {id: sol-z1-A2, modele: capacitif-sol, noeud: esp32-02, zone: z1, mesures: [humidite_sol],
+     emplacement: z1-A2}
+  # z2 : solution (esp32-03, cuve), air (esp32-05)
+  - {id: ph-cuve-z2, modele: EZO-pH, noeud: esp32-03, zone: z2, mesures: [ph], cuve: true,
+     etalonnage: {date: 2026-10-01, methode: "2 points (4,0 / 7,0)"}}
+  - {id: ec-cuve-z2, modele: EZO-EC, noeud: esp32-03, zone: z2, mesures: [ec], cuve: true}
+  - {id: temp-eau-z2, modele: DS18B20, noeud: esp32-03, zone: z2, mesures: [temp_eau], cuve: true}
+  - {id: niveau-cuve-z2, modele: JSN-SR04T, noeud: esp32-03, zone: z2, mesures: [niveau_cuve],
+     cuve: true}
+  - {id: sht41-z2, modele: SHT41, noeud: esp32-05, zone: z2, mesures: [temperature, humidite]}
+  - {id: bmp280-z2, modele: BMP280, noeud: esp32-05, zone: z2, mesures: [pression]}
+  - {id: gy302-z2, modele: GY-302, noeud: esp32-05, zone: z2, mesures: [lux]}
+
+# Caméras : régions [x, y, w, h] normalisées de chaque emplacement visible (docs/09 §4).
+cameras:
+  - id: cam-z1-a
+    zone: z1
+    emplacements_visibles: [z1-A1, z1-A2]
+    regions: {z1-A1: [0.0, 0.0, 0.5, 1.0], z1-A2: [0.5, 0.0, 0.5, 1.0]}
+  - {id: cam-z2-a, zone: z2, emplacements_visibles: [z2-A1]}
+
+hysteresis: {temperature: 1.0, humidite: 5.0, humidite_sol: 5.0}
+securite: {t_max: 35, t_min: 5, ph_min: 4.5, ph_max: 8.0, niveau_cuve_min: 10, capteur_muet_s: 300,
+           capteur_fige_s: 1800}
+risque: {hr_humectation: 90, humectation_h: 10, t_min: 10, t_max: 25, ventilation_s: 900, periode_s: 3600}
+lumiere: {lux_vers_ppfd: 0.0185, pwm_complement: 100, maintien_s: 1800}
+prevision: {modele: edge/models/forecast, hr_max_nuit: 85, ventilation_s: 900, ecart_sigma: 4}

@@ -7,6 +7,7 @@ from enum import StrEnum
 ROOT = "serre"
 _ZONE_RE = re.compile(r"^z\d+$")
 _ID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+CAPTURE = "capture"  # serre/<zone>/cmd/capture: on-demand capture, not an actuator (docs/05 §3)
 
 
 class SensorType(StrEnum):
@@ -18,11 +19,16 @@ class SensorType(StrEnum):
     EC = "ec"
     TEMP_EAU = "temp_eau"
     NIVEAU_CUVE = "niveau_cuve"
+    PRESSION = "pression"  # hPa, BMP280
+    PRESENCE = "presence"  # number of radar targets 0-3, HLK-LD2450
+    HUMIDITE_SOL = "humidite_sol"  # %, capacitive probes (one reading per emplacement)
 
 
 class Actuator(StrEnum):
     POMPE_NUTRI = "pompe_nutri"
     POMPE_PH_DOWN = "pompe_ph_down"
+    POMPE_NUTRI_A = "pompe_nutri_a"  # dosing pumps of the nutrient solution (EC)
+    POMPE_NUTRI_B = "pompe_nutri_b"
     VENTILO = "ventilo"
     LED = "led"
     BRUMISATEUR = "brumisateur"
@@ -32,6 +38,11 @@ class Actuator(StrEnum):
     def is_pump(self) -> bool:
         return self.value.startswith("pompe_")
 
+    @property
+    def is_dosing(self) -> bool:
+        """Dosing pumps of the nutrient solution: inputs in mL, not water (docs/09 §5)."""
+        return self in (Actuator.POMPE_PH_DOWN, Actuator.POMPE_NUTRI_A, Actuator.POMPE_NUTRI_B)
+
 
 class TopicKind(StrEnum):
     CAPTEUR = "capteur"
@@ -40,6 +51,7 @@ class TopicKind(StrEnum):
     CMD = "cmd"
     ETAT = "etat"
     STATUS = "status"
+    DECISION = "decision"
 
 
 @dataclass(frozen=True)
@@ -55,6 +67,7 @@ TOPIC_POLICY: dict[TopicKind, TopicPolicy] = {
     TopicKind.CMD: TopicPolicy(qos=1, retain=False),
     TopicKind.ETAT: TopicPolicy(qos=1, retain=True),
     TopicKind.STATUS: TopicPolicy(qos=1, retain=True),
+    TopicKind.DECISION: TopicPolicy(qos=1, retain=False),
 }
 
 SUBSCRIPTIONS: dict[TopicKind, str] = {
@@ -64,6 +77,7 @@ SUBSCRIPTIONS: dict[TopicKind, str] = {
     TopicKind.CMD: f"{ROOT}/+/cmd/+",
     TopicKind.ETAT: f"{ROOT}/+/etat/+",
     TopicKind.STATUS: f"{ROOT}/+/status",
+    TopicKind.DECISION: f"{ROOT}/+/decision",
 }
 
 
@@ -102,8 +116,16 @@ def cmd_topic(zone: str, actuator: Actuator | str) -> str:
     return f"{ROOT}/{_check_zone(zone)}/cmd/{Actuator(actuator)}"
 
 
+def capture_topic(zone: str) -> str:
+    return f"{ROOT}/{_check_zone(zone)}/cmd/{CAPTURE}"
+
+
 def state_topic(zone: str, actuator: Actuator | str) -> str:
     return f"{ROOT}/{_check_zone(zone)}/etat/{Actuator(actuator)}"
+
+
+def decision_topic(zone: str) -> str:
+    return f"{ROOT}/{_check_zone(zone)}/decision"
 
 
 def status_topic(node: str) -> str:
@@ -120,8 +142,8 @@ def parse_topic(topic: str) -> ParsedTopic:
         scope, kind = parts[1], parts[2]
         if kind == TopicKind.STATUS:
             return ParsedTopic(TopicKind.STATUS, _check_id(scope, "node id"))
-        if kind == TopicKind.ALERTE:
-            return ParsedTopic(TopicKind.ALERTE, _check_zone(scope))
+        if kind in (TopicKind.ALERTE, TopicKind.DECISION):
+            return ParsedTopic(TopicKind(kind), _check_zone(scope))
         raise ValueError(f"not a contract topic: {topic!r}")
 
     if len(parts) != 4:
@@ -132,6 +154,8 @@ def parse_topic(topic: str) -> ParsedTopic:
             return ParsedTopic(TopicKind.CAPTEUR, zone, SensorType(subject).value)
         case TopicKind.VISION:
             return ParsedTopic(TopicKind.VISION, zone, _check_id(subject, "camera id"))
+        case TopicKind.CMD if subject == CAPTURE:
+            return ParsedTopic(TopicKind.CMD, zone, CAPTURE)
         case TopicKind.CMD | TopicKind.ETAT:
             return ParsedTopic(TopicKind(kind), zone, Actuator(subject).value)
     raise ValueError(f"not a contract topic: {topic!r}")

@@ -1,10 +1,10 @@
 """JSON payloads of the MQTT contract (docs/01-architecture.md §2)."""
 
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
-from .topics import Actuator, TopicKind, parse_topic
+from .topics import CAPTURE, Actuator, TopicKind, parse_topic
 
 Confidence = Annotated[float, Field(ge=0.0, le=1.0)]
 Unit = Annotated[float, Field(ge=0.0, le=1.0)]
@@ -16,11 +16,16 @@ class _Message(BaseModel):
     ts: AwareDatetime
 
 
+Qualite = Literal["ok", "suspect", "erreur"]
+
+
 class SensorReading(_Message):
     noeud: str
     valeur: float
     unite: str
-    qualite: Literal["ok", "suspect", "erreur"]
+    qualite: Qualite
+    # Soil probes: several readings of one type per zone, one per emplacement (docs/09 §2).
+    emplacement: str | None = None
 
 
 class Detection(BaseModel):
@@ -71,9 +76,107 @@ class Command(_Message):
         return self
 
 
+class CaptureRequest(_Message):
+    """On-demand capture (serre/<zone>/cmd/capture); camera None = every camera of the zone."""
+
+    source: str
+    camera: str | None = None
+
+
 class ActuatorState(_Message):
     action: Literal["on", "off", "pwm"]
     valeur: float | None = Field(default=None, ge=0, le=100)
+
+
+class _Part(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+
+class RegleRef(_Part):
+    id: str  # stable rule id, e.g. "climat.temperature.ventilation"
+    version: int = Field(ge=1)
+
+
+class PreuveCapteur(_Part):
+    """Raw measurement or aggregate actually used by the rule (docs/10 §2)."""
+
+    topic: str
+    agregat: str = "derniere"  # derniere | moyenne_12h | duree_au_dessus | dli_jour…
+    valeur: float
+    unite: str
+    qualite: Qualite = "ok"
+    seuil: float | None = None
+    emplacement: str | None = None
+
+
+class PreuveVision(_Part):
+    camera: str
+    image_id: str
+    modele: str
+    classe: str
+    classe_conf: Confidence
+    sante: Literal["sain", "anormal"]
+    sante_conf: Confidence
+    espece: str | None = None
+    espece_conf: Confidence | None = None
+    bbox: tuple[Unit, Unit, Unit, Unit] | None = None
+    score_anomalie: Confidence | None = None
+    emplacement: str | None = None
+    confirmations: int = Field(default=1, ge=1)
+
+
+class PreuvePrevision(_Part):
+    grandeur: str
+    horizon: str  # "+1h", "+6h"
+    valeur: float
+    modele: str
+
+
+class Preuves(_Part):
+    vision: list[PreuveVision] = Field(default_factory=list)
+    capteurs: list[PreuveCapteur] = Field(default_factory=list)
+    prevision: list[PreuvePrevision] = Field(default_factory=list)
+    consignes: dict[str, Any] = Field(default_factory=dict)
+
+
+DecisionStatut = Literal[
+    "proposee", "validee", "rejetee", "creee", "executee", "terminee", "bloquee_securite"
+]
+
+
+class Decision(_Message):
+    """Why a command or an alert was issued (docs/10 §2), published on serre/<zone>/decision."""
+
+    id: str = Field(pattern=r"^dec-[A-Za-z0-9_-]+$")
+    zone: str
+    emplacements: list[str] = Field(default_factory=list)
+    niveau: Literal[0, 1, 2, 3, "agent", "manuel"]
+    origine: str  # controller | safety | agent | ui:<utilisateur>
+    regle: RegleRef
+    type: Literal["routine", "exceptionnelle", "securite", "manuelle"]
+    config_version: int | None = None
+    preuves: Preuves = Field(default_factory=Preuves)
+    explication: str
+    actions: list[str] = Field(default_factory=list)  # e.g. "cmd:ventilo on 900 s", "alerte"
+    statut: DecisionStatut = "creee"
+
+
+RAISON_SEP = " | "
+
+
+def command_raison(decision_id: str, texte: str) -> str:
+    """`Command.raison` convention: "<decision_id> | <texte court>" (docs/10 §7)."""
+    return f"{decision_id}{RAISON_SEP}{texte}"
+
+
+def parse_raison(raison: str | None) -> tuple[str | None, str | None]:
+    """(decision id, text) of a `Command.raison`; id None for a free-text reason."""
+    if raison is None:
+        return None, None
+    head, sep, tail = raison.partition(RAISON_SEP)
+    if sep and head.startswith("dec-"):
+        return head, tail
+    return None, raison
 
 
 NodeStatus = Literal["online", "offline"]
@@ -84,6 +187,7 @@ _SCHEMAS: dict[TopicKind, type[_Message]] = {
     TopicKind.ALERTE: Alert,
     TopicKind.CMD: Command,
     TopicKind.ETAT: ActuatorState,
+    TopicKind.DECISION: Decision,
 }
 
 
@@ -100,6 +204,8 @@ def decode(topic: str, payload: bytes | str) -> _Message | NodeStatus:
         payload = payload.decode()
     if parsed.kind is TopicKind.STATUS:
         return _check_status(payload)
+    if parsed.kind is TopicKind.CMD and parsed.subject == CAPTURE:
+        return CaptureRequest.model_validate_json(payload)
     message = _SCHEMAS[parsed.kind].model_validate_json(payload)
     if isinstance(message, Command):
         message.validate_for(parsed.subject)
@@ -115,11 +221,20 @@ def _check_status(status: str) -> NodeStatus:
 __all__ = [
     "ActuatorState",
     "Alert",
+    "CaptureRequest",
     "Command",
+    "Decision",
     "Detection",
     "NodeStatus",
+    "PreuveCapteur",
+    "PreuvePrevision",
+    "PreuveVision",
+    "Preuves",
+    "RegleRef",
     "SensorReading",
     "VisionResult",
+    "command_raison",
     "decode",
     "encode",
+    "parse_raison",
 ]
