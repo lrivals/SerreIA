@@ -28,14 +28,15 @@ Choix structurants :
 | 08 | [Environnement](docs/08-environnement.md) | Installation, dépendances, conventions |
 | — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
-## État actuel (12/10/2026)
+## État actuel (16/10/2026)
 
 - ✅ Données rangées (`data/plantvillage`, `data/ccmt`, `data/plantdoc`), taxonomie unifiée et **`data/index.parquet`** généré : 88 135 images, 16 espèces, 56 classes, splits groupés sans fuite (détail dans [02-donnees](docs/02-donnees.md)).
 - ⚠️ GPU NVIDIA RTX 1000 Ada (6 Go) présent, mais le driver ne répond pas (`nvidia-smi`) → voir [08-environnement](docs/08-environnement.md).
 - ✅ Squelette du dépôt, `pyproject.toml` et **contrat MQTT** (`common/mqtt/`, testé) en place — cf. [01-architecture](docs/01-architecture.md).
 - ✅ **Classifieur phase 1** écrit (dataset, augmentations + remplacement de fond, modèle multi-têtes, entraînement MLflow, évaluation cross-domain, Grad-CAM, export ONNX) et testé sur CPU — cf. [03-classifieur](docs/03-classifieur.md). **Notebooks Colab** (`notebooks/`, données servies par Google Drive) pour lancer les entraînements et les ablations A–E sur GPU ; reste à constituer `data/backgrounds/`.
 - ✅ Données archivées sur **Google Drive** (`tools/get_datasets.sh`, rclone) — cf. [data-drive](docs/data-drive.md).
-- ⏳ Edge, backend, simulateur et firmware : à écrire.
+- ✅ **Edge** (doc 05) écrit et testé sur PC : bundle de modèles, calibration et scripts Hailo, service caméra (ONNX Runtime, mode sans broker), alertes vision lissées, apprentissage actif, systemd — cf. [05-edge-deploiement §7](docs/05-edge-deploiement.md#7-implémentation-et-test-sur-pc). HEF / HailoRT / picamera2 à valider sur le Pi.
+- ⏳ Backend, simulateur et firmware : à écrire.
 
 ## Démarrage rapide
 
@@ -54,6 +55,14 @@ uv run python -m vision.eval.cross_domain_eval --run <run_id>
 uv run python -m vision.eval.gradcam --run <run_id>
 uv run python -m vision.export.to_onnx --run <run_id>
 uv run mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db   # suivi des expériences
+```
+
+Edge, sur PC sans Pi ni broker (doc 05 §7) :
+```bash
+uv sync --extra vision --extra detection --extra edge
+uv run python -m vision.export.package --classifier <run_id> --version clf-effb0-v1
+uv run python -m edge.camera_service --once --mqtt none     # images de data/plantdoc/test
+uv run python -m edge.controller.vision_alerts --replay edge/archive
 ```
 
 Notebooks (`notebooks/`, ouvrables dans Colab via leur badge) :

@@ -88,3 +88,13 @@ def nms(boxes: np.ndarray, scores: np.ndarray, iou: float = 0.7) -> np.ndarray:
         if not keep or box_iou(boxes[i], boxes[keep]).max() < iou:
             keep.append(int(i))
     return np.array(keep, dtype=int)
+
+
+def crop(img: np.ndarray, box: PixelBox, margin: float) -> np.ndarray:
+    """Box enlarged by margin (fraction of its size) on each side, clipped to the image."""
+    h, w = img.shape[:2]
+    x0, y0, x1, y1 = box
+    mx, my = margin * (x1 - x0), margin * (y1 - y0)
+    x0, y0 = int(max(0, x0 - mx)), int(max(0, y0 - my))
+    x1, y1 = int(min(w, x1 + mx)), int(min(h, y1 + my))
+    return img[y0 : max(y1, y0 + 1), x0 : max(x1, x0 + 1)]

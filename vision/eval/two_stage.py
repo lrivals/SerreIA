@@ -27,7 +27,7 @@ from vision.datasets.dataset import HEADS, read_rgb
 from vision.datasets.prepare import voc_boxes
 from vision.datasets.taxonomy import load_taxonomy
 from vision.eval.cross_domain_eval import REPORTS_DIR
-from vision.labeling.yolo_format import box_iou
+from vision.labeling.yolo_format import box_iou, crop
 from vision.train.train_classifier import RUNS_DIR, load_checkpoint, pick_device
 
 log = logging.getLogger(__name__)
@@ -97,16 +97,6 @@ class CropClassifier:
                 row["classe_conf"] = float(probs["classe"][j].max())
                 out.append(row)
         return out
-
-
-def crop(img: np.ndarray, box, margin: float) -> np.ndarray:
-    """Box enlarged by margin (fraction of its size) on each side, clipped to the image."""
-    h, w = img.shape[:2]
-    x0, y0, x1, y1 = box
-    mx, my = margin * (x1 - x0), margin * (y1 - y0)
-    x0, y0 = int(max(0, x0 - mx)), int(max(0, y0 - my))
-    x1, y1 = int(min(w, x1 + mx)), int(min(h, y1 + my))
-    return img[y0 : max(y1, y0 + 1), x0 : max(x1, x0 + 1)]
 
 
 class TwoStagePipeline:

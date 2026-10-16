@@ -35,6 +35,12 @@ detection = [  # phase 2 (docs/04): YOLO, SAM 2 pseudo-labels, growth curves
     "sam2",
     "scipy",
 ]
+edge = [  # Pi services (docs/05); picamera2 and hailo_platform come from apt (hailo-all)
+    "numpy>=2",
+    "opencv-python-headless",
+    "onnxruntime",
+    "pyyaml",
+]
 notebook = [
     "ipykernel",
     "nbclient",

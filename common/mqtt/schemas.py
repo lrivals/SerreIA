@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
-from .topics import Actuator, TopicKind, parse_topic
+from .topics import CAPTURE, Actuator, TopicKind, parse_topic
 
 Confidence = Annotated[float, Field(ge=0.0, le=1.0)]
 Unit = Annotated[float, Field(ge=0.0, le=1.0)]
@@ -71,6 +71,13 @@ class Command(_Message):
         return self
 
 
+class CaptureRequest(_Message):
+    """On-demand capture (serre/<zone>/cmd/capture); camera None = every camera of the zone."""
+
+    source: str
+    camera: str | None = None
+
+
 class ActuatorState(_Message):
     action: Literal["on", "off", "pwm"]
     valeur: float | None = Field(default=None, ge=0, le=100)
@@ -100,6 +107,8 @@ def decode(topic: str, payload: bytes | str) -> _Message | NodeStatus:
         payload = payload.decode()
     if parsed.kind is TopicKind.STATUS:
         return _check_status(payload)
+    if parsed.kind is TopicKind.CMD and parsed.subject == CAPTURE:
+        return CaptureRequest.model_validate_json(payload)
     message = _SCHEMAS[parsed.kind].model_validate_json(payload)
     if isinstance(message, Command):
         message.validate_for(parsed.subject)
@@ -115,6 +124,7 @@ def _check_status(status: str) -> NodeStatus:
 __all__ = [
     "ActuatorState",
     "Alert",
+    "CaptureRequest",
     "Command",
     "Detection",
     "NodeStatus",

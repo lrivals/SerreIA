@@ -3,6 +3,7 @@
 from .schemas import (
     ActuatorState,
     Alert,
+    CaptureRequest,
     Command,
     Detection,
     NodeStatus,
@@ -12,6 +13,7 @@ from .schemas import (
     encode,
 )
 from .topics import (
+    CAPTURE,
     SUBSCRIPTIONS,
     TOPIC_POLICY,
     Actuator,
@@ -20,6 +22,7 @@ from .topics import (
     TopicKind,
     TopicPolicy,
     alert_topic,
+    capture_topic,
     cmd_topic,
     parse_topic,
     sensor_topic,
@@ -29,11 +32,13 @@ from .topics import (
 )
 
 __all__ = [
+    "CAPTURE",
     "SUBSCRIPTIONS",
     "TOPIC_POLICY",
     "Actuator",
     "ActuatorState",
     "Alert",
+    "CaptureRequest",
     "Command",
     "Detection",
     "NodeStatus",
@@ -44,6 +49,7 @@ __all__ = [
     "TopicPolicy",
     "VisionResult",
     "alert_topic",
+    "capture_topic",
     "cmd_topic",
     "decode",
     "encode",

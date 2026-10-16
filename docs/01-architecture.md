@@ -46,6 +46,7 @@
 | `serre/<zone>/vision/<camera_id>` | camera_service | 1 | non | résultat d'inférence |
 | `serre/<zone>/alerte` | controller | 1 | non | alerte consolidée |
 | `serre/<zone>/cmd/<actionneur>` | controller / dashboard | 1 | non | commande |
+| `serre/<zone>/cmd/capture` | controller / dashboard | 1 | non | capture d'image à la demande ([05 §3](05-edge-deploiement.md#3-service-caméra--edgecamera_servicepy)) |
 | `serre/<zone>/etat/<actionneur>` | ESP32 | 1 | oui | état réel de l'actionneur |
 | `serre/<noeud>/status` | ESP32 (LWT) | 1 | oui | `online` / `offline` |
 | `serre/<zone>/decision` *(proposé)* | controller / backend | 1 | non | décision et ses preuves — cf. [10 §7](10-decisions-tracabilite.md#7-évolution-proposée-du-contrat-mqtt), pas encore dans `common/mqtt/` |
@@ -89,6 +90,11 @@ En phase 1 (classifieur seul), `detections` contient un seul élément avec `bbo
 ```
 `action` ∈ `on | off | pwm` (avec `"valeur": 0-100`). `duree_s` est **obligatoire** pour les pompes : l'ESP32 coupe d'office à l'échéance.
 
+**Capture à la demande** (`cmd/capture`) : `camera` absent ou `null` = toutes les caméras de la zone.
+```json
+{ "ts": "...", "source": "dashboard", "camera": "cam-z1-a" }
+```
+
 **Alerte**, **état d'actionneur**, **status**
 ```json
 { "ts": "...", "niveau": "warning", "message": "pH hors plage", "source": "controller" }
@@ -116,15 +122,18 @@ SerreIA/
 │   ├── models/                # multihead.py
 │   ├── train/                 # train_classifier.py, train_yolo.py
 │   ├── eval/                  # cross_domain_eval.py, gradcam.py, ablation_report.py, two_stage.py
-│   ├── labeling/              # yolo_format.py, build_yolo_dataset.py, pseudo_labels.py (Grad-CAM + SAM 2), label_studio.py
+│   ├── labeling/              # yolo_format.py, build_yolo_dataset.py, pseudo_labels.py (Grad-CAM + SAM 2), label_studio.py, active_learning.py
 │   ├── anomaly/               # patchcore.py (anomalies non vues, doc 04 §4)
 │   ├── growth/                # canopy.py, curve.py (suivi de croissance, doc 04 §5)
-│   └── export/                # to_onnx.py, hailo/ (scripts DFC)
-├── edge/                      # services Raspberry Pi
-│   ├── camera_service.py
-│   ├── sensor_bridge.py
-│   ├── controller/            # rules.py, safety.py, forecast.py
-│   └── systemd/               # unités de service
+│   └── export/                # to_onnx.py, yolo_onnx.py, calibration.py, package.py, evaluate_backend.py, hailo/ (scripts DFC)
+├── edge/                      # services Raspberry Pi (doc 05)
+│   ├── camera_service.py      # + cameras.py, archive.py, publisher.py, config.py / config.yaml
+│   ├── vision/                # backends ONNX / Hailo, détecteur, classifieur, pipeline (sans torch)
+│   ├── models/                # bundles de modèles + lien current (non versionné)
+│   ├── sensor_bridge.py       # à venir
+│   ├── controller/            # vision_alerts.py ; rules.py, safety.py, forecast.py à venir
+│   ├── systemd/               # unités de service, watchdog
+│   └── deploy.sh              # mise à jour du Pi
 ├── backend/                   # FastAPI, schéma DB, ingestion MQTT → DB, agent (docs 09–12)
 ├── frontend/                  # interface React + Vite (doc 12)
 ├── firmware/                  # ESP32 (PlatformIO)

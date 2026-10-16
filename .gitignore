@@ -21,3 +21,8 @@ __pycache__/
 .vscode/
 .idea/
 .DS_Store
+
+# Edge : bundles de modèles et archive des captures
+edge/models/*
+!edge/models/.gitkeep
+edge/archive/

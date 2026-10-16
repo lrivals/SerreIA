@@ -8,12 +8,14 @@ from pydantic import ValidationError
 from common.mqtt import (
     TOPIC_POLICY,
     Actuator,
+    CaptureRequest,
     Command,
     SensorReading,
     SensorType,
     TopicKind,
     VisionResult,
     alert_topic,
+    capture_topic,
     cmd_topic,
     decode,
     encode,
@@ -142,6 +144,18 @@ def test_decode_rejects_pump_command_without_duration():
         decode(cmd_topic("z1", "pompe_nutri"), json.dumps(with_(COMMAND_EXAMPLE, duree_s=None)))
 
 
+def test_capture_request():
+    topic = capture_topic("z1")
+    assert topic == "serre/z1/cmd/capture"
+    payload = {"ts": "2026-10-12T14:00:00Z", "source": "dashboard", "camera": "cam-z1-a"}
+    message = decode(topic, json.dumps(payload))
+    assert isinstance(message, CaptureRequest) and message.camera == "cam-z1-a"
+    assert decode(topic, encode(message)) == message
+    assert decode(topic, json.dumps(with_(payload, camera=None))).camera is None
+    with pytest.raises(ValidationError):
+        decode(topic, json.dumps(COMMAND_EXAMPLE))  # an actuator command is not a capture
+
+
 def test_status_payload():
     assert decode(status_topic("esp32-01"), b"online") == "online"
     assert encode("offline") == b"offline"
@@ -169,6 +183,7 @@ def test_topic_builders():
         ("serre/z3/alerte", TopicKind.ALERTE, "z3", None),
         ("serre/z1/cmd/brumisateur", TopicKind.CMD, "z1", "brumisateur"),
         ("serre/z1/etat/chauffage", TopicKind.ETAT, "z1", "chauffage"),
+        ("serre/z1/cmd/capture", TopicKind.CMD, "z1", "capture"),
         ("serre/esp32-02/status", TopicKind.STATUS, "esp32-02", None),
     ],
 )
@@ -183,6 +198,7 @@ def test_parse_topic(topic, kind, scope, subject):
         "serre/zone1/capteur/co2",  # bad zone
         "serre/z1/capteur/pression",  # unknown sensor
         "serre/z1/cmd/arroseur",  # unknown actuator
+        "serre/z1/etat/capture",  # capture is a command only
         "maison/z1/capteur/co2",
         "serre/z1/capteur",
         "serre/z1/capteur/co2/extra",

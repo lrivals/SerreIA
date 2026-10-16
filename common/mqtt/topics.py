@@ -7,6 +7,7 @@ from enum import StrEnum
 ROOT = "serre"
 _ZONE_RE = re.compile(r"^z\d+$")
 _ID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+CAPTURE = "capture"  # serre/<zone>/cmd/capture: on-demand capture, not an actuator (docs/05 §3)
 
 
 class SensorType(StrEnum):
@@ -102,6 +103,10 @@ def cmd_topic(zone: str, actuator: Actuator | str) -> str:
     return f"{ROOT}/{_check_zone(zone)}/cmd/{Actuator(actuator)}"
 
 
+def capture_topic(zone: str) -> str:
+    return f"{ROOT}/{_check_zone(zone)}/cmd/{CAPTURE}"
+
+
 def state_topic(zone: str, actuator: Actuator | str) -> str:
     return f"{ROOT}/{_check_zone(zone)}/etat/{Actuator(actuator)}"
 
@@ -132,6 +137,8 @@ def parse_topic(topic: str) -> ParsedTopic:
             return ParsedTopic(TopicKind.CAPTEUR, zone, SensorType(subject).value)
         case TopicKind.VISION:
             return ParsedTopic(TopicKind.VISION, zone, _check_id(subject, "camera id"))
+        case TopicKind.CMD if subject == CAPTURE:
+            return ParsedTopic(TopicKind.CMD, zone, CAPTURE)
         case TopicKind.CMD | TopicKind.ETAT:
             return ParsedTopic(TopicKind(kind), zone, Actuator(subject).value)
     raise ValueError(f"not a contract topic: {topic!r}")
