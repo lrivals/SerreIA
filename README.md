@@ -37,7 +37,8 @@ Choix structurants :
 - ✅ Données archivées sur **Google Drive** (`tools/get_datasets.sh`, rclone) — cf. [data-drive](docs/data-drive.md).
 - ✅ **Edge** (doc 05) écrit et testé sur PC : bundle de modèles, calibration et scripts Hailo, service caméra (ONNX Runtime, mode sans broker), alertes vision lissées, apprentissage actif, systemd — cf. [05-edge-deploiement §7](docs/05-edge-deploiement.md#7-implémentation-et-test-sur-pc). HEF / HailoRT / picamera2 à valider sur le Pi.
 - ✅ **Capteurs et contrôle** (doc 06) écrits et testés sur PC : contrat MQTT étendu (dont le topic `decision`), contrôleur (sécurité, règles, risque, prévision GRU), simulateur MQTT avec pannes injectables, firmware des 4 nœuds XIAO ESP32-C6 — cf. [06 §6](docs/06-capteurs-controle.md#6-implémentation-et-test-sur-pc). Firmware à compiler et flasher, GRU à entraîner.
-- ⏳ Backend : à écrire.
+- ✅ **Base de la serre et ingestion** (G1 + « en parallèle », docs 07/09) : schéma PostgreSQL/TimescaleDB (`backend/db/`), seed depuis `serre.yaml`, ingestion MQTT → base (`backend/ingestion/`), consommation journalière estimée (kWh, L, DLI, €), stack Docker TimescaleDB + Grafana avec dashboard « Serre » — cf. [09 §7](docs/09-modele-gestion-serre.md#7-persistance). Testé sur PC (SQLite, simulateur intégré) ; dashboard Grafana à vérifier sur la stack Docker.
+- ⏳ API FastAPI, interface React, traçabilité complète, agent (G2–G4) : à écrire.
 
 ## Démarrage rapide
 
@@ -71,6 +72,15 @@ Contrôle et simulateur, sur PC sans broker (doc 06 §6) :
 uv sync --extra controle
 uv run python -m sim --mqtt none --avec-controleur --accel 0 --duree-h 2 --debut 2026-07-15T06:00
 uv run python -m sim --mqtt none --avec-controleur --accel 0 --duree-h 3 --panne cuve_vide:z2@30
+```
+
+Base, ingestion et dashboard (doc 09 §7) :
+```bash
+uv sync --extra backend --extra controle
+uv run python -m backend.ingestion --sim --duree-h 24 --debut 2026-07-15T00:00 --db sqlite:///serreia.db
+uv run python -m backend.consumption --jour 2026-07-15 --db sqlite:///serreia.db
+make stack-up && make db-init && make sim-demo         # TimescaleDB + Grafana (localhost:3000, admin / serreia)
+make ingest                                            # ingestion du broker en continu
 ```
 
 Notebooks (`notebooks/`, ouvrables dans Colab via leur badge) :

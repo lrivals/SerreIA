@@ -26,7 +26,7 @@ Le `pyproject.toml` existe déjà. Les dépendances sont réparties en groupes :
 | `detection` | ultralytics (YOLO, AGPL-3.0), sam2, scipy (phase 2, doc 04) | `uv sync --extra vision --extra detection` |
 | `controle` | numpy, pandas, pyyaml, onnxruntime (contrôleur et simulateur, doc 06 ; torch de `vision` pour entraîner le GRU) | `uv sync --extra controle` |
 | `notebook` | ipykernel, nbclient, nbformat, ipywidgets (notebooks en local) | `uv sync --extra notebook` |
-| `backend` | FastAPI, uvicorn, psycopg | `uv sync --extra backend` |
+| `backend` | SQLAlchemy, psycopg, pyyaml, FastAPI, uvicorn (base, ingestion, API ; doc 09) | `uv sync --extra backend --extra controle` |
 | `dev` | pytest, ruff | inclus par défaut dans `uv sync` |
 
 ```bash
@@ -59,7 +59,7 @@ python3 -m venv .venv && .venv/bin/pip install -e . pytest ruff
 | Label Studio | annotation | `docker run -p 8080:8080 heartexlabs/label-studio` |
 | Hailo AI SW Suite | compilation HEF (x86 uniquement) | Docker, compte développeur Hailo |
 | Mosquitto | broker MQTT | `sudo apt install mosquitto` |
-| TimescaleDB + Grafana | séries temporelles et dashboard | `docker compose` (dans `backend/`) |
+| TimescaleDB + Grafana | séries temporelles et dashboard | `make stack-up` (`backend/docker-compose.yml`, + mosquitto de développement) ; base : `$SERREIA_DB` |
 | PlatformIO | firmware ESP32 (XIAO ESP32-C6) | extension VS Code + plateforme pioarduino (core Arduino 3.x) |
 
 ### GPU : Colab en attendant le driver

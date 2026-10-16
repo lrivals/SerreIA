@@ -182,7 +182,7 @@ Chaque nœud `decision` ouvre la fiche de décision (preuves image + capteurs, c
 
 ## 7. Évolution du contrat MQTT
 
-> Version minimale **implémentée** ([06 §6](06-capteurs-controle.md#6-implémentation-et-test-sur-pc)) : topic `decision`, schéma `Decision` (sans `Action` séparée : `actions` est une liste de libellés `cmd:ventilo on 900 s`, `alerte`, `bloquee:…`), convention `raison`, publication par `edge/controller/service.py` avant chaque commande. Restent pour G3 : tables `decision` / `action`, confirmation par `etat/`, cycle de vie complet, arbre.
+> Version minimale **implémentée** ([06 §6](06-capteurs-controle.md#6-implémentation-et-test-sur-pc)) : topic `decision`, schéma `Decision` (sans `Action` séparée : `actions` est une liste de libellés `cmd:ventilo on 900 s`, `alerte`, `bloquee:…`), convention `raison`, publication par `edge/controller/service.py` avant chaque commande. Côté serveur (G1, [09 §7](09-modele-gestion-serre.md#7-persistance)) : l'ingestion écrit la table `decision` (forme minimale, upsert par id) et relie chaque `commande` à sa décision via `raison` (`commande.decision_id`). Restent pour G3 : table `action`, confirmation par `etat/`, cycle de vie complet, arbre.
 
 | Topic | Émetteur | QoS | Retain | Schéma |
 |---|---|---|---|---|

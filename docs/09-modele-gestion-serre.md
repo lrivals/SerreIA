@@ -3,7 +3,7 @@
 Ce document décrit la **serre physique** telle que le logiciel la connaît : zones, emplacements, plantes, contenants, mode de culture, capteurs, actionneurs, caméras, recettes et consommations.
 C'est la référence commune au contrôleur ([06](06-capteurs-controle.md)), au journal de décisions ([10](10-decisions-tracabilite.md)), à l'agent ([11](11-agent-decision.md)) et à l'interface ([12](12-interface-utilisateur.md)).
 
-> Statut : **conception**. Aucun code n'existe encore ; les noms de tables et de champs ci-dessous sont la cible de `backend/db/`.
+> Statut : **persistance implémentée (G1)** — tables, seed depuis `serre.yaml`, ingestion MQTT et consommation (§5, §7). Le constructeur de serre (UI) et l'export de configuration (§8) arrivent avec G2.
 
 ## 1. Hiérarchie
 
@@ -127,6 +127,12 @@ Aucune mesure électrique dédiée n'est prévue au départ : la consommation es
 | **Intrants** (mL) | volume par impulsion × nombre d'impulsions de `pompe_ph_down` et des pompes nutriments | cuve, jour |
 | **Coût** (€) | kWh × tarif déclaré dans la serre (option heures pleines / creuses) | serre, mois |
 
+Implémentation (`backend/consumption.py`, table `consommation_jour` par actionneur et `lumiere_jour` par zone, jours **locaux** du fuseau de la serre) :
+- un état est supposé tenir jusqu'au suivant (topic `etat/` en retain) ; avant le premier état reçu, rien n'est compté ; la journée en cours est comptée jusqu'à l'instant du calcul ;
+- `puissance_w`, `debit_l_h`, `ppfd_max` viennent de `serre.yaml` (actionneurs) et `tarif_kwh` de la serre ;
+- le lux mesuré **inclut** déjà les LED : `dli_total` = intégrale de `lux × lux_vers_ppfd` (trapèzes, trous > 15 min ignorés, champ `couverture` = part de la journée couverte), `dli_led` = estimation à partir des états LED, `dli_naturel` = différence ;
+- intrants (mL) : pas encore calculés, faute de volume par impulsion déclaré pour les pompes doseuses.
+
 L'écart entre DLI obtenu et DLI cible de la recette alimente la règle de complément lumineux ([06 §4](06-capteurs-controle.md#niveau-1--règles-et-régulateurs-rulespy)).
 
 ## 6. Recettes de culture
@@ -170,16 +176,32 @@ serre 1─┬─* zone 1─┬─* emplacement 1──* affectation *──1 pla
         │          └─* camera   ─* camera_region *─ emplacement
         └─* cuve 1─* zone (zones hydro)
 
-Hypertables (ts, zone, …) :
-  mesure(ts, zone, capteur_id, type, valeur, unite, qualite)
-  vision_resultat(ts, zone, camera, image_id, emplacement_id, modele, espece, espece_conf,
+Hypertables (ts dans la clé primaire, pas de clé étrangère : l'ingestion ne rejette jamais un message
+parce que la configuration est en retard) :
+  mesure(ts, capteur_id, zone, type, noeud, emplacement, valeur, unite, qualite)
+  vision_resultat(ts, image_id, idx, zone, camera, emplacement_id, modele, espece, espece_conf,
                   sante, sante_conf, classe, classe_conf, bbox, score_anomalie, surface_verte_px)
-  etat_actionneur(ts, zone, actionneur_id, action, valeur)
-  decision(...)  action(...)          → schémas détaillés en doc 10
-  consommation_jour(jour, zone, actionneur_id, kwh, litres, dli)   (agrégat continu)
+  etat_actionneur(ts, zone, actionneur, actionneur_id, action, valeur)
+  commande(ts, zone, actionneur, action, valeur, duree_s, source, raison, decision_id, camera)
+  alerte(ts, id, zone, niveau, message, source, acquittee)
+  noeud_status(ts, noeud, status)              (ts = heure de réception : le payload n'en a pas)
+
+Tables classiques :
+  decision(id, ts, zone, …, preuves, actions, statut)   forme minimale du contrat, upsert par id ;
+                                                        table action séparée → G3 (doc 10)
+  consommation_jour(jour, actionneur_id, zone, type, duree_on_s, kwh, litres, dli, cout)
+  lumiere_jour(jour, zone, dli_total, dli_led, dli_naturel, couverture)
 ```
 
-L'ingestion (`backend/ingestion/`) s'abonne aux `SUBSCRIPTIONS` de `common/mqtt/topics.py`, valide avec `decode` et écrit dans ces tables.
+Code : `backend/db/models.py` (SQLAlchemy 2, types portables : les tests tournent sur SQLite), `backend/db/timescale.sql` (hypertables, appliqué par `init_db` sur PostgreSQL seulement), `backend/db/seed.py` (`python -m backend.db.seed` : charge `serre.yaml` et les recettes, idempotent ; un déplacement de plante clôt l'affectation). Pas encore d'Alembic : `init_db` crée les tables manquantes ; les migrations arriveront avec G2, quand le schéma évoluera.
+
+Les capteurs ne sont pas déclarés dans `serre.yaml` : l'ingestion crée un **canal** `capteur` (`<noeud>-<type>[-<emplacement>]`) au premier message et le relie à son emplacement (sondes de sol) ; modèle, étalonnage et plage seront saisis dans l'UI (G2).
+
+L'ingestion (`backend/ingestion/`, `python -m backend.ingestion`) s'abonne aux `SUBSCRIPTIONS` de `common/mqtt/topics.py`, valide avec `decode` et écrit dans ces tables par lots ; les messages invalides sont comptés et journalisés, les doublons (redélivrance QoS 1, retain rejoué) ignorés. `Command.raison` donne `commande.decision_id` (doc 10 §3). Les résultats vision sont rattachés à un emplacement par les `camera_region` (centre de la bbox, ou seul emplacement visible en phase 1).
+
+La consommation n'est **pas** un agrégat continu TimescaleDB : la durée d'un état demande une fonction fenêtre, interdite dans un continuous aggregate. Elle est recalculée toutes les heures par l'ingestion (jour courant et veille) ou à la demande (`python -m backend.consumption --jour …`).
+
+Dashboard : `backend/docker-compose.yml` (TimescaleDB, Grafana, mosquitto de développement) et `backend/grafana/` (source de données et dashboard « Serre » provisionnés : climat, sol, solution, états des actionneurs, nœuds, alertes, décisions, consommation). `make stack-up && make db-init && make sim-demo` remplit la base avec 24 h simulées.
 
 ## 8. Configuration exportée vers le contrôleur
 

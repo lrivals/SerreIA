@@ -152,7 +152,9 @@ frontend/
     └── game/            # vue jeu pixel art (Phaser), voir doc 13
 ```
 
-Dépendances Python à ajouter à l'extra `backend` de `pyproject.toml` : `sqlalchemy`, `alembic`, `anthropic`, `sse-starlette` (en plus de `fastapi`, `uvicorn`, `psycopg` déjà présents).
+Déjà en place (G1) : `backend/db/` (`models.py`, `session.py`, `timescale.sql`, `seed.py` — sans Alembic pour l'instant), `backend/ingestion/` (`mqtt_ingest.py`, `__main__.py`), `backend/consumption.py`, `backend/docker-compose.yml` et `backend/grafana/` ; voir [09 §7](09-modele-gestion-serre.md#7-persistance).
+
+Dépendances Python à ajouter à l'extra `backend` de `pyproject.toml` : `alembic`, `anthropic`, `sse-starlette` (en plus de `sqlalchemy`, `psycopg`, `fastapi`, `uvicorn` déjà présents).
 
 ## 5. Développement sans matériel
 
