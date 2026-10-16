@@ -59,6 +59,7 @@ backend = [  # server (docs/09, 11, 12): database, MQTT ingestion, API, agent
     "pyyaml",
     "fastapi",
     "uvicorn",
+    "websockets",  # WS /ws/live (docs/12)
     "anthropic>=1.15",
 ]
 

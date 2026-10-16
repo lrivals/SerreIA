@@ -47,9 +47,9 @@ Choix structurants :
 - ✅ **Capteurs et contrôle** (doc 06) écrits et testés sur PC : contrat MQTT étendu (dont le topic `decision`), contrôleur (sécurité, règles, risque, prévision GRU), simulateur MQTT avec pannes injectables, firmware des 4 nœuds XIAO ESP32-C6 — cf. [06 §6](docs/06-capteurs-controle.md#6-implémentation-et-test-sur-pc). Firmware à compiler et flasher, GRU à entraîner.
 - ✅ **Base de la serre et ingestion** (G1 + « en parallèle », docs 07/09) : schéma PostgreSQL/TimescaleDB (`backend/db/`), seed depuis `serre.yaml`, ingestion MQTT → base (`backend/ingestion/`), consommation journalière estimée (kWh, L, DLI, €), stack Docker TimescaleDB + Grafana avec dashboard « Serre » — cf. [09 §7](docs/09-modele-gestion-serre.md#7-persistance). Testé sur PC (SQLite, simulateur intégré) ; dashboard Grafana à vérifier sur la stack Docker.
 - ✅ **Modèle de serre complet** (doc 09, hors UI) : contenants, capteurs déclarés, caméras et régions, contrôles de cohérence, intrants des pompes doseuses, export versionné de `serre.yaml` vers le Pi (`make config-export`) — cf. [09 §8](docs/09-modele-gestion-serre.md#8-configuration-exportée-vers-le-contrôleur).
-- ✅ **Traçabilité des décisions** (G3 hors UI, doc 10) : règles « classification → action » (`edge/controller/vision_rules.py`, `regles.yaml`), décisions proposées / validées / rejetées / expirées, table `action` confirmée par `etat/`, état des plantes, arbre des actions (`make arbre`), API FastAPI minimale (`make api`) ; caméras simulées et panne `maladie:` — cf. [10 §8](docs/10-decisions-tracabilite.md#8-implémentation-et-test-sur-pc). Fiche décision et vue arbre React avec G2.
-- ✅ **Agent de décision** (G4 hors UI, doc 11) : boucle Claude (`claude-sonnet-5-5` par défaut) et 12 outils (`backend/agent/`), propositions `niveau: agent` validées par `POST /decisions/{id}/valider`, garde-fous vérifiés avant création (durées, actionneurs, limites de sécurité, preuves existantes), consignes appliquées à la recette après validation, journal `agent_journal`, budgets, chat SSE `POST /agent/chat` ; 12 questions de référence (`make agent-eval`, Claude réel) — cf. [11 §7](docs/11-agent-decision.md#7-implémentation-et-test-sur-pc). Testé avec un LLM scripté ; pas encore joué avec Claude réel.
-- ⏳ API FastAPI complète, interface React (G2) : à écrire ; onglet Agent avec.
+- ✅ **Traçabilité des décisions** (G3, doc 10) : règles « classification → action » (`edge/controller/vision_rules.py`, `regles.yaml`), décisions proposées / validées / rejetées / expirées, table `action` confirmée par `etat/`, état des plantes, arbre des actions (`make arbre`), caméras simulées et panne `maladie:` — cf. [10 §8](docs/10-decisions-tracabilite.md#8-implémentation-et-test-sur-pc) ; fiche décision et vue arbre dans l'UI (G2).
+- ✅ **Agent de décision** (G4, doc 11) : boucle Claude (`claude-sonnet-5-5` par défaut) et 12 outils (`backend/agent/`), propositions `niveau: agent` validées par `POST /api/decisions/{id}/valider`, garde-fous vérifiés avant création (durées, actionneurs, limites de sécurité, preuves existantes), consignes appliquées à la recette après validation, journal `agent_journal`, budgets, chat SSE `POST /api/agent/chat` et onglet Agent de l'UI ; 12 questions de référence (`make agent-eval`, Claude réel) — cf. [11 §7](docs/11-agent-decision.md#7-implémentation-et-test-sur-pc). Testé avec un LLM scripté ; pas encore joué avec Claude réel.
+- ✅ **API et interface web** (G2, doc 12) : API REST complète sous `/api` (structure, plantes, équipements, publication de la configuration, mesures, tableau de bord, images, consommation, alertes, authentification optionnelle), relais `WS /ws/live`, SPA React + Vite (`frontend/`) : constructeur avec plan glisser-déposer et éditeur de régions, équipements, tableau de bord, consommation, journal et fiche décision, arbre des actions, agent ; serre simulée derrière l'API sans broker (`make api-sim`) — cf. [12 §7](docs/12-interface-utilisateur.md#7-implémentation-et-test-sur-pc). Testé par pytest, Vitest et Playwright ; vue jeu (doc 13) et Alembic à venir.
 - 📝 **Test système simulé** (doc 16) : scénarios « journée capteurs » et « mildiou et agent » décrits, à implémenter et jouer après G2–G4 et J3 — cf. [16](docs/16-test-systeme-simule.md).
 
 ## Démarrage rapide
@@ -96,6 +96,14 @@ uv run python -m backend.ingestion --sim --duree-h 24 --debut 2026-07-15T00:00 -
 uv run python -m backend.consumption --jour 2026-07-15 --db sqlite:///serreia.db
 make stack-up && make db-init && make sim-demo         # TimescaleDB + Grafana (localhost:3000, admin / serreia)
 make ingest                                            # ingestion du broker en continu
+```
+
+API et interface web (doc 12 §7 ; Node.js ≥ 20 pour le front) :
+```bash
+make front-install front-build                         # dépendances npm, build servi par l'API
+make api-sim PANNE=maladie:z1-A1/tomate/maladie/mildiou@15   # API + serre simulée → http://127.0.0.1:8000
+make front-dev                                         # développement : Vite sur :5173 (proxy vers :8000)
+make front-test e2e                                    # Vitest, parcours Playwright
 ```
 
 Notebooks (`notebooks/`, ouvrables dans Colab via leur badge) :

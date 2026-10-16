@@ -248,7 +248,7 @@ def test_validation_through_the_api(env):
     client = TestClient(
         create_app(sessions, LoopbackPublisher("api", bus), clock=lambda: clock["t"])
     )
-    r = client.post(f"/decisions/{did}/valider", json={"utilisateur": "leonard"})
+    r = client.post(f"/api/decisions/{did}/valider", json={"utilisateur": "leonard"})
     assert r.status_code == 200 and r.json()["statut"] == "validee"
     (msg,) = published(bus)
     assert msg.id == did and msg.niveau == "agent" and msg.ordres[0].cible == "actionneur:led"
@@ -291,7 +291,7 @@ def test_consigne_applied_on_validation_then_restored(env):
     client = TestClient(
         create_app(sessions, LoopbackPublisher("api", bus), clock=lambda: clock["t"])
     )
-    assert client.post(f"/decisions/{did}/valider", json={}).status_code == 200
+    assert client.post(f"/api/decisions/{did}/valider", json={}).status_code == 200
     with sessions.begin() as s:
         assert s.get(m.Recette, "tomate-standard").stades["floraison"]["humidite"] == [50, 60]
         version = s.scalars(select(m.Serre)).first().config_version
@@ -421,30 +421,31 @@ def test_api_chat_sse_and_conversations(env):
     pub = LoopbackPublisher("api", bus)
     agent = Agent(sessions, llm, pub, clock=lambda: clock["t"])
     client = TestClient(create_app(sessions, pub, clock=lambda: clock["t"], agent=agent))
-    r = client.post("/agent/chat", json={"message": "Allume les LED à fond pendant 2 h"})
+    r = client.post("/api/agent/chat", json={"message": "Allume les LED à fond pendant 2 h"})
     assert r.status_code == 200 and r.headers["content-type"].startswith("text/event-stream")
     assert "event: proposition" in r.text
     events = sse_events(r.text)
     cid = events[0]["id"]
     did = next(e["decision"]["id"] for e in events if e["type"] == "proposition")
-    (conv,) = client.get("/agent/conversations").json()
+    (conv,) = client.get("/api/agent/conversations").json()
     assert conv["id"] == cid and conv["tokens"] == 2200
-    detail = client.get(f"/agent/conversations/{cid}").json()
+    detail = client.get(f"/api/agent/conversations/{cid}").json()
     assert detail["propositions"][0]["decision_id"] == did
     assert detail["propositions"][0]["statut"] == "proposee"
     assert [j["type"] for j in detail["journal"]][0] == "utilisateur"
-    assert client.get("/agent/conversations/conv-x").status_code == 404
+    assert client.get("/api/agent/conversations/conv-x").status_code == 404
     # Validated in the UI like any proposal.
-    assert client.post(f"/decisions/{did}/valider", json={}).status_code == 200
+    assert client.post(f"/api/decisions/{did}/valider", json={}).status_code == 200
     assert published(bus)[0].id == did
 
 
 def test_api_without_agent(env):
     sessions, *_ = env
     client = TestClient(create_app(sessions))
-    assert client.post("/agent/chat", json={"message": "x"}).status_code == 503
-    assert client.get("/agent/conversations").json() == []
-    assert client.get("/decisions").status_code == 200  # the rest works the same
+    assert client.post("/api/agent/chat", json={"message": "x"}).status_code == 503
+    assert client.get("/api/agent/statut").json() == {"disponible": False, "modele": None}
+    assert client.get("/api/agent/conversations").json() == []
+    assert client.get("/api/decisions").status_code == 200  # the rest works the same
 
 
 # --- evaluation ------------------------------------------------------------------------

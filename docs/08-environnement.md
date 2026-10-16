@@ -4,6 +4,7 @@
 - CPU : 22 threads ; RAM : 62 Go ; disque : ≈ 1,2 To libres
 - GPU : **NVIDIA RTX 1000 Ada Laptop (6 Go)**, plus un iGPU Intel Arc
 - Python 3.12
+- Node.js ≥ 20 et npm (interface web, `frontend/`, doc 12) ; Playwright : `cd frontend && npx playwright install chromium`
 
 ### Driver NVIDIA (à faire en premier)
 `nvidia-smi` ne répond pas actuellement : aucun driver propriétaire installé (seuls des restes du 535 en état `rc`). Driver recommandé par `ubuntu-drivers devices` : **`nvidia-driver-595-open`**.
@@ -28,7 +29,7 @@ Le `pyproject.toml` existe déjà. Les dépendances sont réparties en groupes :
 | `detection` | ultralytics (YOLO, AGPL-3.0), sam2, scipy (phase 2, doc 04) | `uv sync --extra vision --extra detection` |
 | `controle` | numpy, pandas, pyyaml, onnxruntime (contrôleur et simulateur, doc 06 ; torch de `vision` pour entraîner le GRU) | `uv sync --extra controle` |
 | `notebook` | ipykernel, nbclient, nbformat, ipywidgets (notebooks en local) | `uv sync --extra notebook` |
-| `backend` | SQLAlchemy, psycopg, pyyaml, FastAPI, uvicorn (base, ingestion, API ; doc 09) | `uv sync --extra backend --extra controle` |
+| `backend` | SQLAlchemy, psycopg, pyyaml, FastAPI, uvicorn, websockets, anthropic (base, ingestion, API, agent ; docs 09, 11, 12) | `uv sync --extra backend --extra controle` |
 | `dev` | pytest, ruff | inclus par défaut dans `uv sync` |
 
 ```bash

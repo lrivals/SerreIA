@@ -135,9 +135,9 @@ SerreIA/
 │   ├── systemd/               # unités de service, watchdog
 │   └── deploy.sh              # mise à jour du Pi
 ├── backend/                   # db/ (schéma, seed), ingestion/ (MQTT → DB), consumption.py,
-│                              #   traceability.py, api/ (FastAPI), agent/ (Claude, doc 11),
-│                              #   docker-compose.yml + grafana/
-├── frontend/                  # interface React + Vite (doc 12)
+│                              #   traceability.py, api/ (FastAPI, routes /api, doc 12), live/ (MQTT → WebSocket),
+│                              #   agent/ (Claude, doc 11), config/ (export serre.yaml), docker-compose.yml + grafana/
+├── frontend/                  # interface React + Vite (doc 12) : src/api, pages, components, live ; e2e/ (Playwright)
 ├── firmware/                  # ESP32-C6 (PlatformIO) : un env par nœud, lib/serre_logic testée sur PC
 ├── sim/                       # simulateur : météo, modèle de zone, nœuds émulés, pannes (doc 06 §5)
 ├── tests/                     # test_mqtt_contract.py, …

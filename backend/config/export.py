@@ -296,8 +296,15 @@ def main() -> None:
     init_db(engine)
     with make_sessions(engine).begin() as session:
         exp = export(session)  # Greenhouse logs the consistency warnings
+    deliver(exp, args.out, args.install, args.rsync)
+
+
+def deliver(
+    exp: Export, out: Path = DEFAULT_OUT, install_to: Path | None = None, rsync: str | None = None
+) -> Path:
+    """Write the version in `out`, then install it locally and/or copy it with rsync."""
     text = exp.yaml()
-    path = args.out / f"serre_config_v{exp.version}.yaml"
+    path = Path(out) / f"serre_config_v{exp.version}.yaml"
     install(text, path)
     log.info(
         "configuration v%d %s : %s",
@@ -305,12 +312,13 @@ def main() -> None:
         "nouvelle" if exp.changed else "inchangée",
         path,
     )
-    if args.install:
-        install(text, args.install)
-        log.info("installée : %s", args.install)
-    if args.rsync:
-        subprocess.run(["rsync", "-a", str(path), args.rsync], check=True)
-        log.info("copiée : %s", args.rsync)
+    if install_to:
+        install(text, install_to)
+        log.info("installée : %s", install_to)
+    if rsync:
+        subprocess.run(["rsync", "-a", str(path), rsync], check=True)
+        log.info("copiée : %s", rsync)
+    return path
 
 
 if __name__ == "__main__":

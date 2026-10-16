@@ -2,7 +2,7 @@
 
 Objectif : pour **chaque action** exécutée dans la serre, pouvoir répondre à « pourquoi ? » — quelle **classification photo** (image, classe, confiance), quelles **mesures capteurs** et quelle **règle ou modèle** l'ont produite — et visualiser l'ensemble sous forme d'**arbre** séparant routines et actions exceptionnelles.
 
-> Statut : **implémenté hors UI** (G3, voir §8) : contrat, contrôleur, règles « classification → action », table `action`, confirmation, cycle de vie, arbre et API. La fiche décision et la vue arbre React viendront avec G2. S'appuie sur le modèle de [09](09-modele-gestion-serre.md) et sur les niveaux de contrôle de [06 §4](06-capteurs-controle.md#4-stratégie-de-contrôle--edgecontroller).
+> Statut : **implémenté** (G3, voir §8) : contrat, contrôleur, règles « classification → action », table `action`, confirmation, cycle de vie, arbre et API ; fiche décision et vue arbre React avec G2 ([12 §2.5–2.6](12-interface-utilisateur.md#25-journal-des-décisions-et-fiche-décision)). S'appuie sur le modèle de [09](09-modele-gestion-serre.md) et sur les niveaux de contrôle de [06 §4](06-capteurs-controle.md#4-stratégie-de-contrôle--edgecontroller).
 
 ## 1. Principe
 
@@ -112,7 +112,7 @@ Les `Action` ne transitent pas par MQTT : `backend/traceability.py` les dérive 
 - Les décisions du contrôleur naissent directement à l'état `creee` (pas de validation humaine, comme aujourd'hui).
 - Les décisions de l'agent et certaines décisions exceptionnelles configurées « avec validation » (ex. isoler une plante, traitement) naissent `proposee` et attendent l'utilisateur ; elles **expirent** après un délai (défaut 2 h, `regles.yaml` : `expiration_s`). L'alerte éventuelle part tout de suite ; les ordres attendent. Une proposition n'est faite qu'une fois tant que sa condition dure : rejetée, elle ne revient qu'après la fin puis le retour de la condition.
 - **Toute** décision passe par `safety.py` (niveau 0) avant exécution ; un refus est lui-même tracé (`bloquee_securite`) avec la limite en cause.
-- Mise en œuvre : l'API publie la décision avec le statut `validee` (ou `rejetee`) sur `serre/<zone>/decision` ; le contrôleur, abonné à ce topic, exécute ses `ordres` au tick suivant via `safety.check` et republie la **même** décision (`executee` ou `bloquee_securite`) suivie de ses commandes. Une action manuelle (`POST /actions/manuelle`) est une décision `manuelle` née `validee` : même chemin. Le serveur ne publie jamais directement sur `cmd/`.
+- Mise en œuvre : l'API publie la décision avec le statut `validee` (ou `rejetee`) sur `serre/<zone>/decision` ; le contrôleur, abonné à ce topic, exécute ses `ordres` au tick suivant via `safety.check` et republie la **même** décision (`executee` ou `bloquee_securite`) suivie de ses commandes. Une action manuelle (`POST /api/actions/manuelle`) est une décision `manuelle` née `validee` : même chemin. Le serveur ne publie jamais directement sur `cmd/`.
 
 ## 5. Routines et actions exceptionnelles
 
@@ -185,7 +185,7 @@ Serre « Maison »                                         [12/10 00:00 → 24:0
 
 Les routines sont agrégées **par règle** (nombre de cycles, d'actions confirmées, d'échecs, durée de marche cumulée dans la période) ; les autres groupes listent les décisions et leurs actions. Rendu texte : `python -m backend.traceability [--zone z1] [--debut … --fin …]` ou `make arbre`.
 
-Structure de données renvoyée par l'API (`GET /actions/arbre?zone=&debut=&fin=`, `backend/traceability.py:build_tree`) :
+Structure de données renvoyée par l'API (`GET /api/actions/arbre?zone=&debut=&fin=`, `backend/traceability.py:build_tree`) :
 
 ```json
 {
@@ -229,11 +229,11 @@ Chaque nœud `decision` ouvre la fiche de décision (preuves image + capteurs, c
 | `edge/controller/service.py` | décisions `proposee` (+ expiration), exécution des décisions `validee` reçues, `CaptureRequest`, consignes temporaires (`ZoneState.consignes`) |
 | `backend/db/models.py` | table `action`, colonnes `decision.ordres` et `decision.expire` |
 | `backend/traceability.py` | `sync_actions`, `reconcile` (appelés par l'ingestion après chaque lot), `build_tree`, `render_text`, CLI |
-| `backend/api/` | FastAPI (`python -m backend.api`, `make api`) : `GET /decisions`, `GET /decisions/{id}` (fiche : preuves, ordres, actions, commandes), `POST /decisions/{id}/valider` et `/rejeter` (409 si la décision n'est plus `proposee` ou a expiré), `POST /actions/manuelle`, `GET /actions/arbre`. Sans broker (`--mqtt none`) : lecture seule |
+| `backend/api/` | FastAPI (`python -m backend.api`, `make api`), routes sous `/api` : `GET /decisions`, `GET /decisions/{id}` (fiche : preuves, ordres, actions, commandes), `POST /decisions/{id}/valider` et `/rejeter` (409 si la décision n'est plus `proposee` ou a expiré), `POST /actions/manuelle`, `GET /actions/arbre`. Sans broker (`--mqtt none`) : lecture seule |
 | `sim/nodes.py`, `sim/faults.py` | caméras simulées (un `VisionResult` toutes les 10 min et à la demande), pannes `maladie:z1-A1/tomate/maladie/mildiou@15-600` et `valeur:z1/humidite=92@0-600` |
 
 Scénario de démonstration (critère G3) : `python -m backend.ingestion --sim --duree-h 3 --panne valeur:z1/humidite=92@0-180 --panne maladie:z1-A1/tomate/maladie/mildiou@15-180 --db sqlite:///g3.db`, puis `python -m backend.traceability --db sqlite:///g3.db --debut … --fin …`.
 
 Tests : `tests/test_vision_rules.py` (une ligne du §5 par test), `test_decision_lifecycle.py` (proposée, validée, rejetée, expirée, sécurité), `test_traceability.py` (actions, confirmation, plantes, arbre), `test_api.py`, `test_traceability_sim.py` (critère G3 : simulateur + contrôleur + ingestion + API, décision mildiou avec preuves vision et capteurs, isolement validé par l'API puis exécuté).
 
-Reste à faire : fiche décision et vue arbre React (G2) ; édition de `regles.yaml` depuis l'UI et export avec `serre.yaml` ; lien Grad-CAM dans `PreuveVision` quand le service caméra le produira ; seuil `classe_conf_min` calibré (doc 03) ; Alembic pour les nouvelles colonnes sur une base existante.
+Reste à faire : édition de `regles.yaml` depuis l'UI et export avec `serre.yaml` ; lien Grad-CAM dans `PreuveVision` quand le service caméra le produira ; seuil `classe_conf_min` calibré (doc 03) ; Alembic pour les nouvelles colonnes sur une base existante.

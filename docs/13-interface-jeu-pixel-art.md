@@ -150,7 +150,7 @@ Règles :
 - une tâche périmée (> 2 min sans être jouée) est abandonnée, sauf les alertes et les décisions à valider.
 
 ### Rejouer une période
-**⏪ Rejouer** reprend le curseur temporel de l'arbre des actions ([12 §2.6](12-interface-utilisateur.md#26-arbre-des-actions)) : 24 h ou 7 j. Les décisions et états sont relus via `GET /actions/arbre` et `GET /mesures` et injectés dans la même file de tâches, en accéléré (×60, ×600). Le jour et la nuit défilent, on voit le jardinier ventiler à 02:31 et la buée disparaître.
+**⏪ Rejouer** reprend le curseur temporel de l'arbre des actions ([12 §2.6](12-interface-utilisateur.md#26-arbre-des-actions)) : 24 h ou 7 j. Les décisions et états sont relus via `GET /api/actions/arbre` et `GET /api/mesures` et injectés dans la même file de tâches, en accéléré (×60, ×600). Le jour et la nuit défilent, on voit le jardinier ventiler à 02:31 et la buée disparaître.
 
 ## 6. Inspection : stats d'une plante ou d'une station
 

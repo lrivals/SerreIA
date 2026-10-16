@@ -36,7 +36,8 @@ from common.mqtt.schemas import Decision, PreuveCapteur, Preuves, PreuveVision, 
 from edge.controller.config import ROOT, ReglesCfg
 from edge.controller.recipes import StageSetpoints
 
-from ..consumption import compute_day, energy_kwh, water_l
+from ..consumption import energy_kwh, water_l
+from ..consumption import summary as consumption_summary
 from ..db import models as m
 from ..db.session import utc
 from ..traceability import (
@@ -529,48 +530,8 @@ class _Ctx:
         return ToolResult(build_tree(self.s, debut, fin, a.zone), resume="arbre des actions")
 
     def get_consommation(self, a: ConsommationArgs) -> ToolResult:
-        serre = self.serre
-        today = self.now.astimezone(self.tz).date()
-        last = min(a.jour or today, today)
-        n = {"jour": 1, "semaine": 7, "mois": 30}[a.periode]
-        jours = [last - timedelta(days=i) for i in range(n - 1, -1, -1)]
-        if last == today:  # the current day, up to now (the ingestion runs it every hour)
-            compute_day(self.s, today, self.now)
-        q = select(m.ConsommationJour).where(m.ConsommationJour.jour.in_(jours))
-        if a.zone:
-            q = q.where(m.ConsommationJour.zone == a.zone)
-        tot: dict[str, dict] = defaultdict(lambda: defaultdict(float))
-        for r in self.s.scalars(q):
-            t = tot[r.actionneur_id]
-            t["zone"], t["type"] = r.zone, r.type  # type: ignore[assignment]
-            t["heures_on"] += r.duree_on_s / 3600
-            for k in ("kwh", "litres", "ml", "cout", "dli"):
-                if getattr(r, k) is not None:
-                    t[k] += getattr(r, k)
-        lq = select(m.LumiereJour).where(m.LumiereJour.jour.in_(jours)).order_by(m.LumiereJour.jour)
-        if a.zone:
-            lq = lq.where(m.LumiereJour.zone == a.zone)
-        lumiere = [
-            dict(jour=r.jour, zone=r.zone, dli_total=_r(r.dli_total), dli_led=_r(r.dli_led),
-                 dli_naturel=_r(r.dli_naturel), couverture=_r(r.couverture))
-            for r in self.s.scalars(lq)
-        ]  # fmt: skip
-        actionneurs = {k: {x: _r(y) if isinstance(y, float) else y for x, y in v.items()}
-                       for k, v in sorted(tot.items())}  # fmt: skip
-        out = dict(
-            periode=a.periode,
-            du=jours[0],
-            au=last,
-            jour_en_cours=last == today,
-            totaux={
-                k: _r(sum(v.get(k, 0.0) for v in tot.values()))
-                for k in ("kwh", "litres", "ml", "cout")
-            },  # fmt: skip
-            tarif_kwh=serre.tarif_kwh,
-            actionneurs=actionneurs,
-            lumiere=lumiere,
-            note="estimation à partir des états des actionneurs (pas de compteur)",
-        )
+        out = consumption_summary(self.s, a.periode, a.zone, a.jour, self.now)
+        out.pop("par_jour")  # the totals are enough for the agent
         return ToolResult(out, resume=f"consommation {a.periode}")
 
     def get_regle(self, a: RegleArgs) -> ToolResult:

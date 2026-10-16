@@ -57,10 +57,39 @@ db-init:
 ingest:
 	$(PY) -m backend.ingestion
 
-# HTTP API (docs/12 §5): decisions, validation of the proposals, action tree (docs/10),
-# agent (docs/11; `--agent none` without it).
+# HTTP API and web UI (docs/12): every route under /api, WS /ws/live, the built front on
+# the same port; agent (docs/11; `--agent none` without it). SERREIA_UI_PASSWORD protects
+# the writes.
 api:
 	$(PY) -m backend.api
+
+# The UI without broker nor Pi: simulator + controller behind the API (docs/12 §5), the
+# last 24 h caught up at start. PANNE=maladie:z1-A1/tomate/maladie/mildiou@15 for a proposal.
+api-sim:
+	$(PY) -m backend.api --mqtt sim --db sqlite:///data/serre_sim.db $(if $(PANNE),--panne $(PANNE))
+
+# Web front (docs/12, frontend/): `front-dev` with `make api` or `make api-sim` alongside
+# (Vite proxies /api and /ws to :8000); `front-build` for `make api` to serve it.
+front-install:
+	cd frontend && npm ci
+
+front-dev:
+	cd frontend && npm run dev
+
+front-build:
+	cd frontend && npm run build
+
+front-test:
+	cd frontend && npm run typecheck && npm test
+
+# OpenAPI schema of the backend → TypeScript types of the front.
+openapi:
+	$(PY) -m backend.api --openapi frontend/src/api/openapi.json
+	cd frontend && npm run gen:api
+
+# Playwright journey against the API with a simulated greenhouse (browser: npx playwright install chromium).
+e2e:
+	cd frontend && npm run build && npx playwright test
 
 # Reference questions of the agent (docs/11 §6) with Claude: real API calls, tokens spent.
 # Q=led-2h for one question; MODELE=claude-opus-5-5, EFFORT=high to compare.
@@ -85,4 +114,4 @@ sim-demo:
 sim-live:
 	$(PY) -m sim --avec-controleur
 
-.PHONY: setup check-env cuda-torch test lint mlflow harvest harvest-all notebooks stack-up stack-down db-init ingest api agent-eval arbre config-export sim-demo sim-live
+.PHONY: setup check-env cuda-torch test lint mlflow harvest harvest-all notebooks stack-up stack-down db-init ingest api api-sim front-install front-dev front-build front-test openapi e2e agent-eval arbre config-export sim-demo sim-live

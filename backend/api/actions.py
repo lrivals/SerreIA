@@ -12,7 +12,7 @@ from common.mqtt.schemas import Decision
 
 from ..db import models as m
 from ..traceability import build_tree, publish_decision, stored_row
-from .deps import Db, Now, Pub
+from .deps import Db, Now, Pub, User
 
 router = APIRouter(prefix="/actions", tags=["actions"])
 
@@ -42,9 +42,10 @@ class Manuelle(BaseModel):
 
 
 @router.post("/manuelle")
-def manual(a: Manuelle, s: Db, now: Now, pub: Pub) -> dict:
+def manual(a: Manuelle, s: Db, now: Now, pub: Pub, u: User) -> dict:
     """A manual order: a decision `manuelle`, born `validee`, that the controller runs
     through safety.py like any other (docs/10 §1: no command without a decision)."""
+    a.utilisateur = u or a.utilisateur
     if s.get(m.Zone, a.zone) is None:
         raise HTTPException(404, f"zone inconnue {a.zone}")
     try:

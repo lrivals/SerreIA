@@ -41,12 +41,12 @@ def test_mildew_decision_traced_from_the_simulator_to_the_api():
         ing.flush()
 
     run(80)
-    exc = client.get("/decisions", params={"zone": "z1", "type": "exceptionnelle"}).json()
+    exc = client.get("/api/decisions", params={"zone": "z1", "type": "exceptionnelle"}).json()
     by_rule = {d["regle"]["id"]: d for d in exc}
     assert {"maladie.mildiou.ventilation", "maladie.mildiou.plante"} <= set(by_rule)
 
     # The record: vision evidence (image, class, confidence, confirmations), sensors, actions.
-    rec = client.get(f"/decisions/{by_rule['maladie.mildiou.plante']['id']}").json()
+    rec = client.get(f"/api/decisions/{by_rule['maladie.mildiou.plante']['id']}").json()
     (v,) = rec["preuves"]["vision"]
     assert v["camera"] == "cam-z1-a" and v["emplacement"] == "z1-A1"
     assert v["classe"] == "tomate/maladie/mildiou" and v["confirmations"] == 3
@@ -57,17 +57,17 @@ def test_mildew_decision_traced_from_the_simulator_to_the_api():
     assert results["plante:z1-A1"] == "confirmee" and results["alerte"] == "confirmee"
     assert rec["statut"] == "terminee"
 
-    vent = client.get(f"/decisions/{by_rule['maladie.mildiou.ventilation']['id']}").json()
+    vent = client.get(f"/api/decisions/{by_rule['maladie.mildiou.ventilation']['id']}").json()
     (act,) = [a for a in vent["actions_detail"] if a["cible"] == "actionneur:ventilo"]
     assert act["resultat"] == "confirmee" and act["commande"]["source"] == "controller"
     assert vent["commandes"][0]["raison"].startswith(vent["id"])
 
     # The isolation waits for the user; validated through the API, run by the controller.
-    (prop,) = client.get("/decisions", params={"statut": "proposee"}).json()
+    (prop,) = client.get("/api/decisions", params={"statut": "proposee"}).json()
     assert prop["regle"]["id"] == "maladie.mildiou.isolement"
-    assert client.post(f"/decisions/{prop['id']}/valider", json={}).status_code == 200
+    assert client.post(f"/api/decisions/{prop['id']}/valider", json={}).status_code == 200
     run(1)
-    rec = client.get(f"/decisions/{prop['id']}").json()
+    rec = client.get(f"/api/decisions/{prop['id']}").json()
     assert rec["statut"] == "terminee"
     assert [a["resultat"] for a in rec["actions_detail"]] == ["confirmee"]
     with sessions() as s:
@@ -75,7 +75,7 @@ def test_mildew_decision_traced_from_the_simulator_to_the_api():
 
     # The tree: routines aggregated, the mildew decisions with their actions.
     tree = client.get(
-        "/actions/arbre",
+        "/api/actions/arbre",
         params={"zone": "z1", "debut": START.isoformat(), "fin": sim.t.isoformat()},
     ).json()
     groups = {g["id"]: g for g in tree["children"][0]["children"]}

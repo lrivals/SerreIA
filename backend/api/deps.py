@@ -1,5 +1,5 @@
 """Dependencies of the routes: database session (one transaction per request), MQTT
-publisher and clock, all set by `create_app`."""
+publisher, clock and user, all set by `create_app`."""
 
 from datetime import datetime
 from typing import Annotated
@@ -23,6 +23,15 @@ def now(request: Request) -> datetime:
     return request.app.state.clock()
 
 
+def user(request: Request) -> str | None:
+    """The user of the session token (None without authentication)."""
+    scheme, _, token = request.headers.get("authorization", "").partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        return None
+    return request.app.state.auth.user(token, request.app.state.clock())
+
+
 Db = Annotated[Session, Depends(session)]
 Pub = Annotated[object, Depends(publisher)]
 Now = Annotated[datetime, Depends(now)]
+User = Annotated[str | None, Depends(user)]

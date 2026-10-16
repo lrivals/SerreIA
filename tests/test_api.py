@@ -51,38 +51,38 @@ def published(bus):
 
 def test_list_and_record(api):
     client, *_ = api
-    rows = client.get("/decisions", params={"zone": "z1", "statut": "proposee"}).json()
+    rows = client.get("/api/decisions", params={"zone": "z1", "statut": "proposee"}).json()
     assert {r["id"] for r in rows} == {proposal(1).id, proposal(2).id}  # 3 has expired
-    assert client.get("/decisions", params={"type": "routine"}).json() == []
-    rec = client.get(f"/decisions/{proposal(1).id}").json()
+    assert client.get("/api/decisions", params={"type": "routine"}).json() == []
+    rec = client.get(f"/api/decisions/{proposal(1).id}").json()
     assert rec["ordres"] == [Ordre(cible="plante:z1-A1", action="isolee").model_dump(mode="json")]
     assert [a["resultat"] for a in rec["actions_detail"]] == ["proposee", "confirmee"]
     assert rec["preuves"]["vision"] == [] and rec["regle"]["id"] == "virus.isolement"
-    assert client.get("/decisions/dec-inconnue").status_code == 404
+    assert client.get("/api/decisions/dec-inconnue").status_code == 404
 
 
 def test_validate_publishes_the_decision_for_the_controller(api):
     client, bus, ing, _ = api
     did = proposal(1).id
-    r = client.post(f"/decisions/{did}/valider", json={"utilisateur": "leonard"})
+    r = client.post(f"/api/decisions/{did}/valider", json={"utilisateur": "leonard"})
     assert r.status_code == 200 and r.json()["statut"] == "validee"
     (msg,) = published(bus)
     assert msg.id == did and msg.statut == "validee" and msg.ordres == proposal(1).ordres
     assert "validée par ui:leonard" in msg.explication
-    assert client.post(f"/decisions/{did}/valider", json={}).status_code == 409  # answered
+    assert client.post(f"/api/decisions/{did}/valider", json={}).status_code == 409  # answered
     ing.flush()
-    assert client.get(f"/decisions/{did}").json()["statut"] == "validee"
+    assert client.get(f"/api/decisions/{did}").json()["statut"] == "validee"
 
 
 def test_reject_and_expired(api):
     client, bus, _, _ = api
     did = proposal(2).id
-    r = client.post(f"/decisions/{did}/rejeter", json={"commentaire": "fausse alerte"})
+    r = client.post(f"/api/decisions/{did}/rejeter", json={"commentaire": "fausse alerte"})
     assert r.json()["statut"] == "rejetee" and "fausse alerte" in r.json()["explication"]
     assert published(bus)[0].statut == "rejetee"
-    rec = client.get(f"/decisions/{did}").json()
+    rec = client.get(f"/api/decisions/{did}").json()
     assert rec["actions_detail"][0]["resultat"] == "annulee"
-    r = client.post(f"/decisions/{proposal(3).id}/valider", json={})
+    r = client.post(f"/api/decisions/{proposal(3).id}/valider", json={})
     assert r.status_code == 409 and "expiree" in r.json()["detail"]  # marked by reconcile
 
 
@@ -90,20 +90,20 @@ def test_manual_action(api):
     client, bus, _, _ = api
     body = dict(zone="z1", actionneur="ventilo", action="on", duree_s=600,
                 utilisateur="leonard", justification="aérer")  # fmt: skip
-    r = client.post("/actions/manuelle", json=body)
+    r = client.post("/api/actions/manuelle", json=body)
     assert r.status_code == 200
     (msg,) = published(bus)
     assert msg.type == "manuelle" and msg.niveau == "manuel" and msg.statut == "validee"
     assert msg.origine == "ui:leonard" and msg.ordres[0].cible == "actionneur:ventilo"
-    assert client.get(f"/decisions/{msg.id}").json()["statut"] == "validee"
+    assert client.get(f"/api/decisions/{msg.id}").json()["statut"] == "validee"
     bad = dict(body, actionneur="pompe_nutri", duree_s=None)  # a pump must be bounded
-    assert client.post("/actions/manuelle", json=bad).status_code == 422
-    assert client.post("/actions/manuelle", json=dict(body, zone="z9")).status_code == 404
+    assert client.post("/api/actions/manuelle", json=bad).status_code == 422
+    assert client.post("/api/actions/manuelle", json=dict(body, zone="z9")).status_code == 404
 
 
 def test_tree(api):
     client, *_ = api
-    tree = client.get("/actions/arbre", params={"zone": "z1"}).json()
+    tree = client.get("/api/actions/arbre", params={"zone": "z1"}).json()
     (z1,) = tree["children"]
     (group,) = z1["children"]
     assert group["id"] == "z1/exceptionnelle" and len(group["children"]) == 3
@@ -112,7 +112,7 @@ def test_tree(api):
 def test_read_only_api():
     _, sessions = seeded_db()
     client = TestClient(create_app(sessions))
-    assert client.get("/decisions").status_code == 200
-    r = client.post("/actions/manuelle", json=dict(zone="z1", actionneur="led", action="off",
+    assert client.get("/api/decisions").status_code == 200
+    r = client.post("/api/actions/manuelle", json=dict(zone="z1", actionneur="led", action="off",
                                                    justification="x"))  # fmt: skip
     assert r.status_code == 503

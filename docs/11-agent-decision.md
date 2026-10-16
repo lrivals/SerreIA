@@ -3,7 +3,7 @@
 L'utilisateur doit pouvoir **dialoguer** avec la serre : demander pourquoi une action a eu lieu, ce qu'il faut faire pour une plante, ou demander une intervention.
 Choix retenu : **le contrôleur déterministe décide, un LLM explique et propose**.
 
-> Statut : **implémenté côté serveur** (G4, `backend/agent/`, §7) ; onglet Agent de l'UI à faire (doc 12). Dépend de [09](09-modele-gestion-serre.md) (modèle de serre) et [10](10-decisions-tracabilite.md) (journal de décisions).
+> Statut : **implémenté** (G4, `backend/agent/`, §7) ; onglet Agent de l'UI fait avec G2 ([12 §2.7](12-interface-utilisateur.md#27-agent)). Dépend de [09](09-modele-gestion-serre.md) (modèle de serre) et [10](10-decisions-tracabilite.md) (journal de décisions).
 
 ## 1. Répartition des rôles
 
@@ -22,7 +22,7 @@ Conséquences :
 ## 2. Architecture
 
 ```
-  UI (onglet Agent) ──POST /agent/chat (SSE)──► backend/agent/
+  UI (onglet Agent) ──POST /api/agent/chat (SSE)──► backend/agent/
                                                   ├─ boucle tool use (Claude API)
                                                   ├─ outils lecture  ──► DB (serre, mesures, vision, décisions)
                                                   ├─ outils proposition ──► table decision (statut « proposee »)
@@ -113,15 +113,15 @@ Les outils de proposition vérifient **avant** de créer la proposition : action
 | `backend/db/models.py` | tables `agent_conversation`, `agent_journal`, `agent_proposition` |
 
 Choix d'implémentation :
-- les propositions ne sont **pas publiées** à leur création (garde-fou 1) : elles sont écrites en base avec leurs actions `proposee` ; la validation passe par `POST /decisions/{id}/valider`, comme les propositions du contrôleur ;
+- les propositions ne sont **pas publiées** à leur création (garde-fou 1) : elles sont écrites en base avec leurs actions `proposee` ; la validation passe par `POST /api/decisions/{id}/valider`, comme les propositions du contrôleur ;
 - `demander_capture` crée une décision née `validee` (ordre `camera:<id>`) publiée sur `serre/<zone>/decision` : jamais de message sur `cmd/` depuis le serveur ;
 - les références de preuves sont vérifiées (décision en base, `image_id` dans `vision_resultat`, série `mesure:<zone>/<type>/<debut>/<fin>` non vide) et converties en `PreuveVision` / `PreuveCapteur` ;
 - `proposer_consigne` : le contrat MQTT n'a pas d'ordre de consigne, le serveur modifie la recette et exporte la configuration ; son installation sur le Pi reste `make config-export PI_CONFIG=…` ;
-- aucune image n'est envoyée à l'API : le serveur ne stocke pas encore les images, l'agent ne voit que les `image_id` et les résultats du classifieur ;
+- aucune image n'est envoyée à l'API Claude : le serveur archive les JPEG reçus du service caméra (`POST /api/images`, doc 12) mais l'agent ne voit que les `image_id` et les résultats du classifieur ;
 - les heures sont données à l'agent et rendues en heure locale de la serre ; l'heure courante précède chaque message utilisateur (le prompt système reste identique d'un message à l'autre).
 
-Lancer : `make api` (agent actif si le paquet `anthropic` et des identifiants sont présents ; `python -m backend.api --agent none` sinon), puis
-`curl -N -X POST localhost:8000/agent/chat -H 'Content-Type: application/json' -d '{"message": "Pourquoi la ventilation a tourné cette nuit ?"}'`.
+Lancer : `make api` (agent actif si le paquet `anthropic` et des identifiants sont présents ; `python -m backend.api --agent none` sinon), puis l'onglet Agent de l'UI ([12](12-interface-utilisateur.md)) ou
+`curl -N -X POST localhost:8000/api/agent/chat -H 'Content-Type: application/json' -d '{"message": "Pourquoi la ventilation a tourné cette nuit ?"}'`.
 
 Tests : `tests/test_agent.py` (LLM scripté, aucun appel réseau) — outils de lecture sur l'historique, garde-fous (pompe 10 min, chauffage 40 °C, actionneur absent, pompe sans durée, référence inventée → refus, rien de créé), propositions, expiration, validation par l'API, consigne appliquée puis restaurée, boucle (journal, reprise de conversation, budget, LLM indisponible), SSE.
 

@@ -2,7 +2,7 @@
 
 Interface web pour **constituer sa serre** (zones, emplacements, plantes, pots, mode de culture, capteurs, actionneurs), **suivre** mesures, images et consommations, **comprendre** les décisions (preuves vision + capteurs, arbre des actions) et **dialoguer** avec l'agent.
 
-> Statut : **conception**. Modèle de données : [09](09-modele-gestion-serre.md) ; décisions et arbre : [10](10-decisions-tracabilite.md) ; agent : [11](11-agent-decision.md) ; vue « jeu » en pixel art (construction de la serre, jardinier animé, stats en bulles) : [13](13-interface-jeu-pixel-art.md).
+> Statut : **implémenté** (G2, §7) : API REST complète sous `/api`, relais `WS /ws/live`, SPA React des sept écrans, authentification optionnelle ; vue jeu (doc 13) et Alembic à venir. Modèle de données : [09](09-modele-gestion-serre.md) ; décisions et arbre : [10](10-decisions-tracabilite.md) ; agent : [11](11-agent-decision.md) ; vue « jeu » en pixel art (construction de la serre, jardinier animé, stats en bulles) : [13](13-interface-jeu-pixel-art.md).
 
 ## 1. Architecture
 
@@ -25,19 +25,21 @@ Interface web pour **constituer sa serre** (zones, emplacements, plantes, pots, 
 
 - Hébergé sur le **serveur / PC** (pas sur le Pi) : si le serveur tombe, la serre continue ([01 §1](01-architecture.md#principes)).
 - En production, FastAPI sert le build statique du front (`frontend/dist`) : un seul processus, un seul port.
-- Accès local (LAN) ; authentification simple par mot de passe + jeton de session dès qu'une action peut être déclenchée depuis l'UI.
+- Accès local (LAN) ; authentification simple par mot de passe + jeton de session dès qu'une action peut être déclenchée depuis l'UI : si `SERREIA_UI_PASSWORD` est défini, toute requête autre qu'une lecture (GET) demande `Authorization: Bearer <jeton>` (`POST /api/auth/login`) ; seuls la connexion et le dépôt d'images du `camera_service` (`POST /api/images`) restent ouverts. Jetons en mémoire, 7 jours.
 
 ### Stack front
 | Besoin | Bibliothèque |
 |---|---|
 | Base | React 18, TypeScript, Vite |
 | Données serveur, cache, invalidation | TanStack Query |
-| Plan de serre (glisser-déposer) et arbre des actions | React Flow |
-| Courbes temps réel / consommation | Recharts |
-| Formulaires | React Hook Form + Zod (schémas générés depuis l'OpenAPI de FastAPI) |
-| Composants | shadcn/ui (Radix) + Tailwind |
+| Navigation | React Router |
+| Plan de serre (glisser-déposer) | grille CSS + glisser-déposer HTML5 natif |
+| Arbre des actions | React Flow (`@xyflow/react`) + dagre (mise en page), chargé à la demande |
+| Courbes temps réel / consommation | Recharts 3 |
+| Formulaires | React Hook Form + Zod (schémas écrits à côté des formulaires, à partir des types générés) |
+| Composants | composants façon shadcn/ui (Radix Dialog / Tabs / Collapsible) copiés dans `src/components/ui/` + Tailwind 4 |
 | Vue jeu pixel art ([13](13-interface-jeu-pixel-art.md)) | Phaser 3, easystarjs, mitt (chargés à la demande) |
-| Types API | `openapi-typescript` à partir de `/openapi.json` |
+| Types API | `openapi-typescript` à partir de `/openapi.json` (`make openapi`) : corps des requêtes ; les réponses (dicts) sont typées dans `src/api/types.ts` |
 
 ## 2. Écrans
 
@@ -116,61 +118,80 @@ Préfixe `/api`. Schémas pydantic partagés avec `common/` quand ils existent (
 
 | Ressource | Routes |
 |---|---|
-| Serre et structure | `GET/POST /serres`, `GET/PATCH/DELETE /serres/{id}` ; idem `/zones`, `/emplacements`, `/cuves` |
-| Plantes | `GET/POST /plantes`, `PATCH /plantes/{id}`, `POST /plantes/{id}/deplacer`, `GET /plantes/{id}/historique` |
-| Contenants, recettes | `/contenants`, `/recettes` (CRUD) |
-| Équipements | `/capteurs`, `/actionneurs`, `/cameras` (CRUD), `PUT /cameras/{id}/regions` |
-| Configuration | `GET /config/diff`, `POST /config/publier` → `config_version` (`backend.config.export.export`) |
-| Mesures | `GET /mesures?zone=&type=&debut=&fin=&agregat=` |
-| Vision | `GET /vision?emplacement=&debut=&fin=`, `GET /images/{image_id}` (+ `?gradcam=1`) |
+| Authentification | `GET /auth` (`{requise, utilisateur}`), `POST /auth/login`, `POST /auth/logout` |
+| Serre et structure | `GET/POST /serres`, `GET/PATCH/DELETE /serres/{id}` ; idem `/zones`, `/emplacements`, `/cuves` ; `GET /zones/{id}/plan` (grille du constructeur : plante active, contenant, capteurs, caméras, dernière classification) |
+| Plantes | `GET/POST /plantes` (`?actives=1&zone=`, POST avec `emplacement` pour planter directement), `GET/PATCH /plantes/{id}`, `POST /plantes/{id}/deplacer` (`emplacement: null` : retirer), `GET /plantes/{id}/historique` |
+| Contenants, recettes | `/contenants`, `/recettes` (CRUD ; une recette est validée comme par le contrôleur) |
+| Équipements | `/capteurs` (canaux ; échéance d'étalonnage calculée), `/actionneurs` (+ état courant), `/cameras` (CRUD), `PUT /cameras/{id}/regions`, `GET /cameras/{id}/derniere-image`, `GET /noeuds` |
+| Configuration | `GET /config/coherence`, `GET /config/versions`, `GET /config/diff?de=&a=` (défaut : dernière version publiée → brouillon), `POST /config/publier` → `config_version` (`backend.config.export`) |
+| Mesures | `GET /mesures?zone=&type=&emplacement=&debut=&fin=&agregat=`, `GET /zones/{id}/tableau` (tuiles vs consigne, actionneurs, dernière image, alertes, propositions) |
+| Vision | `GET /vision?emplacement=&zone=&debut=&fin=`, `GET /images/{image_id}` (+ `?gradcam=1`), `POST /images` (dépôt du `camera_service`, `edge/archive.py`) |
 | Décisions | `GET /decisions?…`, `GET /decisions/{id}`, `POST /decisions/{id}/valider`, `POST /decisions/{id}/rejeter` |
 | Actions | `GET /actions/arbre?zone=&debut=&fin=`, `POST /actions/manuelle` |
-| Consommation | `GET /consommation?zone=&periode=jour\|semaine\|mois` |
+| Consommation | `GET /consommation?zone=&periode=jour\|semaine\|mois&jour=` (totaux, par actionneur, par jour, DLI vs cible, `estime`) |
 | Alertes | `GET /alertes?actives=1`, `POST /alertes/{id}/acquitter` |
-| Agent | `POST /agent/chat` (SSE), `GET /agent/conversations`, `GET /agent/conversations/{id}` |
-| Temps réel | `WS /ws/live` : messages `{kind, zone, subject, payload}` relayés depuis MQTT (capteur, vision, etat, status, alerte, decision) |
+| Agent | `GET /agent/statut`, `POST /agent/chat` (SSE), `GET /agent/conversations`, `GET /agent/conversations/{id}` |
+| Temps réel | `WS /ws/live` (hors `/api`) : messages `{kind, zone, subject, payload}` relayés depuis MQTT (capteur, vision, etat, status, alerte, decision, cmd) |
 
-`POST /decisions/{id}/valider` et `POST /actions/manuelle` sont les **seuls** points d'entrée qui agissent sur la serre depuis le serveur. Ils ne publient pas de `Command` : ils publient la `Decision` (statut `validee`, `ordres` structurés) sur `serre/<zone>/decision`, et le contrôleur l'exécute via `safety.py` puis émet les commandes ([10 §4](10-decisions-tracabilite.md#4-cycle-de-vie)).
+`POST /api/decisions/{id}/valider` et `POST /api/actions/manuelle` sont les **seuls** points d'entrée qui agissent sur la serre depuis le serveur. Ils ne publient pas de `Command` : ils publient la `Decision` (statut `validee`, `ordres` structurés) sur `serre/<zone>/decision`, et le contrôleur l'exécute via `safety.py` puis émet les commandes ([10 §4](10-decisions-tracabilite.md#4-cycle-de-vie)).
 
-> Déjà implémentés (G3, `backend/api/`, `python -m backend.api`) : `GET /decisions`, `GET /decisions/{id}`, `POST /decisions/{id}/valider`, `POST /decisions/{id}/rejeter`, `GET /actions/arbre`, `POST /actions/manuelle` ; G4 : `POST /agent/chat` (SSE), `GET /agent/conversations`, `GET /agent/conversations/{id}` ([11 §7](11-agent-decision.md#7-implémentation-et-test-sur-pc)) ; sans le préfixe `/api` pour l'instant ([10 §8](10-decisions-tracabilite.md#8-implémentation-et-test-sur-pc)).
+Une modification de structure (zones, plantes, équipements, régions) ne touche que la base : le contrôleur la voit à la publication (`POST /api/config/publier`), qui installe le nouveau `serre.yaml` (`python -m backend.api --install <chemin>` et/ou `--rsync <destination>`).
 
-## 4. Organisation du dépôt (cible)
+## 4. Organisation du dépôt
 
 ```
 backend/
-├── main.py              # app FastAPI, montage du front statique
-├── api/                 # serres.py, plantes.py, equipements.py, decisions.py, actions.py, agent.py, live.py
-├── db/                  # models.py (SQLAlchemy), migrations/ (Alembic), timescale.sql
+├── api/                 # app.py (create_app, montage du front), auth.py, deps.py, crud.py
+│   │                    # serres.py, plantes.py, equipements.py, config.py, mesures.py,
+│   │                    # consommation.py, alertes.py, decisions.py, actions.py, agent.py, live.py
+│   ├── sim.py           # serre simulée derrière l'API (--mqtt sim)
+│   └── __main__.py      # python -m backend.api
+├── live/bridge.py       # LiveHub : pont MQTT → WebSocket
+├── db/                  # models.py (SQLAlchemy), session.py, seed.py, timescale.sql
 ├── ingestion/           # mqtt_ingest.py
-├── agent/               # loop.py, tools.py, prompts.py
+├── agent/               # loop.py, tools.py, prompts.py…
 └── config/              # export.py (serre.yaml versionné)
 frontend/
-├── package.json  vite.config.ts  index.html
+├── package.json  vite.config.ts  index.html  playwright.config.ts  e2e/
 └── src/
-    ├── api/             # client généré (openapi-typescript) + hooks TanStack Query
-    ├── pages/           # Constructeur, Equipements, Dashboard, Consommation, Decisions, Arbre, Agent
-    ├── components/      # PlanSerre, FicheEmplacement, FicheDecision, ArbreActions, CarteProposition…
-    ├── live/            # client WebSocket
-    └── game/            # vue jeu pixel art (Phaser), voir doc 13
+    ├── api/             # client.ts, hooks.ts (TanStack Query), sse.ts, types.ts, schema.d.ts (généré)
+    ├── pages/           # Constructeur, Equipements, Dashboard, Consommation, Decisions, FicheDecisionPage, Arbre, Agent
+    ├── components/      # PlanSerre, FicheEmplacement, EditeurRegions, ConfigPublication, FicheDecision,
+    │                    # CarteProposition, CommandeManuelle, Charts, ImageAnnotee, ui/…
+    └── live/            # LiveProvider (WebSocket, invalidation des requêtes)
 ```
 
-Déjà en place (G1) : `backend/db/` (`models.py`, `session.py`, `timescale.sql`, `seed.py` — sans Alembic pour l'instant), `backend/ingestion/` (`mqtt_ingest.py`, `__main__.py`), `backend/consumption.py`, `backend/docker-compose.yml` et `backend/grafana/` ; voir [09 §7](09-modele-gestion-serre.md#7-persistance).
-
-Dépendances Python à ajouter à l'extra `backend` de `pyproject.toml` : `alembic`, `anthropic`, `sse-starlette` (en plus de `sqlalchemy`, `psycopg`, `fastapi`, `uvicorn` déjà présents).
+La vue jeu (`src/game/`, doc 13) n'existe pas encore. Pas d'Alembic : `init_db` crée les tables manquantes ([09 §7](09-modele-gestion-serre.md#7-persistance)).
 
 ## 5. Développement sans matériel
 
-Tout l'écran est développable avec le **simulateur** ([06 §5](06-capteurs-controle.md#5-simulateur--sim)) et un faux `camera_service` qui rejoue des images de PlantDoc :
-1. `docker compose up` : mosquitto, PostgreSQL/TimescaleDB ;
-2. `sim` publie capteurs et vision sur les mêmes topics ;
-3. le controller tourne sur le PC et produit des décisions ;
-4. backend + `vite dev` (proxy `/api` et `/ws` vers FastAPI).
+Tout l'écran est développable avec le **simulateur** ([06 §5](06-capteurs-controle.md#5-simulateur--sim)), de deux façons :
+
+- **Sans broker** : `make api-sim` (`python -m backend.api --mqtt sim`) fait tourner simulateur et contrôleur dans le processus de l'API, sur un bus en mémoire, avec l'ingestion et le relais temps réel branchés. Les 24 dernières heures sont rattrapées au démarrage (`--prefill-h`), puis la simulation avance en temps réel (`--accel`) ; l'horloge de l'API est celle de la simulation. `--panne` reprend les pannes de `sim/faults.py`, par exemple `--panne valeur:z1/humidite=92@0 --panne maladie:z1-A1/tomate/maladie/mildiou@15` pour une proposition d'isolement à valider. Base SQLite `data/serre_sim.db`.
+- **Avec la stack** : `docker compose up` (mosquitto, TimescaleDB), `make ingest`, `make sim-live` (simulateur + contrôleur sur le broker), `make api`.
+
+Puis `make front-dev` (Vite, proxy `/api` et `/ws` vers `:8000`) ou `make front-build` : FastAPI sert alors `frontend/dist` sur le même port. Le simulateur ne produit pas de JPEG : les images s'affichent comme « non reçues » tant qu'un vrai `camera_service` n'envoie rien.
 
 ## 6. Tests
 
 | Niveau | Contenu |
 |---|---|
-| Backend | pytest + base PostgreSQL de test : CRUD, cohérence (mode de culture ↔ capteurs), calcul de consommation, construction de l'arbre, validation/rejet de décision → message MQTT attendu (broker de test) |
-| Contrat | les messages émis par le backend passent `common.mqtt.decode` |
-| Front | Vitest + Testing Library (composants), Playwright (parcours : créer une serre → ajouter une plante → voir une décision simulée → valider une proposition) |
+| Backend | pytest sur SQLite (`seeded_db`) avec le bus en mémoire et l'ingestion : CRUD et refus (`tests/test_api_serre.py`), cohérence (hydro sans pH/EC), diff et publication versionnée, équipements, tableau de bord vs consignes, images (traversée de chemin refusée), consommation, alertes (`tests/test_api_suivi.py`), authentification, relais `WS /ws/live`, service du front (`tests/test_api_auth_live.py`), décisions et agent (`tests/test_api.py`, `tests/test_agent.py`) |
+| Contrat | les décisions publiées par l'API passent `common.mqtt.decode` ; le relais ne transmet que des messages valides |
+| Front | Vitest + Testing Library (`make front-test`) : plan et glisser-déposer, carte de proposition, fenêtre de règle et domaine des courbes, arbre (routines repliées), flux SSE, conversation stockée ; Playwright (`make e2e`, navigateur : `npx playwright install chromium`) : créer une zone → un emplacement → déposer une plante → publier la configuration → valider une proposition du simulateur, contre `python -m backend.api --mqtt sim` |
 | Agent | jeu de questions de référence et tests de garde-fous ([11 §6](11-agent-decision.md#6-évaluation-de-lagent)), avec un client LLM factice en CI |
+
+## 7. Implémentation et test sur PC
+
+```bash
+make setup front-install          # Python (extra backend) et dépendances npm
+make api-sim                      # API + serre simulée sur :8000
+make front-dev                    # http://localhost:5173 (ou make front-build puis :8000)
+make test front-test e2e          # pytest, Vitest, Playwright
+SERREIA_UI_PASSWORD=… make api    # avec authentification des écritures
+make openapi                      # après un changement de route : types TypeScript régénérés
+```
+
+Écarts assumés par rapport à la conception : plan de serre en grille CSS + glisser-déposer natif (React Flow seulement pour l'arbre) ; schémas Zod écrits à la main ; pas de `sse-starlette` (la réponse en flux de FastAPI suffit) ; le dépôt d'images `POST /api/images` s'ajoute aux routes prévues pour recevoir l'`Uploader` du service caméra.
+
+Reste à faire : vue jeu (doc 13) ; Alembic ; édition de `regles.yaml` depuis l'UI ; liste des capteurs couverts éditable dans la fiche capteur ; Grad-CAM produit côté service caméra ; dépôt d'images authentifié par un jeton propre au Pi.

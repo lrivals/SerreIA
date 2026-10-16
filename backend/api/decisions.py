@@ -19,7 +19,7 @@ from ..traceability import (
     publish_decision,
     reconcile,
 )
-from .deps import Db, Now, Pub
+from .deps import Db, Now, Pub, User
 
 router = APIRouter(prefix="/decisions", tags=["decisions"])
 
@@ -80,11 +80,12 @@ def _note(r: Reponse, verbe: str) -> str:
 
 
 @router.post("/{decision_id}/valider")
-def validate(decision_id: str, r: Reponse, s: Db, now: Now, pub: Pub) -> dict:
+def validate(decision_id: str, r: Reponse, s: Db, now: Now, pub: Pub, u: User) -> dict:
     """The controller runs the orders of the decision through safety.py, then publishes it
     again (`executee` or `bloquee_securite`) with its commands. A setpoint change of the
     agent is applied here, to the recipe (new `config_version`)."""
     d = _answer(s, decision_id, now)
+    r.utilisateur = u or r.utilisateur  # the user of the session, when logged in
     d.statut, d.explication = "validee", d.explication + _note(r, "validée")
     apply_validated(s, d, now)  # recipe change proposed by the agent (docs/11 §3)
     publish_decision(pub, decision_message(d))
@@ -92,8 +93,9 @@ def validate(decision_id: str, r: Reponse, s: Db, now: Now, pub: Pub) -> dict:
 
 
 @router.post("/{decision_id}/rejeter")
-def reject(decision_id: str, r: Reponse, s: Db, now: Now, pub: Pub) -> dict:
+def reject(decision_id: str, r: Reponse, s: Db, now: Now, pub: Pub, u: User) -> dict:
     d = _answer(s, decision_id, now)
+    r.utilisateur = u or r.utilisateur
     d.statut, d.explication = "rejetee", d.explication + _note(r, "rejetée")
     s.flush()
     reconcile(s, now)

@@ -15,6 +15,7 @@ not allowed), hence this job, run every hour by the ingestion and on demand here
 
 import argparse
 import logging
+from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
@@ -213,6 +214,84 @@ def compute_day(session: Session, jour: date, now: datetime | None = None) -> di
         "ml": sum(r["ml"] or 0.0 for r in rows),
         "cout": kwh * serre.tarif_kwh if serre.tarif_kwh else None,
     }
+
+
+PERIODES = {"jour": 1, "semaine": 7, "mois": 30}
+
+
+def _r(v: float | None, n: int = 3) -> float | None:
+    return round(v, n) if v is not None else None
+
+
+def summary(
+    session: Session,
+    periode: str = "jour",
+    zone: str | None = None,
+    jour: date | None = None,
+    now: datetime | None = None,
+) -> dict:
+    """Consumption over the `periode` (jour | semaine | mois: 1, 7, 30 local days) ending
+    on `jour` (default: today, counted up to `now`): totals, per actuator, per day (one
+    entry per actuator, for the stacked charts of the UI) and light integrals."""
+    now = now or datetime.now(UTC)
+    serre = session.scalars(select(Serre)).first()
+    if serre is None:
+        raise RuntimeError("aucune serre en base : lancer d'abord python -m backend.db.seed")
+    today = now.astimezone(ZoneInfo(serre.fuseau)).date()
+    last = min(jour or today, today)
+    jours = [last - timedelta(days=i) for i in range(PERIODES[periode] - 1, -1, -1)]
+    if last == today:  # the current day, up to now (the ingestion runs it every hour)
+        compute_day(session, today, now)
+    q = select(ConsommationJour).where(ConsommationJour.jour.in_(jours))
+    if zone:
+        q = q.where(ConsommationJour.zone == zone)
+    tot: dict[str, dict] = defaultdict(lambda: defaultdict(float))
+    days: dict[date, dict[str, dict]] = {j: {} for j in jours}
+    for r in session.scalars(q.order_by(ConsommationJour.jour, ConsommationJour.actionneur_id)):
+        t = tot[r.actionneur_id]
+        t["zone"], t["type"] = r.zone, r.type  # type: ignore[assignment]
+        t["heures_on"] += r.duree_on_s / 3600
+        for k in ("kwh", "litres", "ml", "cout", "dli"):
+            if getattr(r, k) is not None:
+                t[k] += getattr(r, k)
+        days[r.jour][r.actionneur_id] = dict(
+            zone=r.zone, type=r.type, heures_on=_r(r.duree_on_s / 3600),
+            kwh=_r(r.kwh), litres=_r(r.litres), ml=_r(r.ml), cout=_r(r.cout),
+        )  # fmt: skip
+    lq = select(LumiereJour).where(LumiereJour.jour.in_(jours)).order_by(LumiereJour.jour)
+    if zone:
+        lq = lq.where(LumiereJour.zone == zone)
+    lumiere = [
+        dict(jour=r.jour, zone=r.zone, dli_total=_r(r.dli_total), dli_led=_r(r.dli_led),
+             dli_naturel=_r(r.dli_naturel), couverture=_r(r.couverture))
+        for r in session.scalars(lq)
+    ]  # fmt: skip
+    actionneurs = {k: {x: _r(y) if isinstance(y, float) else y for x, y in v.items()}
+                   for k, v in sorted(tot.items())}  # fmt: skip
+    return dict(
+        periode=periode,
+        du=jours[0],
+        au=last,
+        jour_en_cours=last == today,
+        totaux={
+            k: _r(sum(v.get(k, 0.0) for v in tot.values())) for k in ("kwh", "litres", "ml", "cout")
+        },
+        tarif_kwh=serre.tarif_kwh,
+        actionneurs=actionneurs,
+        par_jour=[
+            dict(
+                jour=j,
+                totaux={
+                    k: _r(sum(a[k] or 0.0 for a in acts.values()))
+                    for k in ("kwh", "litres", "ml", "cout")
+                },
+                actionneurs=acts,
+            )
+            for j, acts in days.items()
+        ],  # fmt: skip
+        lumiere=lumiere,
+        note="estimation à partir des états des actionneurs (pas de compteur)",
+    )
 
 
 def _upsert(session: Session, model, rows: list[dict], keys: list[str]) -> None:

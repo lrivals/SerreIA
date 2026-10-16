@@ -15,7 +15,7 @@ from sqlalchemy import func, select
 
 from ..db import models as m
 from ..db.session import utc
-from .deps import Db
+from .deps import Db, User
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
@@ -38,10 +38,18 @@ def sse(events: Iterator[dict]) -> Iterator[str]:
         yield f"event: {e['type']}\ndata: {json.dumps(e, ensure_ascii=False, default=str)}\n\n"
 
 
+@router.get("/statut")
+def status(request: Request) -> dict:
+    """Whether the chat is available (the UI shows a banner otherwise)."""
+    agent = request.app.state.agent
+    llm = getattr(agent, "llm", None)
+    return dict(disponible=agent is not None, modele=getattr(llm, "modele", None))
+
+
 @router.post("/chat")
-def chat(msg: Message, request: Request) -> StreamingResponse:
+def chat(msg: Message, request: Request, u: User) -> StreamingResponse:
     agent = _agent(request)
-    events = agent.chat(msg.message, msg.conversation_id, msg.utilisateur)
+    events = agent.chat(msg.message, msg.conversation_id, u or msg.utilisateur)
     return StreamingResponse(sse(events), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache"})  # fmt: skip
 

@@ -1,0 +1,5313 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "SerreIA",
+  "version": "0.1.0"
+ },
+ "paths": {
+  "/api/auth": {
+   "get": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Status",
+    "operationId": "status_api_auth_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Status Api Auth Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/auth/login": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Login",
+    "operationId": "login_api_auth_login_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Login"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Login Api Auth Login Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/auth/logout": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Logout",
+    "operationId": "logout_api_auth_logout_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Logout Api Auth Logout Post"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/serres": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "List Serres",
+    "operationId": "list_serres_api_serres_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response List Serres Api Serres Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Create Serre",
+    "operationId": "create_serre_api_serres_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SerreIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Serre Api Serres Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/serres/{sid}": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Get Serre",
+    "operationId": "get_serre_api_serres__sid__get",
+    "parameters": [
+     {
+      "name": "sid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Sid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Serre Api Serres  Sid  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Update Serre",
+    "operationId": "update_serre_api_serres__sid__patch",
+    "parameters": [
+     {
+      "name": "sid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Sid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SerrePatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Update Serre Api Serres  Sid  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Delete Serre",
+    "operationId": "delete_serre_api_serres__sid__delete",
+    "parameters": [
+     {
+      "name": "sid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Sid"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/cuves": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "List Cuves",
+    "operationId": "list_cuves_api_cuves_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response List Cuves Api Cuves Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Create Cuve",
+    "operationId": "create_cuve_api_cuves_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CuveIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Cuve Api Cuves Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/cuves/{cid}": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Get Cuve",
+    "operationId": "get_cuve_api_cuves__cid__get",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Cid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Cuve Api Cuves  Cid  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Update Cuve",
+    "operationId": "update_cuve_api_cuves__cid__patch",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Cid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CuvePatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Update Cuve Api Cuves  Cid  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Delete Cuve",
+    "operationId": "delete_cuve_api_cuves__cid__delete",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Cid"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/zones": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "List Zones",
+    "operationId": "list_zones_api_zones_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response List Zones Api Zones Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Create Zone",
+    "operationId": "create_zone_api_zones_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ZoneIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Zone Api Zones Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/zones/{zid}": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Get Zone",
+    "operationId": "get_zone_api_zones__zid__get",
+    "parameters": [
+     {
+      "name": "zid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Zid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Zone Api Zones  Zid  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Update Zone",
+    "operationId": "update_zone_api_zones__zid__patch",
+    "parameters": [
+     {
+      "name": "zid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Zid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ZonePatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Update Zone Api Zones  Zid  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Delete Zone",
+    "operationId": "delete_zone_api_zones__zid__delete",
+    "parameters": [
+     {
+      "name": "zid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Zid"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/zones/{zid}/plan": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Zone Plan",
+    "description": "The builder's grid (docs/12 §2.1): emplacements with their current plant, container,\nsensors, cameras and last classification.",
+    "operationId": "zone_plan_api_zones__zid__plan_get",
+    "parameters": [
+     {
+      "name": "zid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Zid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Zone Plan Api Zones  Zid  Plan Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/contenants": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "List Contenants",
+    "operationId": "list_contenants_api_contenants_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response List Contenants Api Contenants Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Create Contenant",
+    "operationId": "create_contenant_api_contenants_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ContenantIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Contenant Api Contenants Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/contenants/{cid}": {
+   "patch": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Update Contenant",
+    "operationId": "update_contenant_api_contenants__cid__patch",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Cid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ContenantPatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Update Contenant Api Contenants  Cid  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Delete Contenant",
+    "operationId": "delete_contenant_api_contenants__cid__delete",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Cid"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/emplacements": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "List Emplacements",
+    "operationId": "list_emplacements_api_emplacements_get",
+    "parameters": [
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response List Emplacements Api Emplacements Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Create Emplacement",
+    "operationId": "create_emplacement_api_emplacements_post",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EmplacementIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Create Emplacement Api Emplacements Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/emplacements/{eid}": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Get Emplacement",
+    "operationId": "get_emplacement_api_emplacements__eid__get",
+    "parameters": [
+     {
+      "name": "eid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Eid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Emplacement Api Emplacements  Eid  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Update Emplacement",
+    "operationId": "update_emplacement_api_emplacements__eid__patch",
+    "parameters": [
+     {
+      "name": "eid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Eid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EmplacementPatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Update Emplacement Api Emplacements  Eid  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Delete Emplacement",
+    "description": "Refused once a plant has been there: the history of the plants keeps it.",
+    "operationId": "delete_emplacement_api_emplacements__eid__delete",
+    "parameters": [
+     {
+      "name": "eid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Eid"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/recettes": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "List Recettes",
+    "operationId": "list_recettes_api_recettes_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response List Recettes Api Recettes Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Create Recette",
+    "operationId": "create_recette_api_recettes_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RecetteIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Recette Api Recettes Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/recettes/{rid}": {
+   "get": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Get Recette",
+    "operationId": "get_recette_api_recettes__rid__get",
+    "parameters": [
+     {
+      "name": "rid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Rid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Recette Api Recettes  Rid  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Update Recette",
+    "operationId": "update_recette_api_recettes__rid__patch",
+    "parameters": [
+     {
+      "name": "rid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Rid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RecettePatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Update Recette Api Recettes  Rid  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "serre"
+    ],
+    "summary": "Delete Recette",
+    "operationId": "delete_recette_api_recettes__rid__delete",
+    "parameters": [
+     {
+      "name": "rid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Rid"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/plantes": {
+   "get": {
+    "tags": [
+     "plantes"
+    ],
+    "summary": "List Plantes",
+    "description": "`actives`: only the plants on an emplacement; `zone`: those of a zone.",
+    "operationId": "list_plantes_api_plantes_get",
+    "parameters": [
+     {
+      "name": "actives",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Actives"
+      }
+     },
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response List Plantes Api Plantes Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "plantes"
+    ],
+    "summary": "Create Plante",
+    "operationId": "create_plante_api_plantes_post",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PlanteIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Create Plante Api Plantes Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/plantes/{pid}": {
+   "get": {
+    "tags": [
+     "plantes"
+    ],
+    "summary": "Get Plante",
+    "operationId": "get_plante_api_plantes__pid__get",
+    "parameters": [
+     {
+      "name": "pid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Pid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Plante Api Plantes  Pid  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "plantes"
+    ],
+    "summary": "Update Plante",
+    "operationId": "update_plante_api_plantes__pid__patch",
+    "parameters": [
+     {
+      "name": "pid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Pid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PlantePatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Update Plante Api Plantes  Pid  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/plantes/{pid}/deplacer": {
+   "post": {
+    "tags": [
+     "plantes"
+    ],
+    "summary": "Move Plante",
+    "operationId": "move_plante_api_plantes__pid__deplacer_post",
+    "parameters": [
+     {
+      "name": "pid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Pid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Deplacer"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Move Plante Api Plantes  Pid  Deplacer Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/plantes/{pid}/historique": {
+   "get": {
+    "tags": [
+     "plantes"
+    ],
+    "summary": "Plante History",
+    "description": "Assignments, health actions (`plante:<emplacement>` targets) and classifications of\nthe plant, each restricted to the periods it spent on the emplacement.",
+    "operationId": "plante_history_api_plantes__pid__historique_get",
+    "parameters": [
+     {
+      "name": "pid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Pid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Plante History Api Plantes  Pid  Historique Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/capteurs": {
+   "get": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "List Capteurs",
+    "operationId": "list_capteurs_api_capteurs_get",
+    "parameters": [
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response List Capteurs Api Capteurs Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Create Capteur",
+    "operationId": "create_capteur_api_capteurs_post",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CapteurIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Create Capteur Api Capteurs Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/capteurs/{cid}": {
+   "patch": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Update Capteur",
+    "operationId": "update_capteur_api_capteurs__cid__patch",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Cid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CapteurPatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Update Capteur Api Capteurs  Cid  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Delete Capteur",
+    "description": "The channel only: its measurements stay (the ingestion registers it again if the\nnode keeps publishing).",
+    "operationId": "delete_capteur_api_capteurs__cid__delete",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Cid"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/actionneurs": {
+   "get": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "List Actionneurs",
+    "operationId": "list_actionneurs_api_actionneurs_get",
+    "parameters": [
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response List Actionneurs Api Actionneurs Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Create Actionneur",
+    "operationId": "create_actionneur_api_actionneurs_post",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ActionneurIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Create Actionneur Api Actionneurs Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/actionneurs/{aid}": {
+   "get": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Get Actionneur",
+    "operationId": "get_actionneur_api_actionneurs__aid__get",
+    "parameters": [
+     {
+      "name": "aid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Aid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Actionneur Api Actionneurs  Aid  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Update Actionneur",
+    "operationId": "update_actionneur_api_actionneurs__aid__patch",
+    "parameters": [
+     {
+      "name": "aid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Aid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ActionneurPatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Update Actionneur Api Actionneurs  Aid  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Delete Actionneur",
+    "operationId": "delete_actionneur_api_actionneurs__aid__delete",
+    "parameters": [
+     {
+      "name": "aid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Aid"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/cameras": {
+   "get": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "List Cameras",
+    "operationId": "list_cameras_api_cameras_get",
+    "parameters": [
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response List Cameras Api Cameras Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Create Camera",
+    "operationId": "create_camera_api_cameras_post",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CameraIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Create Camera Api Cameras Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/cameras/{cam}": {
+   "get": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Get Camera",
+    "operationId": "get_camera_api_cameras__cam__get",
+    "parameters": [
+     {
+      "name": "cam",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Cam"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Camera Api Cameras  Cam  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Update Camera",
+    "operationId": "update_camera_api_cameras__cam__patch",
+    "parameters": [
+     {
+      "name": "cam",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Cam"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CameraPatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Update Camera Api Cameras  Cam  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Delete Camera",
+    "operationId": "delete_camera_api_cameras__cam__delete",
+    "parameters": [
+     {
+      "name": "cam",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Cam"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/cameras/{cam}/regions": {
+   "put": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Set Regions",
+    "description": "Emplacements seen by the camera and their rectangle on the image (region editor).",
+    "operationId": "set_regions_api_cameras__cam__regions_put",
+    "parameters": [
+     {
+      "name": "cam",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Cam"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Regions"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Set Regions Api Cameras  Cam  Regions Put"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/cameras/{cam}/derniere-image": {
+   "get": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "Last Image",
+    "operationId": "last_image_api_cameras__cam__derniere_image_get",
+    "parameters": [
+     {
+      "name": "cam",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Cam"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Last Image Api Cameras  Cam  Derniere Image Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/noeuds": {
+   "get": {
+    "tags": [
+     "equipements"
+    ],
+    "summary": "List Noeuds",
+    "description": "Nodes known from their status (`serre/<noeud>/status`) or from the configuration.",
+    "operationId": "list_noeuds_api_noeuds_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response List Noeuds Api Noeuds Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/config/coherence": {
+   "get": {
+    "tags": [
+     "config"
+    ],
+    "summary": "Coherence",
+    "description": "Warnings (the controller runs with them) and errors (publication refused).",
+    "operationId": "coherence_api_config_coherence_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Coherence Api Config Coherence Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/config/versions": {
+   "get": {
+    "tags": [
+     "config"
+    ],
+    "summary": "Versions",
+    "operationId": "versions_api_config_versions_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response Versions Api Config Versions Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/config/diff": {
+   "get": {
+    "tags": [
+     "config"
+    ],
+    "summary": "Diff",
+    "description": "Unified diff of serre.yaml between two versions; default: last published → draft\n(what `publier` would change).",
+    "operationId": "diff_api_config_diff_get",
+    "parameters": [
+     {
+      "name": "de",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "De"
+      }
+     },
+     {
+      "name": "a",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "A"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Diff Api Config Diff Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/config/publier": {
+   "post": {
+    "tags": [
+     "config"
+    ],
+    "summary": "Publish",
+    "description": "New `config_version` (or the current one when nothing changed), installed for the\ncontroller, which hot-reloads it and records it in every decision.",
+    "operationId": "publish_api_config_publier_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Publish Api Config Publier Post"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/mesures": {
+   "get": {
+    "tags": [
+     "mesures"
+    ],
+    "summary": "Mesures",
+    "description": "Series of a zone over [debut, fin) (default: the last 24 h), averaged per `agregat`\nand widened so that each series keeps at most `max_points` points.",
+    "operationId": "mesures_api_mesures_get",
+    "parameters": [
+     {
+      "name": "zone",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Zone"
+      }
+     },
+     {
+      "name": "type",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/SensorType"
+         }
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Type"
+      }
+     },
+     {
+      "name": "emplacement",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Emplacement"
+      }
+     },
+     {
+      "name": "debut",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date-time"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Debut"
+      }
+     },
+     {
+      "name": "fin",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date-time"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Fin"
+      }
+     },
+     {
+      "name": "agregat",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "enum": [
+        "brut",
+        "moy_15min",
+        "moy_1h"
+       ],
+       "type": "string",
+       "default": "moy_15min",
+       "title": "Agregat"
+      }
+     },
+     {
+      "name": "max_points",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 2000,
+       "minimum": 10,
+       "default": 500,
+       "title": "Max Points"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Mesures Api Mesures Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/zones/{zid}/tableau": {
+   "get": {
+    "tags": [
+     "mesures"
+    ],
+    "summary": "Dashboard",
+    "description": "Dashboard of a zone (docs/12 §2.3): current values against the setpoint range,\n24 h mini-curves, actuator states, last image with its classifications, active\nalerts and proposals waiting for a validation.",
+    "operationId": "dashboard_api_zones__zid__tableau_get",
+    "parameters": [
+     {
+      "name": "zid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Zid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Dashboard Api Zones  Zid  Tableau Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/vision": {
+   "get": {
+    "tags": [
+     "mesures"
+    ],
+    "summary": "Vision",
+    "operationId": "vision_api_vision_get",
+    "parameters": [
+     {
+      "name": "emplacement",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Emplacement"
+      }
+     },
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     },
+     {
+      "name": "debut",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date-time"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Debut"
+      }
+     },
+     {
+      "name": "fin",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date-time"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Fin"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 1000,
+       "minimum": 1,
+       "default": 200,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response Vision Api Vision Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/images/{image_id}": {
+   "get": {
+    "tags": [
+     "mesures"
+    ],
+    "summary": "Image",
+    "description": "The JPEG of a capture; `gradcam=1`: its Grad-CAM map (`<id>.gradcam.jpg`) when the\ncamera_service or an offline replay produced one.",
+    "operationId": "image_api_images__image_id__get",
+    "parameters": [
+     {
+      "name": "image_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Image Id"
+      }
+     },
+     {
+      "name": "gradcam",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Gradcam"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/images": {
+   "post": {
+    "tags": [
+     "mesures"
+    ],
+    "summary": "Upload",
+    "description": "Archive of the captures on the server (the results themselves come by MQTT).",
+    "operationId": "upload_api_images_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Upload"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Upload Api Images Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/consommation": {
+   "get": {
+    "tags": [
+     "consommation"
+    ],
+    "summary": "Consommation",
+    "operationId": "consommation_api_consommation_get",
+    "parameters": [
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     },
+     {
+      "name": "periode",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "enum": [
+        "jour",
+        "semaine",
+        "mois"
+       ],
+       "type": "string",
+       "default": "semaine",
+       "title": "Periode"
+      }
+     },
+     {
+      "name": "jour",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Jour"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Consommation Api Consommation Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/alertes": {
+   "get": {
+    "tags": [
+     "alertes"
+    ],
+    "summary": "List Alertes",
+    "description": "`actives`: not acknowledged yet.",
+    "operationId": "list_alertes_api_alertes_get",
+    "parameters": [
+     {
+      "name": "actives",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Actives"
+      }
+     },
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     },
+     {
+      "name": "niveau",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Niveau"
+      }
+     },
+     {
+      "name": "debut",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date-time"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Debut"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 2000,
+       "minimum": 1,
+       "default": 200,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response List Alertes Api Alertes Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/alertes/{alerte_id}/acquitter": {
+   "post": {
+    "tags": [
+     "alertes"
+    ],
+    "summary": "Acknowledge",
+    "operationId": "acknowledge_api_alertes__alerte_id__acquitter_post",
+    "parameters": [
+     {
+      "name": "alerte_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Alerte Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Acknowledge Api Alertes  Alerte Id  Acquitter Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/decisions": {
+   "get": {
+    "tags": [
+     "decisions"
+    ],
+    "summary": "List Decisions",
+    "operationId": "list_decisions_api_decisions_get",
+    "parameters": [
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     },
+     {
+      "name": "debut",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date-time"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Debut"
+      }
+     },
+     {
+      "name": "fin",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date-time"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Fin"
+      }
+     },
+     {
+      "name": "type",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Type"
+      }
+     },
+     {
+      "name": "statut",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Statut"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 2000,
+       "minimum": 1,
+       "default": 200,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response List Decisions Api Decisions Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/decisions/{decision_id}": {
+   "get": {
+    "tags": [
+     "decisions"
+    ],
+    "summary": "Get Decision",
+    "description": "Record of a decision (docs/12, \"fiche décision\"): evidence, orders, actions and the\ncommands that point to it.",
+    "operationId": "get_decision_api_decisions__decision_id__get",
+    "parameters": [
+     {
+      "name": "decision_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Decision Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Decision Api Decisions  Decision Id  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/decisions/{decision_id}/valider": {
+   "post": {
+    "tags": [
+     "decisions"
+    ],
+    "summary": "Validate",
+    "description": "The controller runs the orders of the decision through safety.py, then publishes it\nagain (`executee` or `bloquee_securite`) with its commands. A setpoint change of the\nagent is applied here, to the recipe (new `config_version`).",
+    "operationId": "validate_api_decisions__decision_id__valider_post",
+    "parameters": [
+     {
+      "name": "decision_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Decision Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Reponse"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Validate Api Decisions  Decision Id  Valider Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/decisions/{decision_id}/rejeter": {
+   "post": {
+    "tags": [
+     "decisions"
+    ],
+    "summary": "Reject",
+    "operationId": "reject_api_decisions__decision_id__rejeter_post",
+    "parameters": [
+     {
+      "name": "decision_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Decision Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Reponse"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Reject Api Decisions  Decision Id  Rejeter Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/actions/arbre": {
+   "get": {
+    "tags": [
+     "actions"
+    ],
+    "summary": "Tree",
+    "description": "Greenhouse → zones → routines (aggregated) / exceptional / safety / manual →\ndecisions → actions, over [debut, fin) (default: the last 24 h).",
+    "operationId": "tree_api_actions_arbre_get",
+    "parameters": [
+     {
+      "name": "zone",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Zone"
+      }
+     },
+     {
+      "name": "debut",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date-time"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Debut"
+      }
+     },
+     {
+      "name": "fin",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date-time"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Fin"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Tree Api Actions Arbre Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/actions/manuelle": {
+   "post": {
+    "tags": [
+     "actions"
+    ],
+    "summary": "Manual",
+    "description": "A manual order: a decision `manuelle`, born `validee`, that the controller runs\nthrough safety.py like any other (docs/10 §1: no command without a decision).",
+    "operationId": "manual_api_actions_manuelle_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Manuelle"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Manual Api Actions Manuelle Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agent/statut": {
+   "get": {
+    "tags": [
+     "agent"
+    ],
+    "summary": "Status",
+    "description": "Whether the chat is available (the UI shows a banner otherwise).",
+    "operationId": "status_api_agent_statut_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Status Api Agent Statut Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agent/chat": {
+   "post": {
+    "tags": [
+     "agent"
+    ],
+    "summary": "Chat",
+    "operationId": "chat_api_agent_chat_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Message"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agent/conversations": {
+   "get": {
+    "tags": [
+     "agent"
+    ],
+    "summary": "Conversations",
+    "operationId": "conversations_api_agent_conversations_get",
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 50,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response Conversations Api Agent Conversations Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agent/conversations/{conversation_id}": {
+   "get": {
+    "tags": [
+     "agent"
+    ],
+    "summary": "Conversation",
+    "description": "The conversation, its full log and its proposals with their current status.",
+    "operationId": "conversation_api_agent_conversations__conversation_id__get",
+    "parameters": [
+     {
+      "name": "conversation_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Conversation Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Conversation Api Agent Conversations  Conversation Id  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "ActionneurIn": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+      "title": "Id"
+     },
+     "zone_id": {
+      "type": "string",
+      "pattern": "^z\\d+$",
+      "title": "Zone Id"
+     },
+     "type": {
+      "$ref": "#/components/schemas/Actuator"
+     },
+     "noeud": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+      "title": "Noeud"
+     },
+     "commande": {
+      "type": "string",
+      "pattern": "^(on_off|pwm)$",
+      "title": "Commande",
+      "default": "on_off"
+     },
+     "puissance_w": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Puissance W"
+     },
+     "debit_l_h": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Debit L H"
+     },
+     "debit_ml_min": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Debit Ml Min"
+     },
+     "ppfd_max": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ppfd Max"
+     },
+     "duree_max_s": {
+      "anyOf": [
+       {
+        "type": "number",
+        "exclusiveMinimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Duree Max S"
+     },
+     "parametres": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Parametres"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "zone_id",
+     "type",
+     "noeud"
+    ],
+    "title": "ActionneurIn"
+   },
+   "ActionneurPatch": {
+    "properties": {
+     "noeud": {
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Noeud"
+     },
+     "commande": {
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^(on_off|pwm)$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Commande"
+     },
+     "puissance_w": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Puissance W"
+     },
+     "debit_l_h": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Debit L H"
+     },
+     "debit_ml_min": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Debit Ml Min"
+     },
+     "ppfd_max": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ppfd Max"
+     },
+     "duree_max_s": {
+      "anyOf": [
+       {
+        "type": "number",
+        "exclusiveMinimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Duree Max S"
+     },
+     "parametres": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Parametres"
+     }
+    },
+    "type": "object",
+    "title": "ActionneurPatch"
+   },
+   "Actuator": {
+    "type": "string",
+    "enum": [
+     "pompe_nutri",
+     "pompe_ph_down",
+     "pompe_nutri_a",
+     "pompe_nutri_b",
+     "ventilo",
+     "led",
+     "brumisateur",
+     "chauffage"
+    ],
+    "title": "Actuator"
+   },
+   "CameraIn": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+      "title": "Id"
+     },
+     "zone_id": {
+      "type": "string",
+      "pattern": "^z\\d+$",
+      "title": "Zone Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "zone_id"
+    ],
+    "title": "CameraIn"
+   },
+   "CameraPatch": {
+    "properties": {
+     "zone_id": {
+      "type": "string",
+      "pattern": "^z\\d+$",
+      "title": "Zone Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "zone_id"
+    ],
+    "title": "CameraPatch"
+   },
+   "CapteurIn": {
+    "properties": {
+     "materiel": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Materiel"
+     },
+     "noeud": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+      "title": "Noeud"
+     },
+     "zone": {
+      "type": "string",
+      "pattern": "^z\\d+$",
+      "title": "Zone"
+     },
+     "type": {
+      "$ref": "#/components/schemas/SensorType"
+     },
+     "emplacement": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Emplacement"
+     },
+     "modele": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Modele"
+     },
+     "cuve_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cuve Id"
+     },
+     "etalonnage": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Etalonnage"
+     },
+     "plage_min": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Plage Min"
+     },
+     "plage_max": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Plage Max"
+     },
+     "emplacements_couverts": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Emplacements Couverts"
+     }
+    },
+    "type": "object",
+    "required": [
+     "noeud",
+     "zone",
+     "type"
+    ],
+    "title": "CapteurIn"
+   },
+   "CapteurPatch": {
+    "properties": {
+     "materiel": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Materiel"
+     },
+     "modele": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Modele"
+     },
+     "cuve_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cuve Id"
+     },
+     "etalonnage": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Etalonnage"
+     },
+     "plage_min": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Plage Min"
+     },
+     "plage_max": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Plage Max"
+     },
+     "emplacements_couverts": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Emplacements Couverts"
+     }
+    },
+    "type": "object",
+    "title": "CapteurPatch"
+   },
+   "ContenantIn": {
+    "properties": {
+     "type": {
+      "type": "string",
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Type"
+     },
+     "volume_l": {
+      "anyOf": [
+       {
+        "type": "number",
+        "exclusiveMinimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Volume L"
+     },
+     "materiau": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Materiau"
+     },
+     "drainage": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Drainage"
+     }
+    },
+    "type": "object",
+    "required": [
+     "type"
+    ],
+    "title": "ContenantIn"
+   },
+   "ContenantPatch": {
+    "properties": {
+     "type": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 32,
+        "minLength": 1
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Type"
+     },
+     "volume_l": {
+      "anyOf": [
+       {
+        "type": "number",
+        "exclusiveMinimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Volume L"
+     },
+     "materiau": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Materiau"
+     },
+     "drainage": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Drainage"
+     }
+    },
+    "type": "object",
+    "title": "ContenantPatch"
+   },
+   "CuveIn": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+      "title": "Id"
+     },
+     "serre_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Serre Id"
+     },
+     "volume_l": {
+      "anyOf": [
+       {
+        "type": "number",
+        "exclusiveMinimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Volume L"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id"
+    ],
+    "title": "CuveIn"
+   },
+   "CuvePatch": {
+    "properties": {
+     "volume_l": {
+      "anyOf": [
+       {
+        "type": "number",
+        "exclusiveMinimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Volume L"
+     }
+    },
+    "type": "object",
+    "title": "CuvePatch"
+   },
+   "Deplacer": {
+    "properties": {
+     "emplacement": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Emplacement"
+     }
+    },
+    "type": "object",
+    "required": [
+     "emplacement"
+    ],
+    "title": "Deplacer"
+   },
+   "EmplacementIn": {
+    "properties": {
+     "zone_id": {
+      "type": "string",
+      "pattern": "^z\\d+$",
+      "title": "Zone Id"
+     },
+     "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{1,12}$",
+      "title": "Code"
+     },
+     "mode_culture": {
+      "type": "string",
+      "enum": [
+       "terre",
+       "substrat",
+       "hydro_nft",
+       "hydro_dwc",
+       "ebb_flow",
+       "aeroponie"
+      ],
+      "title": "Mode Culture"
+     },
+     "rangee": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "minimum": 1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rangee"
+     },
+     "colonne": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "minimum": 1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Colonne"
+     },
+     "contenant_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contenant Id"
+     },
+     "contenant": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ContenantIn"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "zone_id",
+     "code",
+     "mode_culture"
+    ],
+    "title": "EmplacementIn"
+   },
+   "EmplacementPatch": {
+    "properties": {
+     "mode_culture": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "terre",
+         "substrat",
+         "hydro_nft",
+         "hydro_dwc",
+         "ebb_flow",
+         "aeroponie"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mode Culture"
+     },
+     "rangee": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "minimum": 1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rangee"
+     },
+     "colonne": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "minimum": 1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Colonne"
+     },
+     "contenant_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contenant Id"
+     },
+     "contenant": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ContenantIn"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "title": "EmplacementPatch"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "Login": {
+    "properties": {
+     "mot_de_passe": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Mot De Passe"
+     },
+     "utilisateur": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Utilisateur",
+      "default": "ui"
+     }
+    },
+    "type": "object",
+    "required": [
+     "mot_de_passe"
+    ],
+    "title": "Login"
+   },
+   "Manuelle": {
+    "properties": {
+     "zone": {
+      "type": "string",
+      "pattern": "^z\\d+$",
+      "title": "Zone"
+     },
+     "actionneur": {
+      "$ref": "#/components/schemas/Actuator"
+     },
+     "action": {
+      "type": "string",
+      "enum": [
+       "on",
+       "off",
+       "pwm"
+      ],
+      "title": "Action"
+     },
+     "valeur": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Valeur"
+     },
+     "duree_s": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Duree S"
+     },
+     "utilisateur": {
+      "type": "string",
+      "title": "Utilisateur",
+      "default": "ui"
+     },
+     "justification": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Justification"
+     }
+    },
+    "type": "object",
+    "required": [
+     "zone",
+     "actionneur",
+     "action",
+     "justification"
+    ],
+    "title": "Manuelle"
+   },
+   "Message": {
+    "properties": {
+     "message": {
+      "type": "string",
+      "maxLength": 8000,
+      "minLength": 1,
+      "title": "Message"
+     },
+     "conversation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Conversation Id"
+     },
+     "utilisateur": {
+      "type": "string",
+      "title": "Utilisateur",
+      "default": "ui"
+     }
+    },
+    "type": "object",
+    "required": [
+     "message"
+    ],
+    "title": "Message"
+   },
+   "Periode": {
+    "properties": {
+     "debut": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "title": "Debut"
+     },
+     "fin": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "title": "Fin"
+     }
+    },
+    "type": "object",
+    "required": [
+     "debut",
+     "fin"
+    ],
+    "title": "Periode"
+   },
+   "PlanteIn": {
+    "properties": {
+     "id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Id"
+     },
+     "espece": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Espece"
+     },
+     "variete": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Variete"
+     },
+     "date_semis": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Date Semis"
+     },
+     "date_plantation": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Date Plantation"
+     },
+     "stade": {
+      "type": "string",
+      "maxLength": 16,
+      "minLength": 1,
+      "title": "Stade"
+     },
+     "recette_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Recette Id"
+     },
+     "prioritaire": {
+      "type": "boolean",
+      "title": "Prioritaire",
+      "default": false
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     },
+     "emplacement": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Emplacement"
+     }
+    },
+    "type": "object",
+    "required": [
+     "espece",
+     "stade"
+    ],
+    "title": "PlanteIn"
+   },
+   "PlantePatch": {
+    "properties": {
+     "espece": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64,
+        "minLength": 1
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Espece"
+     },
+     "variete": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Variete"
+     },
+     "date_semis": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Date Semis"
+     },
+     "date_plantation": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Date Plantation"
+     },
+     "stade": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 16,
+        "minLength": 1
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Stade"
+     },
+     "recette_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Recette Id"
+     },
+     "etat_sante": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "sain",
+         "a_surveiller",
+         "malade",
+         "isolee",
+         "retiree"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Etat Sante"
+     },
+     "prioritaire": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prioritaire"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "title": "PlantePatch"
+   },
+   "RecetteIn": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+      "title": "Id"
+     },
+     "espece": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Espece"
+     },
+     "stades": {
+      "additionalProperties": true,
+      "type": "object",
+      "minProperties": 1,
+      "title": "Stades"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "espece",
+     "stades"
+    ],
+    "title": "RecetteIn"
+   },
+   "RecettePatch": {
+    "properties": {
+     "espece": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64,
+        "minLength": 1
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Espece"
+     },
+     "stades": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Stades"
+     }
+    },
+    "type": "object",
+    "title": "RecettePatch"
+   },
+   "Region": {
+    "properties": {
+     "emplacement_id": {
+      "type": "string",
+      "title": "Emplacement Id"
+     },
+     "bbox": {
+      "anyOf": [
+       {
+        "prefixItems": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "number"
+         },
+         {
+          "type": "number"
+         },
+         {
+          "type": "number"
+         }
+        ],
+        "type": "array",
+        "maxItems": 4,
+        "minItems": 4
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Bbox"
+     }
+    },
+    "type": "object",
+    "required": [
+     "emplacement_id"
+    ],
+    "title": "Region"
+   },
+   "Regions": {
+    "properties": {
+     "regions": {
+      "items": {
+       "$ref": "#/components/schemas/Region"
+      },
+      "type": "array",
+      "title": "Regions"
+     }
+    },
+    "type": "object",
+    "required": [
+     "regions"
+    ],
+    "title": "Regions"
+   },
+   "Reponse": {
+    "properties": {
+     "utilisateur": {
+      "type": "string",
+      "title": "Utilisateur",
+      "default": "ui"
+     },
+     "commentaire": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Commentaire"
+     }
+    },
+    "type": "object",
+    "title": "Reponse"
+   },
+   "SensorType": {
+    "type": "string",
+    "enum": [
+     "temperature",
+     "humidite",
+     "co2",
+     "lux",
+     "ph",
+     "ec",
+     "temp_eau",
+     "niveau_cuve",
+     "pression",
+     "presence",
+     "humidite_sol"
+    ],
+    "title": "SensorType"
+   },
+   "SerreIn": {
+    "properties": {
+     "nom": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Nom"
+     },
+     "fuseau": {
+      "type": "string",
+      "title": "Fuseau",
+      "default": "Europe/Paris"
+     },
+     "tarif_kwh": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tarif Kwh"
+     },
+     "lux_vers_ppfd": {
+      "type": "number",
+      "exclusiveMinimum": 0.0,
+      "title": "Lux Vers Ppfd",
+      "default": 0.0185
+     }
+    },
+    "type": "object",
+    "required": [
+     "nom"
+    ],
+    "title": "SerreIn"
+   },
+   "SerrePatch": {
+    "properties": {
+     "nom": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 128,
+        "minLength": 1
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Nom"
+     },
+     "fuseau": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fuseau"
+     },
+     "tarif_kwh": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tarif Kwh"
+     },
+     "lux_vers_ppfd": {
+      "anyOf": [
+       {
+        "type": "number",
+        "exclusiveMinimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lux Vers Ppfd"
+     },
+     "parametres": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Parametres"
+     }
+    },
+    "type": "object",
+    "title": "SerrePatch"
+   },
+   "Upload": {
+    "properties": {
+     "resultat": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Resultat"
+     },
+     "extras": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Extras",
+      "default": {}
+     },
+     "jpeg_b64": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Jpeg B64"
+     }
+    },
+    "type": "object",
+    "required": [
+     "resultat"
+    ],
+    "title": "Upload",
+    "description": "Record sent by `edge.archive.Uploader` (`http_send`)."
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   },
+   "ZoneIn": {
+    "properties": {
+     "id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^z\\d+$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Id"
+     },
+     "serre_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Serre Id"
+     },
+     "nom": {
+      "type": "string",
+      "title": "Nom",
+      "default": ""
+     },
+     "cuve_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cuve Id"
+     },
+     "jour_debut": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "title": "Jour Debut",
+      "default": "06:00"
+     },
+     "presence_autorisee": {
+      "items": {
+       "$ref": "#/components/schemas/Periode"
+      },
+      "type": "array",
+      "title": "Presence Autorisee",
+      "default": []
+     }
+    },
+    "type": "object",
+    "title": "ZoneIn"
+   },
+   "ZonePatch": {
+    "properties": {
+     "nom": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Nom"
+     },
+     "cuve_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cuve Id"
+     },
+     "jour_debut": {
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^\\d{2}:\\d{2}$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Jour Debut"
+     },
+     "presence_autorisee": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/Periode"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Presence Autorisee"
+     }
+    },
+    "type": "object",
+    "title": "ZonePatch"
+   }
+  }
+ }
+}
