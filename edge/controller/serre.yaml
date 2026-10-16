@@ -6,6 +6,7 @@
 config_version: 1
 nom: Maison
 fuseau: Europe/Paris
+tarif_kwh: 0.25
 recettes: edge/controller/recettes.yaml
 
 zones:
@@ -32,11 +33,13 @@ actionneurs:
   - {id: chauffage-z1, zone: z1, type: chauffage, puissance_w: 1500}
   - {id: brumisateur-z1, zone: z1, type: brumisateur, duree_s: 60, delai_min_s: 600, puissance_w: 30}
   - {id: led-z1, zone: z1, type: led, commande: pwm, puissance_w: 240, ppfd_max: 450}
-  - {id: arrosage-z1, zone: z1, type: pompe_nutri, duree_s: 45, duree_max_s: 120, delai_min_s: 3600, puissance_w: 20}
+  - {id: arrosage-z1, zone: z1, type: pompe_nutri, duree_s: 45, duree_max_s: 120, delai_min_s: 3600, puissance_w: 20,
+     debit_l_h: 120}
   # z2
   - {id: ventilo-z2, zone: z2, type: ventilo, commande: pwm, puissance_w: 40}
   - {id: led-z2, zone: z2, type: led, commande: pwm, puissance_w: 240, ppfd_max: 450}
-  - {id: pompe-nft-z2, zone: z2, type: pompe_nutri, duree_s: 900, duree_max_s: 1800, delai_min_s: 1800, puissance_w: 25}
+  - {id: pompe-nft-z2, zone: z2, type: pompe_nutri, duree_s: 900, duree_max_s: 1800, delai_min_s: 1800, puissance_w: 25,
+     debit_l_h: 300}
   - {id: ph-down-z2, zone: z2, type: pompe_ph_down, impulsion_s: 2, duree_max_s: 10, melange_s: 600}
   - {id: nutri-a-z2, zone: z2, type: pompe_nutri_a, impulsion_s: 3, duree_max_s: 15, melange_s: 900}
   - {id: nutri-b-z2, zone: z2, type: pompe_nutri_b, impulsion_s: 3, duree_max_s: 15, melange_s: 900}

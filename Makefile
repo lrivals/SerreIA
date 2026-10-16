@@ -15,4 +15,29 @@ harvest-all:
 notebooks:
 	python -m tools.notebooks.build
 
-.PHONY: harvest harvest-all notebooks
+# Server stack (docs/09 §7): TimescaleDB + Grafana (+ mosquitto for development).
+# Database URL: $$SERREIA_DB, default postgresql+psycopg://serreia:serreia@localhost:5432/serreia
+PY ?= python
+COMPOSE := docker compose -f backend/docker-compose.yml --profile broker
+
+stack-up:
+	$(COMPOSE) up -d
+
+stack-down:
+	$(COMPOSE) down
+
+db-init:
+	$(PY) -m backend.db.seed
+
+ingest:
+	$(PY) -m backend.ingestion
+
+# The last 24 h simulated at full speed and ingested (no broker), then the dashboard.
+sim-demo:
+	$(PY) -m backend.ingestion --sim --duree-h 24 --debut $$(date -u -d '-24 hours' +%Y-%m-%dT%H:%M:%S+00:00)
+
+# Real-time simulator + controller on the broker (run `make ingest` alongside).
+sim-live:
+	$(PY) -m sim --avec-controleur
+
+.PHONY: harvest harvest-all notebooks stack-up stack-down db-init ingest sim-demo sim-live

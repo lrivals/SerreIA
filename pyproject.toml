@@ -53,10 +53,12 @@ notebook = [
     "nbformat",
     "ipywidgets",
 ]
-backend = [
+backend = [  # server (docs/09, 12): database, MQTT ingestion, API
+    "sqlalchemy>=2",
+    "psycopg[binary]",
+    "pyyaml",
     "fastapi",
     "uvicorn",
-    "psycopg",
 ]
 
 [dependency-groups]

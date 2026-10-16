@@ -87,6 +87,7 @@ class ActionneurCfg(_Cfg):
     marche_min_s: float = 300.0  # regulation: minimal "on" time (no short cycles)
     puissance_w: float | None = None
     ppfd_max: float | None = None  # LED: µmol/m²/s at canopy level, 100 %
+    debit_l_h: float | None = None  # pumps: flow, base of the water estimate (docs/09 §5)
 
     @model_validator(mode="after")
     def _pump_bounded(self) -> "ActionneurCfg":
@@ -137,6 +138,7 @@ class SerreCfg(_Cfg):
     config_version: int = Field(ge=0)
     nom: str = "serre"
     fuseau: str = "Europe/Paris"
+    tarif_kwh: float | None = None  # €/kWh, cost of the estimated consumption (docs/09 §5)
     recettes: Path = Path("edge/controller/recettes.yaml")
     zones: list[ZoneCfg] = Field(min_length=1)
     actionneurs: list[ActionneurCfg] = Field(default_factory=list)
