@@ -31,7 +31,7 @@ Choix structurants :
 ## État actuel (16/10/2026)
 
 - ✅ Données rangées (`data/plantvillage`, `data/ccmt`, `data/plantdoc`), taxonomie unifiée et **`data/index.parquet`** généré : 88 135 images, 16 espèces, 56 classes, splits groupés sans fuite (détail dans [02-donnees](docs/02-donnees.md)).
-- ⚠️ GPU NVIDIA RTX 1000 Ada (6 Go) présent, mais le driver ne répond pas (`nvidia-smi`) → voir [08-environnement](docs/08-environnement.md).
+- ⚠️ GPU NVIDIA RTX 1000 Ada (6 Go) présent, mais aucun driver installé (`nvidia-smi`) : installer `nvidia-driver-595-open` puis `make cuda-torch` → voir [08-environnement](docs/08-environnement.md). État du poste : `make check-env`.
 - ✅ Squelette du dépôt, `pyproject.toml` et **contrat MQTT** (`common/mqtt/`, testé) en place — cf. [01-architecture](docs/01-architecture.md).
 - ✅ **Classifieur phase 1** écrit (dataset, augmentations + remplacement de fond, modèle multi-têtes, entraînement MLflow, évaluation cross-domain, Grad-CAM, export ONNX) et testé sur CPU — cf. [03-classifieur](docs/03-classifieur.md). **Notebooks Colab** (`notebooks/`, données servies par Google Drive) pour lancer les entraînements et les ablations A–E sur GPU ; reste à constituer `data/backgrounds/`.
 - ✅ Données archivées sur **Google Drive** (`tools/get_datasets.sh`, rclone) — cf. [data-drive](docs/data-drive.md).
@@ -46,7 +46,10 @@ Choix structurants :
 Disponible dès maintenant :
 ```bash
 uv sync                                                # dépendances de base + dev
-uv run pytest                                          # tests (contrat MQTT, taxonomie, index)
+make setup                                             # poste complet (vision, notebook, backend, controle)
+make check-env                                         # diagnostic : driver, torch/CUDA, extras, outils
+make test                                              # tests (contrat MQTT, taxonomie, index…)
+make lint                                              # ruff format + check
 ```
 
 Classifieur (phase 1) :
@@ -57,7 +60,7 @@ uv run python -m vision.train.train_classifier --config configs/clf_effnet_b0.ya
 uv run python -m vision.eval.cross_domain_eval --run <run_id>
 uv run python -m vision.eval.gradcam --run <run_id>
 uv run python -m vision.export.to_onnx --run <run_id>
-uv run mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db   # suivi des expériences
+make mlflow                                            # suivi des expériences (mlruns/mlflow.db)
 ```
 
 Edge, sur PC sans Pi ni broker (doc 05 §7) :
