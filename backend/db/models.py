@@ -45,6 +45,8 @@ class Serre(Base):
     tarif_kwh: Mapped[float | None] = mapped_column(Float)
     lux_vers_ppfd: Mapped[float] = mapped_column(Float, default=0.0185)
     config_version: Mapped[int] = mapped_column(Integer, default=0)
+    # Controller parameters of serre.yaml (hysteresis, securite, risque, lumiere, prevision).
+    parametres: Mapped[dict | None] = mapped_column(Json)
 
 
 class Cuve(Base):
@@ -63,6 +65,7 @@ class Zone(Base):
     nom: Mapped[str] = mapped_column(String(128), default="")
     cuve_id: Mapped[str | None] = mapped_column(ForeignKey("cuve.id"))
     jour_debut: Mapped[str] = mapped_column(String(5), default="06:00")  # local time
+    presence_autorisee: Mapped[list | None] = mapped_column(Json)  # [{debut, fin}]
 
 
 class Contenant(Base):
@@ -139,6 +142,7 @@ class Capteur(Base):
     __tablename__ = "capteur"
 
     id: Mapped[str] = mapped_column(String(128), primary_key=True)  # esp32-01-temperature
+    materiel: Mapped[str | None] = mapped_column(String(64))  # declared device (sht41-z1)
     noeud: Mapped[str] = mapped_column(String(64))
     zone: Mapped[str] = mapped_column(String(16), index=True)
     type: Mapped[str] = mapped_column(String(32))  # SensorType
@@ -168,8 +172,11 @@ class Actionneur(Base):
     commande: Mapped[str] = mapped_column(String(8), default="on_off")
     puissance_w: Mapped[float | None] = mapped_column(Float)
     debit_l_h: Mapped[float | None] = mapped_column(Float)
+    debit_ml_min: Mapped[float | None] = mapped_column(Float)  # dosing pumps
     ppfd_max: Mapped[float | None] = mapped_column(Float)
     duree_max_s: Mapped[float | None] = mapped_column(Float)
+    # Controller timings of serre.yaml (duree_s, impulsion_s, melange_s, delai_min_s…).
+    parametres: Mapped[dict | None] = mapped_column(Json)
 
 
 class Camera(Base):
@@ -179,12 +186,25 @@ class Camera(Base):
     zone_id: Mapped[str] = mapped_column(ForeignKey("zone.id"))
 
 
+class ConfigExport(Base):
+    """One exported version of serre.yaml (docs/09 §8): decisions record the
+    `config_version` they ran with, this table gives back its exact content."""
+
+    __tablename__ = "config_export"
+
+    version: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ts: Mapped[datetime] = mapped_column(Ts)
+    sha256: Mapped[str] = mapped_column(String(64))  # of the content without the version
+    contenu: Mapped[dict] = mapped_column(Json)
+
+
 class CameraRegion(Base):
     __tablename__ = "camera_region"
 
     camera_id: Mapped[str] = mapped_column(ForeignKey("camera.id"), primary_key=True)
     emplacement_id: Mapped[str] = mapped_column(ForeignKey("emplacement.id"), primary_key=True)
-    bbox: Mapped[list] = mapped_column(Json)  # [x, y, w, h] normalised to [0, 1]
+    # [x, y, w, h] normalised to [0, 1]; None: visible emplacement without a region.
+    bbox: Mapped[list | None] = mapped_column(Json)
 
 
 # --- time series (hypertables) -------------------------------------------------------
@@ -315,6 +335,7 @@ class ConsommationJour(Base):
     duree_on_s: Mapped[float] = mapped_column(Float)  # weighted by the PWM duty cycle
     kwh: Mapped[float | None] = mapped_column(Float)
     litres: Mapped[float | None] = mapped_column(Float)
+    ml: Mapped[float | None] = mapped_column(Float)  # dosing pumps: inputs (pH−, A, B)
     dli: Mapped[float | None] = mapped_column(Float)  # LED only, mol/m²/day
     cout: Mapped[float | None] = mapped_column(Float)
 

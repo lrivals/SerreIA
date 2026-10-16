@@ -75,3 +75,14 @@ def test_vision_confirmation_adds_evidence():
     assert p.preuves.vision[0].confirmations == 3
     z.on_vision(vision(3, classe="tomate/maladie/septoriose"))
     assert risk.confirmed(z, "mildiou") == []  # the streak is broken
+
+
+def test_cameras_seeing_only_out_of_taxonomy_species_are_ignored():
+    s = GreenhouseState()
+    for i in range(3):
+        s.zone("z1").vision.append(vision(i))
+    assert len(risk.confirmed(s.zone("z1"), "mildiou")) == 3
+    assert risk.confirmed(s.zone("z1"), "mildiou", allowed=lambda cam: False) == []
+    gh = greenhouse()
+    gh.especes = frozenset()  # the tomato of cam-z1-a is now out of taxonomy too
+    assert risk.mildew_risk(ctx(gh, s, "z1", NIGHT)).vision == []

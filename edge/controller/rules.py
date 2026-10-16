@@ -10,7 +10,7 @@
 | `ec.nutriments` | EC < min → one pulse of A and of B, same logic; EC > max → alert |
 | `lumiere.photoperiode` | LEDs only inside the photoperiod; with lux + DLI target: complement |
 | `sol.arrosage` | soil of an emplacement < min of its recipe → watering, every `delai_min_s` |
-| `hydro.circulation` | hydro zone: nutrient pump cycles of `duree_s` every `delai_min_s` |
+| `hydro.circulation` | hydro zone, except DWC: pump cycles of `duree_s` every `delai_min_s` |
 | `presence.intrusion` | presence outside the declared ranges (night) → alert; inside: logged |
 
 Rules are stateless and evaluated at every tick: they return what they want and the
@@ -23,6 +23,7 @@ from datetime import timedelta
 
 from common.mqtt import Actuator, Preuves, SensorType
 
+from .config import HYDRO
 from .context import Ctx
 from .decisions import AlertSpec, Order, Proposal, evidence, fmt, rule
 
@@ -350,6 +351,8 @@ def soil(ctx: Ctx) -> list[Proposal]:
 def circulation(ctx: Ctx) -> list[Proposal]:
     cfg = ctx.act(Actuator.POMPE_NUTRI)
     if cfg is None or not ctx.zcfg.hydro or ctx.since_on(Actuator.POMPE_NUTRI) < cfg.delai_min_s:
+        return []
+    if ctx.zcfg.modes & set(HYDRO) <= {"hydro_dwc"}:  # DWC: immersed roots, no cycles
         return []
     duree = cfg.duree_s or 600.0
     msg = f"cycle de circulation {duree:g} s toutes les {cfg.delai_min_s / 60:g} min"

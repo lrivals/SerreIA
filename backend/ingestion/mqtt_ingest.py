@@ -29,6 +29,7 @@ from common.mqtt.schemas import (
     SensorReading,
     VisionResult,
 )
+from edge.controller.config import capteur_id
 
 from ..db import models as m
 from ..db.session import insert, utc
@@ -36,10 +37,6 @@ from ..db.session import insert, utc
 log = logging.getLogger(__name__)
 
 MAX_PENDING = 200_000  # rows kept while the database is unreachable
-
-
-def capteur_id(noeud: str, sensor: str, emplacement: str | None = None) -> str:
-    return f"{noeud}-{sensor}" + (f"-{emplacement}" if emplacement else "")
 
 
 class Ingestor:
@@ -66,7 +63,7 @@ class Ingestor:
             self.actuators = {(a.zone_id, a.type): a.id for a in s.scalars(select(m.Actionneur))}
             self.emplacements = set(s.scalars(select(m.Emplacement.id)))
             self.capteurs = set(s.scalars(select(m.Capteur.id)))
-            self.regions: dict[str, list[tuple[str, list[float]]]] = defaultdict(list)
+            self.regions: dict[str, list[tuple[str, list[float] | None]]] = defaultdict(list)
             for r in s.scalars(select(m.CameraRegion)):
                 self.regions[r.camera_id].append((r.emplacement_id, r.bbox))
 
@@ -276,14 +273,18 @@ class Ingestor:
 
 
 def resolve_emplacement(
-    bbox: tuple[float, float, float, float] | None, regions: list[tuple[str, list[float]]]
+    bbox: tuple[float, float, float, float] | None,
+    regions: list[tuple[str, list[float] | None]],
 ) -> str | None:
     """Emplacement of a detection (docs/09 §4): the region containing the bbox centre;
-    without bbox (phase 1, whole image), the only emplacement seen by the camera if any."""
-    if bbox is None:
-        return regions[0][0] if len(regions) == 1 else None
-    cx, cy = bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2
-    for emplacement, (x, y, w, h) in regions:
-        if x <= cx <= x + w and y <= cy <= y + h:
-            return emplacement
-    return None
+    otherwise (phase 1 whole image, or no matching region), the only emplacement seen by
+    the camera if any. `regions`: (visible emplacement, its region or None)."""
+    if bbox is not None:
+        cx, cy = bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2
+        for emplacement, region in regions:
+            if region is None:
+                continue
+            x, y, w, h = region
+            if x <= cx <= x + w and y <= cy <= y + h:
+                return emplacement
+    return regions[0][0] if len(regions) == 1 else None

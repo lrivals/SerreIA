@@ -806,6 +806,50 @@
         "overrides": []
       },
       "options": {}
+    },
+    {
+      "id": 25,
+      "type": "timeseries",
+      "title": "Intrants des pompes doseuses (mL/jour)",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "timescale"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 66,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "timescale"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT jour::timestamptz AS time, actionneur_id AS metric, ml\nFROM consommation_jour\nWHERE jour BETWEEN $__timeFrom()::date - 1 AND $__timeTo()::date AND zone = '$zone' AND ml IS NOT NULL\nORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "stacking": {
+              "mode": "normal"
+            },
+            "barAlignment": 0,
+            "lineWidth": 1
+          },
+          "unit": "mlitre"
+        },
+        "overrides": []
+      },
+      "options": {}
     }
   ]
 }

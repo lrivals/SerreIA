@@ -78,7 +78,7 @@ Sans Pi ni Hailo, tout tourne sur PC : les modèles passent par **ONNX Runtime**
 | `vision/export/evaluate_backend.py` | écart ONNX / INT8 (émulateur DFC ou HEF) et porte anti-régression (§5) |
 | `edge/vision/` | backends ONNX / Hailo, YOLO (letterbox, NMS), classifieur, balance des blancs, pipeline → `VisionResult` |
 | `edge/camera_service.py` | planification, `cmd/capture`, LED, inférence, publication, archive (`edge/archive.py`) |
-| `edge/controller/vision_alerts.py` | lissage N = 3, fusion humidité, niveaux `info` / `warning` / `critique` |
+| `edge/controller/vision_alerts.py` | lissage N = 3, fusion humidité, niveaux `info` / `warning` / `critique` ; caméra ne voyant que des espèces hors taxonomie (`--config serre.yaml`, [09 §2](09-modele-gestion-serre.md#2-plante)) : lissage sur `score_anomalie`, plafonné à `warning` |
 | `vision/labeling/active_learning.py` | sélection ≤ 50 captures incertaines → tâches Label Studio |
 | `edge/systemd/`, `edge/deploy.sh` | services, watchdog, mise à jour |
 

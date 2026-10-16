@@ -91,3 +91,18 @@ def test_on_message_and_replay(tmp_path):
     for i in range(3):
         (day / f"r{i}.json").write_text(json.dumps({"resultat": result(i).model_dump(mode="json")}))
     assert [x.niveau for x in replay(VisionAlerter(), tmp_path, "z1")] == ["info", "warning"]
+
+
+def test_out_of_taxonomy_camera_alerts_on_score_anomalie_only():
+    a = VisionAlerter(vision_auto=lambda cam: False)
+    for h in range(8):
+        humidity(a, h)
+    healthy = [result(i, sante="sain", conf=0.99) for i in range(3)]
+    for r in healthy:  # the classifier health is not used: score_anomalie = 0
+        assert a.on_vision("z1", r) is None
+    weird = [
+        result(i, sante="sain").model_copy(update={"score_anomalie": 0.9}) for i in range(3, 6)
+    ]
+    levels = [a.on_vision("z1", r) for r in weird]
+    assert levels[0].niveau == "info" and levels[2].niveau == "warning"  # never critique
+    assert "score d'anomalie" in levels[2].message and "mildiou" not in levels[2].message

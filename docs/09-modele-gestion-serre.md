@@ -3,7 +3,7 @@
 Ce document décrit la **serre physique** telle que le logiciel la connaît : zones, emplacements, plantes, contenants, mode de culture, capteurs, actionneurs, caméras, recettes et consommations.
 C'est la référence commune au contrôleur ([06](06-capteurs-controle.md)), au journal de décisions ([10](10-decisions-tracabilite.md)), à l'agent ([11](11-agent-decision.md)) et à l'interface ([12](12-interface-utilisateur.md)).
 
-> Statut : **persistance implémentée (G1)** — tables, seed depuis `serre.yaml`, ingestion MQTT et consommation (§5, §7). Le constructeur de serre (UI) et l'export de configuration (§8) arrivent avec G2.
+> Statut : **modèle implémenté hors UI** : tables, seed depuis `serre.yaml` (zones, emplacements, contenants, plantes, cuves, capteurs, actionneurs, caméras et régions), contrôles de cohérence (§2, §3), ingestion MQTT et consommation avec intrants (§5, §7), export versionné de la configuration vers le Pi (§8). Le constructeur de serre (UI, API) et les migrations Alembic arrivent avec G2.
 
 ## 1. Hiérarchie
 
@@ -49,6 +49,8 @@ Règles :
 Espèces actuellement reconnues par le classifieur : `anacardier, cerisier, courge, fraisier, framboisier, mais, manioc, myrtillier, oranger, pecher, poivron, pomme_de_terre, pommier, soja, tomate, vigne`.
 Une plante d'une espèce **hors taxonomie** (salade, basilic… avant l'ajout de nos propres images) est acceptée : ses classifications vision sont alors affichées mais **ne déclenchent aucune décision automatique** (seul `score_anomalie` est exploité, en alerte simple).
 
+Implémentation : `Greenhouse.vision_auto(camera)` (`edge/controller/config.py`) est faux pour une caméra déclarée dont toutes les plantes visibles sont hors taxonomie (`vision/datasets/taxonomy.yaml`). Ses résultats ne comptent pas dans la confirmation vision de la règle mildiou (`risk.confirmed`), et `vision_alerts` les lisse sur `score_anomalie` au lieu de la santé du classifieur, sans jamais dépasser le niveau `warning`. Une caméra non déclarée garde le comportement par défaut.
+
 ## 3. Contenant et mode de culture
 
 ### Pot / contenant
@@ -76,6 +78,8 @@ Le mode de culture sert à :
 - **choisir les règles** actives du contrôleur (pas de dosage pH sur un emplacement en terre, pas d'arrosage cyclique sur du DWC) ;
 - **contrôler la cohérence** : un emplacement `hydro_*` sans capteur pH/EC dans sa cuve déclenche un avertissement de configuration.
 
+Implémentation : `edge/controller/coherence.py` produit des **avertissements** (la configuration reste chargée), journalisés au chargement par le contrôleur, le seed et l'export (`Greenhouse.warnings`) : emplacement hydro sans `ph`/`ec` déclaré dans sa zone ou sa cuve, pompe doseuse dans une zone sans emplacement hydro, caméra qui voit plusieurs emplacements sans région, espèce hors taxonomie. Côté règles, `hydro.circulation` ne tourne pas sur une zone dont les emplacements hydro sont tous en `hydro_dwc`, et `sol.arrosage` ne concerne que les zones sans emplacement hydro (la `pompe_nutri` d'une zone hydro est celle de la solution). Les erreurs bloquantes (emplacement d'une autre zone dans une caméra ou un capteur, région hors de [0, 1], cuve inconnue, deux capteurs sur le même canal) sont refusées par `SerreCfg`.
+
 > Les sondes capacitives d'humidité du sol publient `humidite_sol` avec le champ `emplacement` (une mesure par sonde) ; `pression` et `presence` sont aussi dans le contrat ([06 §6](06-capteurs-controle.md#6-implémentation-et-test-sur-pc)).
 
 ## 4. Équipements
@@ -85,12 +89,15 @@ Le mode de culture sert à :
 |---|---|---|
 | `id` | `sht41-z1` | |
 | `modele` | `SHT41`, `BMP280`, `GY-302`, `HLK-LD2450`, `capacitif-sol`, `SCD41`, `EZO-pH`, `EZO-EC`, `DS18B20`, `JSN-SR04T` | BOM de [06 §1.2](06-capteurs-controle.md#12-capteurs-bom) |
-| `mesures` | liste de `SensorType` (`temperature`, `humidite`…) | un SHT41 publie `temperature`, `humidite` ; un SCD41 publie `co2`, `temperature`, `humidite` |
+| `mesures` | liste de `SensorType` (`temperature`, `humidite`…) | un SHT41 publie `temperature`, `humidite` ; un SCD41 publie `co2`, `temperature`, `humidite` (deux mesures du même type sur un même nœud partagent un canal : n'en déclarer qu'une) |
 | `noeud` | `esp32-01` | champ `noeud` du message `SensorReading` |
-| `zone`, `cuve_id` | `z1` | |
-| `emplacements_couverts` | `[z1-A1, z1-A2]` ou `*` (toute la zone) | sert à rattacher une mesure à une plante |
+| `zone`, `cuve` | `z1`, `true` | `cuve: true` : le capteur mesure la cuve de sa zone |
+| `emplacement` | `z1-A1` | sonde de sol : champ `emplacement` de ses mesures |
+| `emplacements_couverts` | `[z1-A1, z1-A2]` ou `*` (toute la zone, par défaut) | sert à rattacher une mesure à une plante |
 | `etalonnage` | date, méthode, coefficients | rappel dans l'UI (pH : mensuel) |
-| `plage_physique` | min / max | cohérent avec la validation `qualite` du firmware |
+| `plage` | min / max | cohérent avec la validation `qualite` du firmware |
+
+En base, un capteur déclaré donne une ligne `capteur` **par canal** `<noeud>-<mesure>[-<emplacement>]` (l'id que l'ingestion reconnaît), regroupées par `materiel` (l'`id` déclaré), et une ligne `capteur_emplacement` par emplacement couvert.
 
 ### Actionneur
 | Champ | Exemple | Remarque |
@@ -109,11 +116,13 @@ Le mode de culture sert à :
 | `id` | `cam-z1-a` (segment `<camera_id>` du topic vision) |
 | `zone` | `z1` |
 | `emplacements_visibles` | `[z1-A1, z1-A2, z1-B1]` |
-| `regions` | polygone ou bbox normalisée par emplacement dans l'image |
+| `regions` | bbox normalisée `[x, y, w, h]` par emplacement dans l'image (polygone : plus tard) |
 
 Les `regions` permettent de rattacher un résultat vision à un emplacement :
 - **phase 1** (classifieur, `bbox: null`) : on classe une tuile par emplacement, découpée selon `regions` → un `VisionResult` par tuile ;
 - **phase 2** (YOLO) : le centre de chaque `bbox` détectée est affecté à la région qui le contient.
+
+Si aucune région ne convient (image entière, centre hors des régions), le résultat va au seul emplacement visible, s'il n'y en a qu'un ; sinon il reste sans emplacement. Le découpage en tuiles sur le Pi utilise encore les ROI en pixels de `edge/config.yaml` (`plantes[].roi`) ; ces ROI seront générées à partir des `regions` avec l'export G2.
 
 ## 5. Consommations
 
@@ -124,14 +133,14 @@ Aucune mesure électrique dédiée n'est prévue au départ : la consommation es
 | **Énergie** (kWh) | Σ `puissance_w` × facteur d'état (`on` = 1, `pwm` = `valeur`/100, `off` = 0) × durée de l'état | actionneur, zone, jour |
 | **Eau** (L) | Σ `debit_l_h` × durée `on` des pompes ; recoupé avec la variation de `niveau_cuve` | pompe, cuve, jour |
 | **Lumière** (DLI, mol/m²/j) | lumière artificielle : `ppfd_max` × `valeur`/100 × durée ; lumière naturelle : lux × 0,0185 (facteur indicatif lumière du jour, à remplacer par un capteur PAR) | zone, jour |
-| **Intrants** (mL) | volume par impulsion × nombre d'impulsions de `pompe_ph_down` et des pompes nutriments | cuve, jour |
+| **Intrants** (mL) | `debit_ml_min` × durée `on` de `pompe_ph_down`, `pompe_nutri_a`, `pompe_nutri_b` (= volume par impulsion × nombre d'impulsions) | pompe, zone (cuve), jour |
 | **Coût** (€) | kWh × tarif déclaré dans la serre (option heures pleines / creuses) | serre, mois |
 
 Implémentation (`backend/consumption.py`, table `consommation_jour` par actionneur et `lumiere_jour` par zone, jours **locaux** du fuseau de la serre) :
 - un état est supposé tenir jusqu'au suivant (topic `etat/` en retain) ; avant le premier état reçu, rien n'est compté ; la journée en cours est comptée jusqu'à l'instant du calcul ;
 - `puissance_w`, `debit_l_h`, `ppfd_max` viennent de `serre.yaml` (actionneurs) et `tarif_kwh` de la serre ;
 - le lux mesuré **inclut** déjà les LED : `dli_total` = intégrale de `lux × lux_vers_ppfd` (trapèzes, trous > 15 min ignorés, champ `couverture` = part de la journée couverte), `dli_led` = estimation à partir des états LED, `dli_naturel` = différence ;
-- intrants (mL) : pas encore calculés, faute de volume par impulsion déclaré pour les pompes doseuses.
+- intrants (mL) : `debit_ml_min` des pompes doseuses (pompe péristaltique, à mesurer une fois au verre doseur), colonne `ml` ; ils ne comptent pas dans les `litres` d'eau.
 
 L'écart entre DLI obtenu et DLI cible de la recette alimente la règle de complément lumineux ([06 §4](06-capteurs-controle.md#niveau-1--règles-et-régulateurs-rulespy)).
 
@@ -189,13 +198,14 @@ parce que la configuration est en retard) :
 Tables classiques :
   decision(id, ts, zone, …, preuves, actions, statut)   forme minimale du contrat, upsert par id ;
                                                         table action séparée → G3 (doc 10)
-  consommation_jour(jour, actionneur_id, zone, type, duree_on_s, kwh, litres, dli, cout)
+  consommation_jour(jour, actionneur_id, zone, type, duree_on_s, kwh, litres, ml, dli, cout)
   lumiere_jour(jour, zone, dli_total, dli_led, dli_naturel, couverture)
+  config_export(version, ts, sha256, contenu)          versions exportées vers le Pi (§8)
 ```
 
-Code : `backend/db/models.py` (SQLAlchemy 2, types portables : les tests tournent sur SQLite), `backend/db/timescale.sql` (hypertables, appliqué par `init_db` sur PostgreSQL seulement), `backend/db/seed.py` (`python -m backend.db.seed` : charge `serre.yaml` et les recettes, idempotent ; un déplacement de plante clôt l'affectation). Pas encore d'Alembic : `init_db` crée les tables manquantes ; les migrations arriveront avec G2, quand le schéma évoluera.
+Code : `backend/db/models.py` (SQLAlchemy 2, types portables : les tests tournent sur SQLite), `backend/db/timescale.sql` (hypertables, appliqué par `init_db` sur PostgreSQL seulement), `backend/db/seed.py` (`python -m backend.db.seed` : charge `serre.yaml` et les recettes, idempotent ; un déplacement de plante clôt l'affectation). Les champs du contrôleur sans colonne dédiée sont stockés en JSON (`serre.parametres` : hystérésis, sécurité, risque, lumière, prévision ; `actionneur.parametres` : `duree_s`, `impulsion_s`, `melange_s`, `delai_min_s`, `marche_min_s` ; `zone.presence_autorisee`), si bien que l'export (§8) reconstruit `serre.yaml` à partir de la base seule. Pas encore d'Alembic : `init_db` crée les tables manquantes mais **ne modifie pas une table existante**. Après une évolution du schéma, une base de développement se recrée : `docker compose -f backend/docker-compose.yml --profile broker down -v && make stack-up db-init`. Les migrations arriveront avec G2.
 
-Les capteurs ne sont pas déclarés dans `serre.yaml` : l'ingestion crée un **canal** `capteur` (`<noeud>-<type>[-<emplacement>]`) au premier message et le relie à son emplacement (sondes de sol) ; modèle, étalonnage et plage seront saisis dans l'UI (G2).
+Les capteurs déclarés dans `serre.yaml` (§4) sont créés par le seed. Un canal inconnu (capteur non déclaré) est créé par l'ingestion au premier message (`<noeud>-<type>[-<emplacement>]`, sans `materiel`) et relié à son emplacement (sondes de sol) ; il n'apparaît pas dans l'export tant qu'il n'est pas déclaré.
 
 L'ingestion (`backend/ingestion/`, `python -m backend.ingestion`) s'abonne aux `SUBSCRIPTIONS` de `common/mqtt/topics.py`, valide avec `decode` et écrit dans ces tables par lots ; les messages invalides sont comptés et journalisés, les doublons (redélivrance QoS 1, retain rejoué) ignorés. `Command.raison` donne `commande.decision_id` (doc 10 §3). Les résultats vision sont rattachés à un emplacement par les `camera_region` (centre de la bbox, ou seul emplacement visible en phase 1).
 
@@ -215,3 +225,16 @@ UI ──► API ──► serre_config_v<N>.yaml ──► Pi : edge/config/ser
 Contenu : zones, emplacements et plantes actives (espèce, stade, recette), capteurs et actionneurs (avec `duree_max_s`, `puissance_w`), régions caméra, recettes.
 Chaque décision enregistre la `config_version` utilisée, ce qui rend les décisions rejouables.
 Transport : topic retain `serre/config` (proposition, hors contrat actuel) ou simple copie `rsync` dans un premier temps.
+
+Implémentation (`backend/config/export.py`, `make config-export [INSTALL=…] [PI_CONFIG=…]`) :
+
+```
+python -m backend.config.export                      # data/serre_config/serre_config_v<N>.yaml
+python -m backend.config.export --install edge/controller/serre.yaml
+python -m backend.config.export --rsync pi@serre.local:SerreIA/edge/controller/serre.yaml
+```
+
+- `build_config` reconstruit un `serre.yaml` **autonome** depuis la base (recettes en ligne : `recettes:` accepte un chemin ou un dictionnaire) ; il est validé comme le contrôleur le chargera (`SerreCfg`, recette et stade de chaque plante), avec les avertissements de cohérence. Une configuration invalide est refusée et aucune version n'est créée.
+- La **version suit le contenu** : `sha256` du contenu hors version ; si rien n'a changé depuis le dernier export, le numéro est conservé, sinon N + 1, enregistré dans `config_export` (contenu complet, pour rejouer une décision) et dans `serre.config_version`.
+- `--install` écrit le fichier de manière atomique (fichier temporaire + `os.replace`) : le `ConfigWatcher` du contrôleur recharge le fichier quand sa date change et ne lit jamais un fichier tronqué. `--rsync` copie la version vers le Pi.
+- Tant que l'UI n'existe pas (G2), le cycle est : éditer `serre.yaml` → `make db-init` → `make config-export PI_CONFIG=pi@serre.local:SerreIA/edge/controller/serre.yaml` (ou `INSTALL=<chemin>` pour un contrôleur local). Sur le PC, ne pas installer par-dessus l'exemple versionné `edge/controller/serre.yaml`, qui reste la source du seed.

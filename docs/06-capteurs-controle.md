@@ -134,7 +134,8 @@ Tout se teste sans électronique : le simulateur publie sur les mêmes topics qu
 
 | Fichier | Rôle |
 |---|---|
-| `serre.yaml`, `config.py` | configuration exportée ([09 §8](09-modele-gestion-serre.md#8-configuration-exportée-vers-le-contrôleur)) : zones, emplacements, plantes, actionneurs (`duree_max_s`, `impulsion_s`, `melange_s`, `delai_min_s`, `marche_min_s`), limites de sécurité. Rechargée à chaud ; une version invalide garde la précédente |
+| `serre.yaml`, `config.py` | configuration exportée ([09 §8](09-modele-gestion-serre.md#8-configuration-exportée-vers-le-contrôleur)) : zones, emplacements (mode de culture, contenant), plantes, cuves, actionneurs (`duree_max_s`, `impulsion_s`, `melange_s`, `delai_min_s`, `marche_min_s`, `debit_ml_min`), capteurs déclarés, caméras et régions, limites de sécurité ; recettes par chemin ou en ligne. Rechargée à chaud ; une version invalide garde la précédente |
+| `coherence.py` | avertissements de configuration ([09 §3](09-modele-gestion-serre.md#mode-de-culture)) : hydro sans pH/EC, pompe doseuse hors hydro, caméra sans régions, espèce hors taxonomie (`Greenhouse.vision_auto` : pas de décision vision automatique) ; pas de cycles `hydro.circulation` en DWC |
 | `recettes.yaml`, `recipes.py` | recettes par espèce et stade. Consigne de zone = intersection des plages, à défaut la plante prioritaire ; pH et EC seulement en zone hydro |
 | `state.py` | état issu du flux MQTT : mesures, états réels `etat/`, status des nœuds, vision récente, durée HR > seuil, T° moyenne sur 12 h, DLI du jour |
 | `safety.py` | niveau 0 : `check()` sur chaque ordre, `watch()` pour les limites dures. Ajout : alerte « capteur figé » (même valeur pendant 30 min) |

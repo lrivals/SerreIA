@@ -38,6 +38,11 @@ class Actuator(StrEnum):
     def is_pump(self) -> bool:
         return self.value.startswith("pompe_")
 
+    @property
+    def is_dosing(self) -> bool:
+        """Dosing pumps of the nutrient solution: inputs in mL, not water (docs/09 §5)."""
+        return self in (Actuator.POMPE_PH_DOWN, Actuator.POMPE_NUTRI_A, Actuator.POMPE_NUTRI_B)
+
 
 class TopicKind(StrEnum):
     CAPTEUR = "capteur"

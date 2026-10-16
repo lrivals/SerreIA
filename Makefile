@@ -32,6 +32,12 @@ db-init:
 ingest:
 	$(PY) -m backend.ingestion
 
+# Versioned serre.yaml rebuilt from the database (docs/09 §8), in data/serre_config/.
+# INSTALL=<path> installs it for a local controller (not over the tracked example),
+# PI_CONFIG=pi@serre.local:SerreIA/edge/controller/serre.yaml copies it to the Pi.
+config-export:
+	$(PY) -m backend.config.export $(if $(INSTALL),--install $(INSTALL)) $(if $(PI_CONFIG),--rsync $(PI_CONFIG))
+
 # The last 24 h simulated at full speed and ingested (no broker), then the dashboard.
 sim-demo:
 	$(PY) -m backend.ingestion --sim --duree-h 24 --debut $$(date -u -d '-24 hours' +%Y-%m-%dT%H:%M:%S+00:00)
@@ -40,4 +46,4 @@ sim-demo:
 sim-live:
 	$(PY) -m sim --avec-controleur
 
-.PHONY: harvest harvest-all notebooks stack-up stack-down db-init ingest sim-demo sim-live
+.PHONY: harvest harvest-all notebooks stack-up stack-down db-init ingest config-export sim-demo sim-live

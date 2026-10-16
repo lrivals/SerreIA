@@ -128,23 +128,33 @@ def test_every_topic_kind_is_written():
 
 def test_sensors_are_registered_and_linked_to_their_emplacement():
     ing, sessions = ingestor()
+    declared = len(rows(sessions, m.Capteur))
     for t in range(3):
-        r = SensorReading(
-            ts=T0 + timedelta(minutes=t),
-            noeud="esp32-02",
-            valeur=40.0,
-            unite="%",
-            qualite="ok",
-            emplacement="z1-A1",
-        )
-        send(ing, sensor_topic("z1", "humidite_sol"), r)
+        for noeud in ("esp32-06", "esp32-02"):  # undeclared probe, declared one
+            r = SensorReading(
+                ts=T0 + timedelta(minutes=t),
+                noeud=noeud,
+                valeur=40.0,
+                unite="%",
+                qualite="ok",
+                emplacement="z1-A1",
+            )
+            send(ing, sensor_topic("z1", "humidite_sol"), r)
     ing.close()
-    cid = capteur_id("esp32-02", "humidite_sol", "z1-A1")
-    (cap,) = rows(sessions, m.Capteur)
-    assert (cap.id, cap.zone, cap.emplacement) == (cid, "z1", "z1-A1")
-    (link,) = rows(sessions, m.CapteurEmplacement)
-    assert (link.capteur_id, link.emplacement_id) == (cid, "z1-A1")
-    assert len(rows(sessions, m.Mesure)) == 3
+    cid = capteur_id("esp32-06", "humidite_sol", "z1-A1")
+    assert len(rows(sessions, m.Capteur)) == declared + 1
+    with sessions() as s:
+        cap = s.get(m.Capteur, cid)
+        assert (cap.zone, cap.emplacement, cap.materiel) == ("z1", "z1-A1", None)
+        links = s.scalars(
+            select(m.CapteurEmplacement.emplacement_id).where(
+                m.CapteurEmplacement.capteur_id == cid
+            )
+        ).all()
+        assert links == ["z1-A1"]
+        seeded = s.get(m.Capteur, capteur_id("esp32-02", "humidite_sol", "z1-A1"))
+        assert seeded.modele == "capacitif-sol"  # the declared channel is kept as is
+    assert len(rows(sessions, m.Mesure)) == 6
 
 
 def test_decision_is_upserted_on_status_change():
@@ -183,7 +193,7 @@ def test_rows_are_written_by_batch():
     ing, sessions = ingestor(batch_size=5, flush_s=3600)
     for i in range(5):
         r = SensorReading(
-            ts=T0 + timedelta(seconds=i), noeud="esp32-01", valeur=20.0, unite="°C", qualite="ok"
+            ts=T0 + timedelta(seconds=i), noeud="esp32-09", valeur=20.0, unite="°C", qualite="ok"
         )
         send(ing, sensor_topic("z1", "temperature"), r)
         if i == 2:
@@ -202,3 +212,32 @@ def test_vision_emplacement_from_camera_regions():
     assert resolve_emplacement(None, regions) is None  # whole image, two emplacements
     assert resolve_emplacement(None, regions[:1]) == "z1-A1"
     assert resolve_emplacement((0.1, 0.1, 0.1, 0.1), []) is None
+    assert resolve_emplacement((0.1, 0.1, 0.1, 0.1), [("z2-A1", None)]) == "z2-A1"
+
+
+def test_vision_results_are_assigned_with_the_seeded_regions():
+    ing, sessions = ingestor()
+
+    def det(bbox):
+        return Detection(
+            espece="tomate", espece_conf=0.9, sante="sain", sante_conf=0.9,
+            classe="tomate/sain/sain", classe_conf=0.9, bbox=bbox,
+        )  # fmt: skip
+
+    for cam, zone, dets in (
+        ("cam-z1-a", "z1", [det((0.1, 0.2, 0.2, 0.3)), det((0.7, 0.2, 0.2, 0.3)), det(None)]),
+        ("cam-z2-a", "z2", [det(None)]),  # one visible emplacement, no region
+    ):
+        v = VisionResult(
+            ts=T0, camera=cam, image_id=f"{cam}-1", modele="clf-v1", detections=dets,
+            score_anomalie=0.1, surface_verte_px=100,
+        )  # fmt: skip
+        send(ing, vision_topic(zone, cam), v)
+    ing.close()
+    got = {(r.camera, r.idx): r.emplacement_id for r in rows(sessions, m.VisionResultat)}
+    assert got == {
+        ("cam-z1-a", 0): "z1-A1",
+        ("cam-z1-a", 1): "z1-A2",
+        ("cam-z1-a", 2): None,
+        ("cam-z2-a", 0): "z2-A1",
+    }

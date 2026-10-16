@@ -3,10 +3,11 @@
     python -m backend.consumption --jour 2026-10-16 [--db URL]
 
 No electrical measurement: energy = Σ puissance_w × state factor (on 1, pwm valeur/100,
-off 0) × duration, water = debit_l_h × "on" duration of the pumps, LED light = ppfd_max ×
-valeur/100 × duration. The measured light integral comes from the lux sensor (× the
-`lux_vers_ppfd` factor of the serre); it includes the LED, so the natural part is the
-difference. Days are local days of the serre's time zone.
+off 0) × duration, water = debit_l_h × "on" duration of the pumps, inputs (mL) =
+debit_ml_min × "on" duration of the dosing pumps (pH−, nutrients A / B; not counted as
+water), LED light = ppfd_max × valeur/100 × duration. The measured light integral comes
+from the lux sensor (× the `lux_vers_ppfd` factor of the serre); it includes the LED, so
+the natural part is the difference. Days are local days of the serre's time zone.
 
 A TimescaleDB continuous aggregate cannot compute state durations (window functions are
 not allowed), hence this job, run every hour by the ingestion and on demand here.
@@ -85,6 +86,11 @@ def water_l(debit_l_h: float, on_s: float) -> float:
     return debit_l_h * on_s / 3600.0
 
 
+def inputs_ml(debit_ml_min: float, on_s: float) -> float:
+    """Volume of a dosing pump: flow × "on" time (= volume per pulse × number of pulses)."""
+    return debit_ml_min * on_s / 60.0
+
+
 def dli_led(ppfd_max: float, weighted_s: float) -> float:
     """mol/m² from µmol/m²/s × s."""
     return ppfd_max * weighted_s / 1e6
@@ -130,21 +136,24 @@ def _states(session: Session, zone: str, actuator: str, debut: datetime, fin: da
 
 def compute_day(session: Session, jour: date, now: datetime | None = None) -> dict:
     """Upsert `consommation_jour` and `lumiere_jour` for one local day; the current day is
-    counted up to `now`. Returns totals {kwh, litres, cout}. The caller commits."""
+    counted up to `now`. Returns totals {kwh, litres, ml, cout}. The caller commits."""
     serre = session.scalars(select(Serre)).first()
     if serre is None:
         raise RuntimeError("aucune serre en base : lancer d'abord python -m backend.db.seed")
     debut, fin = day_bounds(jour, serre.fuseau)
     fin = min(fin, now or datetime.now(UTC))
     if fin <= debut:
-        return {"kwh": 0.0, "litres": 0.0, "cout": None}
+        return {"kwh": 0.0, "litres": 0.0, "ml": 0.0, "cout": None}
     rows, led_by_zone = [], {}
     for a in session.scalars(select(Actionneur).order_by(Actionneur.id)):
         iv = state_intervals(_states(session, a.zone_id, a.type, debut, fin), debut, fin)
         w = weighted_seconds(iv)
         kwh = energy_kwh(a.puissance_w, w) if a.puissance_w is not None else None
-        pump = Actuator(a.type).is_pump
-        litres = water_l(a.debit_l_h, on_seconds(iv)) if pump and a.debit_l_h else None
+        kind = Actuator(a.type)
+        on_s = on_seconds(iv)
+        water = kind.is_pump and not kind.is_dosing
+        litres = water_l(a.debit_l_h, on_s) if water and a.debit_l_h else None
+        ml = inputs_ml(a.debit_ml_min, on_s) if kind.is_dosing and a.debit_ml_min else None
         dli = dli_led(a.ppfd_max, w) if a.type == Actuator.LED and a.ppfd_max else None
         if dli is not None:
             led_by_zone[a.zone_id] = led_by_zone.get(a.zone_id, 0.0) + dli
@@ -158,6 +167,7 @@ def compute_day(session: Session, jour: date, now: datetime | None = None) -> di
                 duree_on_s=w,
                 kwh=kwh,
                 litres=litres,
+                ml=ml,
                 dli=dli,
                 cout=cout,
             )
@@ -200,6 +210,7 @@ def compute_day(session: Session, jour: date, now: datetime | None = None) -> di
     return {
         "kwh": kwh,
         "litres": sum(r["litres"] or 0.0 for r in rows),
+        "ml": sum(r["ml"] or 0.0 for r in rows),
         "cout": kwh * serre.tarif_kwh if serre.tarif_kwh else None,
     }
 
@@ -228,12 +239,13 @@ def main() -> None:
             select(ConsommationJour).where(ConsommationJour.jour == args.jour)
         ):
             log.info(
-                "%-14s %-14s on %7.0f s  %s kWh  %s L  %s DLI",
+                "%-14s %-14s on %7.0f s  %s kWh  %s L  %s mL  %s DLI",
                 r.actionneur_id,
                 r.type,
                 r.duree_on_s,
                 _fmt(r.kwh),
                 _fmt(r.litres),
+                _fmt(r.ml),
                 _fmt(r.dli),
             )
         for r in session.scalars(select(LumiereJour).where(LumiereJour.jour == args.jour)):
@@ -246,10 +258,11 @@ def main() -> None:
                 100 * r.couverture,
             )
     log.info(
-        "%s : %.3f kWh, %.1f L, coût %s €",
+        "%s : %.3f kWh, %.1f L, %.0f mL d'intrants, coût %s €",
         args.jour,
         totals["kwh"],
         totals["litres"],
+        totals["ml"],
         _fmt(totals["cout"]),
     )
 

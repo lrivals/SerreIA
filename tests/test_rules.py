@@ -140,3 +140,12 @@ def test_hydro_circulation_cycle(gh):
     assert rules.circulation(ctx(gh, s, "z2", NOON + minutes(20))) == []
     assert rules.circulation(ctx(gh, s, "z2", NOON + minutes(31)))
     assert rules.circulation(ctx(gh, s, "z1", NOON)) == []
+
+
+def test_no_circulation_cycles_in_dwc(gh):
+    from edge.controller.config import Greenhouse
+
+    raw = gh.cfg.model_dump()
+    raw["zones"][1]["emplacements"][0]["mode_culture"] = "hydro_dwc"
+    dwc = Greenhouse(type(gh.cfg).model_validate(raw), gh.recipes, gh.especes)
+    assert rules.circulation(ctx(dwc, GreenhouseState(), "z2", NOON)) == []  # immersed roots

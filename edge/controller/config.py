@@ -3,17 +3,21 @@
 Zones, emplacements and active plants (species, recipe, stage), actuators with their
 limits, safety limits. The controller reloads the file when it changes and records its
 `config_version` in every decision, which makes decisions replayable.
+
+Besides what the controller uses, the file describes the whole greenhouse model of
+docs/09 (containers, declared sensors, cameras and their regions, tanks): the seed loads
+it into the database and `backend/config/export.py` writes it back.
 """
 
 import logging
-from datetime import time
+from datetime import date, time
 from pathlib import Path
 from typing import Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from common.mqtt import Actuator
+from common.mqtt import Actuator, SensorType
 
 from .recipes import PlantStage, Recipe, Setpoints, load_recipes, zone_setpoints
 
@@ -30,18 +34,37 @@ class _Cfg(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+def capteur_id(noeud: str, sensor: str, emplacement: str | None = None) -> str:
+    """Id of a measurement channel (node × type × emplacement), as the ingestion sees it."""
+    return f"{noeud}-{sensor}" + (f"-{emplacement}" if emplacement else "")
+
+
 class PlanteCfg(_Cfg):
     id: str
-    espece: str
+    espece: str  # key of vision/datasets/taxonomy.yaml, or any other species
     recette: str
     stade: str
     prioritaire: bool = False
+    variete: str | None = None
+    date_semis: date | None = None
+    date_plantation: date | None = None
+    notes: str | None = None
+
+
+class ContenantCfg(_Cfg):
+    type: Literal[
+        "pot", "jardiniere", "sac_de_culture", "godet", "canal_NFT", "bac_DWC", "pleine_terre"
+    ]
+    volume_l: float | None = None
+    materiau: str | None = None  # plastique, terre_cuite, geotextile
+    drainage: bool | None = None
 
 
 class EmplacementCfg(_Cfg):
     id: str
     mode_culture: ModeCulture
     plante: PlanteCfg | None = None
+    contenant: ContenantCfg | None = None
 
 
 class PlageCfg(_Cfg):
@@ -62,11 +85,21 @@ class ZoneCfg(_Cfg):
     presence_autorisee: list[PlageCfg] = Field(
         default_factory=lambda: [PlageCfg(debut=time(7, 0), fin=time(21, 0))]
     )
-    cuve: bool = False  # the zone pumps from a tank with a niveau_cuve sensor
+    cuve: bool | str = False  # the zone pumps from a tank (true: its own, str: a shared one)
+
+    @property
+    def cuve_id(self) -> str | None:
+        if isinstance(self.cuve, str):
+            return self.cuve
+        return f"cuve-{self.id}" if self.cuve else None
 
     @property
     def hydro(self) -> bool:
         return any(e.mode_culture in HYDRO for e in self.emplacements)
+
+    @property
+    def modes(self) -> set[str]:
+        return {e.mode_culture for e in self.emplacements}
 
     @property
     def plants(self) -> list[PlanteCfg]:
@@ -88,12 +121,55 @@ class ActionneurCfg(_Cfg):
     puissance_w: float | None = None
     ppfd_max: float | None = None  # LED: µmol/m²/s at canopy level, 100 %
     debit_l_h: float | None = None  # pumps: flow, base of the water estimate (docs/09 §5)
+    debit_ml_min: float | None = None  # dosing pumps: flow, base of the inputs estimate
 
     @model_validator(mode="after")
     def _pump_bounded(self) -> "ActionneurCfg":
         if self.type.is_pump and self.duree_max_s is None:
             raise ValueError(f"{self.id}: duree_max_s est obligatoire pour une pompe")
         return self
+
+
+class CuveCfg(_Cfg):
+    id: str
+    volume_l: float | None = None
+
+
+class CapteurCfg(_Cfg):
+    """A sensor device: one channel per measured type (an SHT41 gives temperature and
+    humidite). `emplacements_couverts` links its measurements to plants (`*`: the whole
+    zone); a soil probe covers its own emplacement."""
+
+    id: str  # sht41-z1
+    modele: str  # SHT41, capacitif-sol, EZO-pH… (BOM of docs/06 §1.2)
+    noeud: str
+    zone: str
+    mesures: list[SensorType] = Field(min_length=1)
+    emplacement: str | None = None  # soil probe: field `emplacement` of its readings
+    cuve: bool = False  # measures the tank of the zone (pH, EC, temp_eau, niveau_cuve)
+    emplacements_couverts: list[str] | Literal["*"] = "*"
+    etalonnage: dict | None = None  # {date, methode, coefficients}
+    plage: tuple[float, float] | None = None  # physical range (min, max)
+
+    def canaux(self) -> list[tuple[str, SensorType]]:
+        return [(capteur_id(self.noeud, m, self.emplacement), m) for m in self.mesures]
+
+    def couverts(self, zone: "ZoneCfg") -> list[str]:
+        if self.emplacement is not None:
+            return [self.emplacement]
+        if self.emplacements_couverts == "*":
+            return [e.id for e in zone.emplacements]
+        return list(self.emplacements_couverts)
+
+
+class CameraCfg(_Cfg):
+    """`regions`: normalised [x, y, w, h] of each visible emplacement in the image; a
+    detection is assigned to the region containing the centre of its bbox (docs/09 §4)."""
+
+    id: str = Field(pattern=r"^[a-z0-9_-]+$")  # <camera_id> segment of the vision topic
+    zone: str
+    emplacements_visibles: list[str] = Field(min_length=1)
+    regions: dict[str, tuple[float, float, float, float]] = Field(default_factory=dict)
 
 
 class HysteresisCfg(_Cfg):
@@ -139,9 +215,12 @@ class SerreCfg(_Cfg):
     nom: str = "serre"
     fuseau: str = "Europe/Paris"
     tarif_kwh: float | None = None  # €/kWh, cost of the estimated consumption (docs/09 §5)
-    recettes: Path = Path("edge/controller/recettes.yaml")
+    recettes: Path | dict[str, Recipe] = Path("edge/controller/recettes.yaml")  # or inline
     zones: list[ZoneCfg] = Field(min_length=1)
+    cuves: list[CuveCfg] = Field(default_factory=list)
     actionneurs: list[ActionneurCfg] = Field(default_factory=list)
+    capteurs: list[CapteurCfg] = Field(default_factory=list)
+    cameras: list[CameraCfg] = Field(default_factory=list)
     hysteresis: HysteresisCfg = Field(default_factory=HysteresisCfg)
     securite: SecuriteCfg = Field(default_factory=SecuriteCfg)
     risque: RisqueCfg = Field(default_factory=RisqueCfg)
@@ -150,7 +229,12 @@ class SerreCfg(_Cfg):
 
     @model_validator(mode="after")
     def _check(self) -> "SerreCfg":
-        zones = {z.id for z in self.zones}
+        zones = {z.id: z for z in self.zones}
+        if len(zones) != len(self.zones):
+            raise ValueError("zones en double")
+        emps = {e.id: z.id for z in self.zones for e in z.emplacements}
+        if len(emps) != sum(len(z.emplacements) for z in self.zones):
+            raise ValueError("emplacements en double")
         seen = set()
         for a in self.actionneurs:
             if a.zone not in zones:
@@ -158,6 +242,41 @@ class SerreCfg(_Cfg):
             if (a.zone, a.type) in seen:
                 raise ValueError(f"{a.id}: un seul {a.type} par zone (topic cmd/{a.type})")
             seen.add((a.zone, a.type))
+        declared = {c.id for c in self.cuves}
+        for z in self.zones:
+            if isinstance(z.cuve, str) and z.cuve not in declared:
+                raise ValueError(f"{z.id}: cuve inconnue {z.cuve}")
+
+        def in_zone(owner: str, zone: str, emplacements) -> None:
+            for e in emplacements:
+                if emps.get(e) != zone:
+                    raise ValueError(f"{owner}: emplacement {e} hors de la zone {zone}")
+
+        ids = set()
+        for c in self.capteurs:
+            if c.zone not in zones:
+                raise ValueError(f"{c.id}: zone inconnue {c.zone}")
+            if c.id in ids:
+                raise ValueError(f"capteur {c.id} en double")
+            ids.add(c.id)
+            if c.cuve and zones[c.zone].cuve_id is None:
+                raise ValueError(f"{c.id}: la zone {c.zone} n'a pas de cuve")
+            in_zone(c.id, c.zone, c.couverts(zones[c.zone]))
+        channels = [ch for c in self.capteurs for ch, _ in c.canaux()]
+        if len(set(channels)) != len(channels):
+            raise ValueError("deux capteurs déclarent le même canal (noeud, mesure, emplacement)")
+        for cam in self.cameras:
+            if cam.zone not in zones:
+                raise ValueError(f"{cam.id}: zone inconnue {cam.zone}")
+            in_zone(cam.id, cam.zone, cam.emplacements_visibles)
+            extra = set(cam.regions) - set(cam.emplacements_visibles)
+            if extra:
+                raise ValueError(f"{cam.id}: régions d'emplacements non visibles {sorted(extra)}")
+            for e, (x, y, w, h) in cam.regions.items():
+                if not (0 <= x <= 1 and 0 <= y <= 1 and 0 < w <= 1 and 0 < h <= 1):
+                    raise ValueError(f"{cam.id}: région {e} hors de [0, 1]")
+        if len({c.id for c in self.cameras}) != len(self.cameras):
+            raise ValueError("caméras en double")
         return self
 
     def zone(self, zone: str) -> ZoneCfg:
@@ -166,15 +285,33 @@ class SerreCfg(_Cfg):
     def actuator(self, zone: str, actuator: Actuator | str) -> ActionneurCfg | None:
         return next((a for a in self.actionneurs if a.zone == zone and a.type == actuator), None)
 
+    def camera(self, camera: str) -> CameraCfg | None:
+        return next((c for c in self.cameras if c.id == camera), None)
+
+    def plant_at(self, emplacement: str) -> PlanteCfg | None:
+        for z in self.zones:
+            for e in z.emplacements:
+                if e.id == emplacement:
+                    return e.plante
+        return None
+
     def resolve(self, path: Path) -> Path:
         return path if path.is_absolute() else ROOT / path
+
+    def load_recipes(self) -> dict[str, Recipe]:
+        if isinstance(self.recettes, dict):
+            return dict(self.recettes)
+        return load_recipes(self.resolve(self.recettes))
 
 
 class Greenhouse:
     """Loaded configuration + recipes, with the setpoints of each zone."""
 
-    def __init__(self, cfg: SerreCfg, recipes: dict[str, Recipe]):
+    def __init__(self, cfg: SerreCfg, recipes: dict[str, Recipe], especes: set[str] | None = None):
+        from .coherence import check, known_species
+
         self.cfg, self.recipes = cfg, recipes
+        self.especes = known_species() if especes is None else especes
         for z in cfg.zones:
             for p in z.plants:
                 if p.recette not in recipes:
@@ -189,6 +326,9 @@ class Greenhouse:
         for zone, sp in self.setpoints.items():
             if sp is not None and sp.incompatibles:
                 log.warning("plantes incompatibles dans %s : %s", zone, ", ".join(sp.incompatibles))
+        self.warnings = check(cfg, self.especes)  # configuration warnings (docs/09 §3)
+        for w in self.warnings:
+            log.warning("configuration : %s", w)
 
     @property
     def version(self) -> int:
@@ -202,10 +342,21 @@ class Greenhouse:
         p = e.plante
         return zone_setpoints([PlantStage(p.recette, p.stade)], self.recipes, False)
 
+    def vision_auto(self, camera: str) -> bool:
+        """May the vision results of this camera trigger automatic decisions? Not when it
+        only sees plants of species outside the taxonomy (docs/09 §2): their
+        classifications are shown, only `score_anomalie` gives a simple alert. An
+        undeclared camera, or one that sees no plant, keeps the default behaviour."""
+        cam = self.cfg.camera(camera)
+        if cam is None:
+            return True
+        plants = [p for e in cam.emplacements_visibles if (p := self.cfg.plant_at(e))]
+        return not plants or any(p.espece in self.especes for p in plants)
+
 
 def load_greenhouse(path: Path = DEFAULT_CONFIG) -> Greenhouse:
     cfg = SerreCfg.model_validate(yaml.safe_load(Path(path).read_text()))
-    return Greenhouse(cfg, load_recipes(cfg.resolve(cfg.recettes)))
+    return Greenhouse(cfg, cfg.load_recipes())
 
 
 class ConfigWatcher:

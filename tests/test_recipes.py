@@ -5,7 +5,7 @@ import shutil
 import pytest
 import yaml
 
-from edge.controller.config import ConfigWatcher, SerreCfg, load_greenhouse
+from edge.controller.config import ConfigWatcher, Greenhouse, SerreCfg, load_greenhouse
 from edge.controller.recipes import PlantStage, Recipe, intersect, load_recipes, zone_setpoints
 
 
@@ -80,3 +80,47 @@ def test_hot_reload_keeps_previous_on_error(tmp_path):
     path.write_text("zones: []")
     w.mtime = 0
     assert w.get().version == 2  # invalid file: previous configuration kept
+
+
+def test_model_validation_of_sensors_and_cameras():
+    def fails(edit, match):
+        raw = yaml.safe_load(open("edge/controller/serre.yaml"))
+        edit(raw)
+        with pytest.raises(ValueError, match=match):
+            SerreCfg.model_validate(raw)
+
+    fails(lambda r: r["cameras"][0]["emplacements_visibles"].append("z2-A1"), "hors de la zone")
+    fails(lambda r: r["cameras"][1].update(regions={"z1-A1": [0, 0, 1, 1]}), "non visibles")
+    fails(lambda r: r["cameras"][0]["regions"].update({"z1-A1": [0, 0, 1.5, 1]}), r"\[0, 1\]")
+    fails(lambda r: r["zones"][1].update(cuve="cuve-inconnue"), "cuve inconnue")
+    fails(lambda r: r["capteurs"].append({**r["capteurs"][0], "id": "bis"}), "même canal")
+    fails(lambda r: r["capteurs"][0].update(cuve=True), "pas de cuve")
+
+
+def test_consistency_warnings():
+    from edge.controller.coherence import check
+
+    raw = yaml.safe_load(open("edge/controller/serre.yaml"))
+    cfg = SerreCfg.model_validate(raw)
+    assert check(cfg, {"tomate", "basilic", "laitue"}) == []  # the sample is consistent
+    raw["capteurs"] = [c for c in raw["capteurs"] if c["id"] != "ph-cuve-z2"]
+    raw["actionneurs"].append(
+        {"id": "ph-z1", "zone": "z1", "type": "pompe_ph_down", "duree_max_s": 10}
+    )
+    raw["cameras"][0]["regions"].pop("z1-A2")
+    warnings = check(SerreCfg.model_validate(raw), {"tomate"})
+    assert any("z2-A1" in w and "ph" in w and "cuve-z2" in w for w in warnings)
+    assert any(w.startswith("ph-z1 : pompe doseuse") for w in warnings)
+    assert any(w.startswith("cam-z1-a") and "z1-A2" in w for w in warnings)
+    assert sum("hors taxonomie" in w for w in warnings) == 2  # basilic, laitue
+
+
+def test_inline_recipes_and_vision_auto():
+    raw = yaml.safe_load(open("edge/controller/serre.yaml"))
+    raw["recettes"] = yaml.safe_load(open("edge/controller/recettes.yaml"))
+    cfg = SerreCfg.model_validate(raw)
+    gh = Greenhouse(cfg, cfg.load_recipes(), especes={"tomate"})
+    assert gh.setpoints["z1"] == load_greenhouse().setpoints["z1"]
+    assert gh.vision_auto("cam-z1-a")  # sees a tomato
+    assert not gh.vision_auto("cam-z2-a")  # only a lettuce, out of taxonomy
+    assert gh.vision_auto("cam-inconnue")  # undeclared: default behaviour

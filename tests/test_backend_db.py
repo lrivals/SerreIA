@@ -84,3 +84,47 @@ def test_one_active_plant_per_emplacement():
 def test_helpers():
     assert serre_id("Serre « Maison »") == "serre-maison"
     assert _grid("A1") == (1, 1) and _grid("B12") == (2, 12) and _grid("etagere-2") == (None, None)
+
+
+def test_seed_loads_the_whole_greenhouse_model():
+    _, sessions = seeded_db()
+    with sessions() as s:
+        tomate = s.get(m.Plante, "tomate-1")
+        assert tomate.variete == "Cœur de bœuf" and tomate.date_semis.isoformat() == "2026-03-01"
+        pot = s.get(m.Contenant, s.get(m.Emplacement, "z1-A1").contenant_id)
+        assert (pot.type, pot.volume_l, pot.drainage) == ("pot", 11, True)
+        assert s.get(m.Cuve, "cuve-z2").volume_l == 60
+        sht = s.get(m.Capteur, "esp32-01-humidite")
+        assert (sht.materiel, sht.modele, sht.cuve_id) == ("sht41-z1", "SHT41", None)
+        ph = s.get(m.Capteur, "esp32-03-ph")
+        assert ph.cuve_id == "cuve-z2" and ph.etalonnage["date"] == "2026-10-01"
+
+        def covered(cid):
+            q = select(m.CapteurEmplacement.emplacement_id).where(
+                m.CapteurEmplacement.capteur_id == cid
+            )
+            return set(s.scalars(q))
+
+        assert covered("esp32-01-temperature") == {"z1-A1", "z1-A2"}  # "*": the whole zone
+        assert covered("esp32-02-humidite_sol-z1-A2") == {"z1-A2"}  # soil probe
+        regions = {
+            (r.camera_id, r.emplacement_id): r.bbox for r in s.scalars(select(m.CameraRegion))
+        }
+        assert regions == {
+            ("cam-z1-a", "z1-A1"): [0.0, 0.0, 0.5, 1.0],
+            ("cam-z1-a", "z1-A2"): [0.5, 0.0, 0.5, 1.0],
+            ("cam-z2-a", "z2-A1"): None,
+        }
+        assert s.get(m.Actionneur, "ph-down-z2").debit_ml_min == 60
+        assert s.get(m.Actionneur, "brumisateur-z1").parametres["delai_min_s"] == 600
+        assert s.get(m.Serre, "maison").parametres["securite"]["t_max"] == 35
+
+
+def test_seed_is_idempotent_for_containers_sensors_and_cameras():
+    _, sessions = seeded_db()
+    tables = (m.Contenant, m.Capteur, m.CapteurEmplacement, m.Camera, m.CameraRegion)
+    with sessions.begin() as s:
+        before = {t: count(s, t) for t in tables}
+        seed(s, load_greenhouse(), T0 + timedelta(days=1))
+    with sessions() as s:
+        assert {t: count(s, t) for t in tables} == before

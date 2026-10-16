@@ -12,6 +12,9 @@
 - An alert is published only when the level of a camera changes; going back to normal
   after a warning or a critique is reported as info. The humidity escalation is evaluated
   at the next capture of the camera.
+- A camera that only sees species outside the taxonomy (docs/09 §2, `serre.yaml`) is
+  smoothed on `score_anomalie` instead of the classifier health, and its level stops at
+  warning: a simple alert, no disease class to trust.
 """
 
 import argparse
@@ -20,6 +23,7 @@ import logging
 import signal
 import threading
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -107,6 +111,8 @@ class HumidityTracker:
 @dataclass
 class VisionAlerter:
     cfg: VisionAlertConfig = field(default_factory=VisionAlertConfig)
+    # Greenhouse.vision_auto: False for a camera that only sees out-of-taxonomy species.
+    vision_auto: Callable[[str], bool] = lambda camera: True
 
     def __post_init__(self):
         self.smoother = VisionSmoother(self.cfg.n, self.cfg.seuil, self.cfg.mode)
@@ -119,9 +125,10 @@ class VisionAlerter:
 
     def on_vision(self, zone: str, result: VisionResult) -> Alert | None:
         cam = result.camera
-        score = abnormal_score(result)
+        auto = self.vision_auto(cam)
+        score = abnormal_score(result) if auto else result.score_anomalie
         now_abn, persistent = self.smoother.update(cam, score)
-        classe = dominant_class(result)
+        classe = dominant_class(result) if auto else None
         humid = self.humidity.duration(zone, result.ts)
         humid_disease = (
             classe is not None and classe.rsplit("/", 1)[-1] in self.cfg.maladies_humides
@@ -143,7 +150,8 @@ class VisionAlerter:
                 return Alert(ts=result.ts, niveau="info", source=f"{SOURCE}/{cam}",
                              message=f"{cam} : retour à la normale")  # fmt: skip
             return None
-        msg = f"{cam} : {classe or 'anomalie'} ({score:.2f})"
+        what = classe or ("anomalie" if auto else "score d'anomalie")
+        msg = f"{cam} : {what} ({score:.2f})"
         if level == "info":
             msg += " sur une capture isolée"
         else:
@@ -183,6 +191,21 @@ def replay(alerter: VisionAlerter, archive: Path, zone: str) -> list[Alert]:
     return alerts
 
 
+def _vision_auto(path: Path | None) -> Callable[[str], bool]:
+    """`Greenhouse.vision_auto` of the (hot reloaded) serre.yaml; without a readable
+    configuration, every camera keeps the default behaviour."""
+    import yaml
+
+    from .config import DEFAULT_CONFIG, ConfigWatcher
+
+    try:
+        watcher = ConfigWatcher(path or DEFAULT_CONFIG)
+    except (OSError, ValueError, KeyError, yaml.YAMLError) as e:
+        log.warning("serre.yaml illisible (%s) : toutes les caméras en mode standard", e)
+        return lambda camera: True
+    return lambda camera: watcher.get().vision_auto(camera)
+
+
 def main() -> None:
     from edge.config import ROOT
     from edge.publisher import make_publisher
@@ -197,10 +220,14 @@ def main() -> None:
     parser.add_argument("--seuil", type=float, default=VisionAlertConfig.seuil)
     parser.add_argument("--n", type=int, default=VisionAlertConfig.n)
     parser.add_argument("--mode", choices=["consecutif", "moyenne"], default="consecutif")
+    parser.add_argument("--config", type=Path, help="serre.yaml (caméras, espèces vues)")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 
-    alerter = VisionAlerter(VisionAlertConfig(seuil=args.seuil, n=args.n, mode=args.mode))
+    alerter = VisionAlerter(
+        VisionAlertConfig(seuil=args.seuil, n=args.n, mode=args.mode),
+        vision_auto=_vision_auto(args.config),
+    )
     if args.replay:
         path = args.replay if args.replay.is_absolute() else ROOT / args.replay
         print(f"{len(replay(alerter, path, args.zone))} alerte(s)")

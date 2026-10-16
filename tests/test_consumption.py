@@ -11,6 +11,7 @@ from backend.consumption import (
     day_bounds,
     dli_led,
     energy_kwh,
+    inputs_ml,
     light_integral,
     on_seconds,
     state_intervals,
@@ -58,6 +59,7 @@ def test_pump_water():
         *(day_bounds(DAY, "Europe/Paris")),
     )
     assert water_l(120, on_seconds(iv)) == pytest.approx(1.5)
+    assert inputs_ml(60, 3) == pytest.approx(3.0)  # 3 s at 60 mL/min
 
 
 def test_light_integral_skips_gaps_and_clips():
@@ -85,6 +87,10 @@ def test_compute_day_writes_the_tables():
                 etat("z1", "pompe_nutri", h(7), "on"),
                 etat("z1", "pompe_nutri", h(7) + timedelta(seconds=45), "off"),
                 etat("z1", "chauffage", h(20), "on"),  # still on at `now`
+                etat("z2", "pompe_ph_down", h(9), "on"),
+                etat("z2", "pompe_ph_down", h(9) + timedelta(seconds=2), "off"),
+                etat("z2", "pompe_ph_down", h(10), "on"),
+                etat("z2", "pompe_ph_down", h(10) + timedelta(seconds=2), "off"),
             ]
         )
         for i in range(0, 25 * 6):  # constant 10 klx every 10 min
@@ -110,6 +116,9 @@ def test_compute_day_writes_the_tables():
     assert rows["chauffage-z1"].kwh == pytest.approx(1500 * 2 / 1000)  # 20 h → now (22 h)
     assert rows["ventilo-z1"].duree_on_s == 0  # no state received: nothing counted
     assert rows["ph-down-z2"].kwh is None  # no declared power
+    assert rows["ph-down-z2"].ml == pytest.approx(60 * 4 / 60)  # 2 pulses of 2 s at 60 mL/min
+    assert rows["ph-down-z2"].litres is None  # inputs, not water
+    assert totals["ml"] == pytest.approx(4.0) and totals["litres"] == pytest.approx(1.5)
     assert rows["led-z1"].cout == pytest.approx(0.24 * 0.25)
     expected_kwh = 0.24 + 20 * 45 / 3.6e6 + 3.0
     assert totals["kwh"] == pytest.approx(expected_kwh)
