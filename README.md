@@ -36,6 +36,7 @@ Choix structurants :
 | 16 | [Test système simulé](docs/16-test-systeme-simule.md) | Scénarios scriptés sans images (journée capteurs, mildiou et agent), attendus vérifiés, historique figé, journal de test et constats |
 | 17 | [Analyse du système](docs/17-analyse-systeme.md) | État des lieux du logiciel : forces, limites par domaine, synthèse des risques |
 | 18 | [Améliorations logicielles](docs/18-ameliorations-logicielles.md) | Plan d'améliorations réalisables sans matériel, par priorité et par lot (Q1–Q5) |
+| 19 | [Notebooks d'analyse des datasets](docs/19-notebooks-analyse-datasets.md) | Spécification des notebooks 06–08 : statistiques du classifieur, du jeu YOLO et des séries capteurs |
 | — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
 ## État actuel (17/10/2026)
@@ -55,6 +56,7 @@ Choix structurants :
 - ✅ **Vue jeu pixel art** (J1–J5, doc 13) : `/jeu` en Phaser 3, serre construite case par case depuis un inventaire, jardinier qui rejoue les événements réels, bulles de stats, rejeu 24 h / 7 j, démo hors ligne `/jeu?demo=1` ; sprites générés (planches 01 à 04 : jardinier et ses actions, 16 espèces) → atlas par `make sprites`, prompts des planches suivantes dans [`sprites-src/PROMPTS.md`](sprites-src/PROMPTS.md).
 - 🔄 **Test système simulé** (T1, doc 16) : scénarios scriptés `sim --scenario journee|mildiou` (forçages, pannes, vision factice) rejoués au plus vite et vérifiés contre leurs attendus (`make scenario`, `tests/test_scenarios.py`), historique figé pour l'UI, la vue jeu (`/jeu?demo=mildiou`) et l'agent (`make scenario-figer`, `make api-historique`) ; premier passage fait, 5 constats sur le contrôleur et la consommation à traiter, parcours UI et agent avec Claude réel restants — cf. [16 §6](docs/16-test-systeme-simule.md#6-journal-de-test).
 - 📋 **Analyse et qualité logicielle** (docs 17 et 18) : état des lieux complet (10 risques principaux, dont chauffage non borné sur sonde muette et bus MQTT sans authentification) et plan d'améliorations sans matériel en 5 lots, Q1 (sécurité et justesse) avant toute mise en serre — cf. [18 §11](docs/18-ameliorations-logicielles.md#11-ordre-proposé).
+- 📋 **Notebooks d'analyse des datasets** (doc 19) : `06_stats_classifieur` (déséquilibre, classes mono-source, écart de domaine, doublons), `07_stats_yolo` (boîtes : toutes de classe `feuille` aujourd'hui) et `08_stats_capteurs` (trous, profils journaliers, actionneurs), calculs dans `vision/datasets/stats.py` et `sim/stats.py` — cf. [19 §7](docs/19-notebooks-analyse-datasets.md#7-plan-de-travail).
 
 ## Démarrage rapide
 
