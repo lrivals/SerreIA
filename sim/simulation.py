@@ -4,22 +4,31 @@ Default layout, the one of `edge/controller/serre.yaml`:
 - z1, soil: air node esp32-01 (SHT41, BMP280, GY-302, SCD41, HLK-LD2450), soil node
   esp32-02 (probes z1-A1, z1-A2);
 - z2, hydro NFT: solution node esp32-03 (pH, EC, DS18B20, tank level), air node esp32-05;
-- actuator node esp32-04 for both zones.
+- actuator node esp32-04 for both zones;
+- cameras cam-z1-a (z1-A1 tomato, z1-A2 basil, one region each) and cam-z2-a (z2-A1).
 """
 
 import logging
 import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 
 import numpy as np
 
-from common.mqtt import Actuator, SensorType, status_topic
+from common.mqtt import (
+    CAPTURE,
+    Actuator,
+    CaptureRequest,
+    SensorType,
+    decode,
+    parse_topic,
+    status_topic,
+)
 
 from .faults import Faults
 from .model import ZoneModel, ZoneParams
-from .nodes import ActuatorNode, SensorNode
+from .nodes import ActuatorNode, SensorNode, SimCamera
 from .weather import Weather
 
 log = logging.getLogger(__name__)
@@ -55,6 +64,7 @@ class Layout:
     zones: dict[str, ZoneParams]
     sensor_nodes: list[SensorNode]
     actuators: dict[str, list[Actuator]]
+    cameras: list[SimCamera] = field(default_factory=list)
 
 
 def default_layout(seed: int = 0) -> Layout:
@@ -69,6 +79,15 @@ def default_layout(seed: int = 0) -> Layout:
             SensorNode("esp32-05", "z2", [(s, None) for s in AIR[:4]], rng=rng),
         ],
         actuators={"z1": CLIMATE, "z2": HYDRO},
+        cameras=[
+            SimCamera(
+                "cam-z1-a",
+                "z1",
+                {"z1-A1": (0.0, 0.0, 0.5, 1.0), "z1-A2": (0.5, 0.0, 0.5, 1.0)},
+                {"z1-A1": "tomate", "z1-A2": "basilic"},
+            ),
+            SimCamera("cam-z2-a", "z2", {"z2-A1": None}, {"z2-A1": "laitue"}),
+        ],
     )
 
 
@@ -86,11 +105,14 @@ class Simulation:
         controller=None,
         dt: float = 10.0,
         tick_s: float = 10.0,
+        scenario=None,
     ):
         self.pub, self.t, self.dt = publisher, start or datetime.now(UTC), dt
         self.t0 = self.t
         self.faults = faults or Faults()
         self.layout = layout or default_layout(seed)
+        # sim.scenario.Scenario: forced weather and quantities, fake vision (docs/16)
+        self.scenario = scenario.injector(self.layout) if scenario is not None else None
         self.weather = Weather(seed)
         self.models = {
             z: ZoneModel(z, p, seed + i) for i, (z, p) in enumerate(self.layout.zones.items())
@@ -113,7 +135,14 @@ class Simulation:
 
     def _on_command(self, topic: str, payload: bytes) -> None:
         with self.lock:
-            self.act_node.on_command(topic, payload, self.t)
+            parsed = parse_topic(topic)
+            if parsed.subject == CAPTURE:
+                req: CaptureRequest = decode(topic, payload)
+                for cam in self.layout.cameras:
+                    if cam.zone == parsed.scope and req.camera in (None, cam.id):
+                        cam.requested = True  # captured at the next step
+            else:
+                self.act_node.on_command(topic, payload, self.t)
         self._flush_states()
 
     def _flush_states(self) -> None:
@@ -125,16 +154,24 @@ class Simulation:
             self.t += timedelta(seconds=self.dt)
             t = self.t
             w = self.weather.step(t, self.dt)
+            if self.scenario is not None:
+                w = self.scenario.weather(t, w)
             for zone, model in self.models.items():
                 if self.faults.tank_empty(zone, t):
                     model.niveau = 0.0
                 model.step(t, self.dt, w, self.act_node.levels(zone))
+                if self.scenario is not None:
+                    self.scenario.force(zone, model, t, self.dt)
                 self.act_node.tank[zone] = model.niveau if model.p.hydro else 100.0
             self.act_node.step(t)
             out = []
             for node in self.layout.sensor_nodes:
                 truth = self.models[node.zone].readings()
                 out += node.poll(t, truth, self.faults)
+            for cam in self.layout.cameras:
+                out += cam.poll(t, self.faults)
+            if self.scenario is not None:
+                out += self.scenario.vision(t)
             status = []
             for n in self._nodes():
                 down = self.faults.disconnected(n, t)

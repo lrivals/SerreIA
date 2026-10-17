@@ -3,7 +3,7 @@
 Ce document décrit la **serre physique** telle que le logiciel la connaît : zones, emplacements, plantes, contenants, mode de culture, capteurs, actionneurs, caméras, recettes et consommations.
 C'est la référence commune au contrôleur ([06](06-capteurs-controle.md)), au journal de décisions ([10](10-decisions-tracabilite.md)), à l'agent ([11](11-agent-decision.md)) et à l'interface ([12](12-interface-utilisateur.md)).
 
-> Statut : **modèle implémenté hors UI** : tables, seed depuis `serre.yaml` (zones, emplacements, contenants, plantes, cuves, capteurs, actionneurs, caméras et régions), contrôles de cohérence (§2, §3), ingestion MQTT et consommation avec intrants (§5, §7), export versionné de la configuration vers le Pi (§8). Le constructeur de serre (UI, API) et les migrations Alembic arrivent avec G2.
+> Statut : **modèle implémenté hors UI** : tables, seed depuis `serre.yaml` (zones, emplacements, contenants, plantes, cuves, capteurs, actionneurs, caméras et régions), contrôles de cohérence (§2, §3), ingestion MQTT et consommation avec intrants (§5, §7), export versionné de la configuration vers le Pi (§8). Le constructeur de serre (UI, API) est fait ([12](12-interface-utilisateur.md), G2) ; les migrations Alembic restent à faire.
 
 ## 1. Hiérarchie
 
@@ -196,18 +196,21 @@ parce que la configuration est en retard) :
   noeud_status(ts, noeud, status)              (ts = heure de réception : le payload n'en a pas)
 
 Tables classiques :
-  decision(id, ts, zone, …, preuves, actions, statut)   forme minimale du contrat, upsert par id ;
-                                                        table action séparée → G3 (doc 10)
+  decision(id, ts, zone, …, preuves, actions, ordres, statut, expire)   upsert par id (doc 10 §2)
+  action(id, decision_id, zone, type, cible, label, commande, resultat, ts_debut, ts_fin)
+                                                        dérivée des décisions et commandes (doc 10 §3)
   consommation_jour(jour, actionneur_id, zone, type, duree_on_s, kwh, litres, ml, dli, cout)
   lumiere_jour(jour, zone, dli_total, dli_led, dli_naturel, couverture)
   config_export(version, ts, sha256, contenu)          versions exportées vers le Pi (§8)
 ```
 
-Code : `backend/db/models.py` (SQLAlchemy 2, types portables : les tests tournent sur SQLite), `backend/db/timescale.sql` (hypertables, appliqué par `init_db` sur PostgreSQL seulement), `backend/db/seed.py` (`python -m backend.db.seed` : charge `serre.yaml` et les recettes, idempotent ; un déplacement de plante clôt l'affectation). Les champs du contrôleur sans colonne dédiée sont stockés en JSON (`serre.parametres` : hystérésis, sécurité, risque, lumière, prévision ; `actionneur.parametres` : `duree_s`, `impulsion_s`, `melange_s`, `delai_min_s`, `marche_min_s` ; `zone.presence_autorisee`), si bien que l'export (§8) reconstruit `serre.yaml` à partir de la base seule. Pas encore d'Alembic : `init_db` crée les tables manquantes mais **ne modifie pas une table existante**. Après une évolution du schéma, une base de développement se recrée : `docker compose -f backend/docker-compose.yml --profile broker down -v && make stack-up db-init`. Les migrations arriveront avec G2.
+Code : `backend/db/models.py` (SQLAlchemy 2, types portables : les tests tournent sur SQLite), `backend/db/timescale.sql` (hypertables, appliqué par `init_db` sur PostgreSQL seulement), `backend/db/seed.py` (`python -m backend.db.seed` : charge `serre.yaml` et les recettes, idempotent ; un déplacement de plante clôt l'affectation). Les champs du contrôleur sans colonne dédiée sont stockés en JSON (`serre.parametres` : hystérésis, sécurité, risque, lumière, prévision ; `actionneur.parametres` : `duree_s`, `impulsion_s`, `melange_s`, `delai_min_s`, `marche_min_s` ; `zone.presence_autorisee`), si bien que l'export (§8) reconstruit `serre.yaml` à partir de la base seule. Pas encore d'Alembic : `init_db` crée les tables manquantes et ajoute aux tables existantes les **colonnes nullables** apparues depuis (`add_missing_columns`, par exemple `disposition`), mais ne modifie ni ne supprime une colonne existante. Pour tout autre changement de schéma, une base de développement se recrée : `docker compose -f backend/docker-compose.yml --profile broker down -v && make stack-up db-init`.
+
+Zones, emplacements, capteurs, actionneurs, caméras et cuves portent un champ JSON optionnel **`disposition`** (`{x, y, largeur?, hauteur?, orientation?, sprite?}`, en tuiles) : la position dans la vue jeu ([13 §3](13-interface-jeu-pixel-art.md#ajout-au-modèle--disposition)). Purement visuel, il n'est pas exporté vers le contrôleur.
 
 Les capteurs déclarés dans `serre.yaml` (§4) sont créés par le seed. Un canal inconnu (capteur non déclaré) est créé par l'ingestion au premier message (`<noeud>-<type>[-<emplacement>]`, sans `materiel`) et relié à son emplacement (sondes de sol) ; il n'apparaît pas dans l'export tant qu'il n'est pas déclaré.
 
-L'ingestion (`backend/ingestion/`, `python -m backend.ingestion`) s'abonne aux `SUBSCRIPTIONS` de `common/mqtt/topics.py`, valide avec `decode` et écrit dans ces tables par lots ; les messages invalides sont comptés et journalisés, les doublons (redélivrance QoS 1, retain rejoué) ignorés. `Command.raison` donne `commande.decision_id` (doc 10 §3). Les résultats vision sont rattachés à un emplacement par les `camera_region` (centre de la bbox, ou seul emplacement visible en phase 1).
+L'ingestion (`backend/ingestion/`, `python -m backend.ingestion`) s'abonne aux `SUBSCRIPTIONS` de `common/mqtt/topics.py`, valide avec `decode` et écrit dans ces tables par lots ; les messages invalides sont comptés et journalisés, les doublons (redélivrance QoS 1, retain rejoué) ignorés. `Command.raison` donne `commande.decision_id` (doc 10 §3) ; après chaque lot, `backend/traceability.py` dérive les `action`, les confirme par `etat_actionneur` et applique les changements d'`etat_sante` décidés (doc 10 §3–4). Les résultats vision sont rattachés à un emplacement par les `camera_region` (centre de la bbox, ou seul emplacement visible en phase 1).
 
 La consommation n'est **pas** un agrégat continu TimescaleDB : la durée d'un état demande une fonction fenêtre, interdite dans un continuous aggregate. Elle est recalculée toutes les heures par l'ingestion (jour courant et veille) ou à la demande (`python -m backend.consumption --jour …`).
 
@@ -237,4 +240,4 @@ python -m backend.config.export --rsync pi@serre.local:SerreIA/edge/controller/s
 - `build_config` reconstruit un `serre.yaml` **autonome** depuis la base (recettes en ligne : `recettes:` accepte un chemin ou un dictionnaire) ; il est validé comme le contrôleur le chargera (`SerreCfg`, recette et stade de chaque plante), avec les avertissements de cohérence. Une configuration invalide est refusée et aucune version n'est créée.
 - La **version suit le contenu** : `sha256` du contenu hors version ; si rien n'a changé depuis le dernier export, le numéro est conservé, sinon N + 1, enregistré dans `config_export` (contenu complet, pour rejouer une décision) et dans `serre.config_version`.
 - `--install` écrit le fichier de manière atomique (fichier temporaire + `os.replace`) : le `ConfigWatcher` du contrôleur recharge le fichier quand sa date change et ne lit jamais un fichier tronqué. `--rsync` copie la version vers le Pi.
-- Tant que l'UI n'existe pas (G2), le cycle est : éditer `serre.yaml` → `make db-init` → `make config-export PI_CONFIG=pi@serre.local:SerreIA/edge/controller/serre.yaml` (ou `INSTALL=<chemin>` pour un contrôleur local). Sur le PC, ne pas installer par-dessus l'exemple versionné `edge/controller/serre.yaml`, qui reste la source du seed.
+- Depuis l'UI (G2) : bouton « Publier la configuration » du constructeur (`POST /api/config/publier`, avec `python -m backend.api --install … / --rsync …`). Sans l'UI, le cycle est : éditer `serre.yaml` → `make db-init` → `make config-export PI_CONFIG=pi@serre.local:SerreIA/edge/controller/serre.yaml` (ou `INSTALL=<chemin>` pour un contrôleur local). Sur le PC, ne pas installer par-dessus l'exemple versionné `edge/controller/serre.yaml`, qui reste la source du seed.

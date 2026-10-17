@@ -1,0 +1,28 @@
+# Seuils des règles « classification → action » (docs/10 §5), lus par
+# edge/controller/vision_rules.py. Une classification ne déclenche d'action que si elle est
+# confirmée : même classe sur `confirmations` captures consécutives de l'emplacement, chacune
+# avec classe_conf >= classe_conf_min, et espèce prédite = espèce déclarée de la plante.
+
+confirmations: 3
+classe_conf_min: 0.6        # à remplacer par le seuil calibré du classifieur (docs/03)
+anomalie_seuil: 0.7         # plante classée saine mais score_anomalie au-dessus : recapture
+recapture_s: 3600           # recapture rapprochée (oïdium, nuisible, anomalie)
+expiration_s: 7200          # une décision « proposee » expire après ce délai (docs/10 §4)
+hr_abaissement: 10          # mildiou : consigne HR max abaissée de N points…
+hr_abaissement_h: 72        # … pendant N heures
+surface_baisse: 0.15        # surface verte en baisse de plus de 15 %…
+surface_fenetre_h: 48       # … sur 48 h : stress hydrique possible
+brumisation_s: 30           # nuisible (acarien) : brumisation légère
+
+# true : la décision naît « proposee » et attend la validation de l'utilisateur ;
+# false : exécutée automatiquement (toujours après safety.py).
+validation:
+  maladie.mildiou.plante: false
+  maladie.mildiou.isolement: true
+  maladie.oidium.surveillance: false
+  maladie.taches.arrosage: true
+  nuisible.brumisation: true
+  virus.isolement: true
+  vision.anomalie.recapture: false
+  vision.anormal.surveillance: false
+  croissance.surface.arrosage: true

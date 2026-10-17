@@ -5,7 +5,10 @@ firmware, so the controller cannot tell the simulator from the real greenhouse.
 - radar (in the air node): `presence` on every change and every 30 s;
 - actuator node: `serre/<zone>/cmd/#` → `etat/` (retained) on change; pump commands
   without `duree_s` or beyond the firmware maximum are refused; pumps cut at the deadline
-  and forbidden when the tank is empty (local float switch, independent of the Pi).
+  and forbidden when the tank is empty (local float switch, independent of the Pi);
+- camera (`camera_service` + classifier): a `VisionResult` every 10 min and on
+  `serre/<zone>/cmd/capture`, one detection per visible emplacement, healthy unless a
+  `maladie:` fault puts a class on it. No image: the classification is given.
 """
 
 import logging
@@ -19,13 +22,16 @@ from common.mqtt import (
     Actuator,
     ActuatorState,
     Command,
+    Detection,
     SensorReading,
     SensorType,
+    VisionResult,
     decode,
     parse_topic,
     quality,
     sensor_topic,
     state_topic,
+    vision_topic,
 )
 
 from .faults import Faults
@@ -187,3 +193,70 @@ class ActuatorNode:
     def drain(self) -> list[tuple[str, ActuatorState]]:
         out, self.outbox = self.outbox, []
         return out
+
+
+CAPTURE_PERIOD_S = 600.0
+SURFACE_PX = 50_000
+
+
+@dataclass
+class SimCamera:
+    """`regions`: emplacement -> its [x, y, w, h] region (None: the whole image);
+    `especes`: species of the plant of each emplacement."""
+
+    id: str
+    zone: str
+    regions: dict[str, tuple[float, float, float, float] | None]
+    especes: dict[str, str]
+    period_s: float = CAPTURE_PERIOD_S
+    modele: str = "sim-clf"
+    _next: datetime | None = None
+    requested: bool = False
+
+    def poll(self, t: datetime, faults: Faults) -> list[tuple[str, VisionResult]]:
+        if not self.requested and self._next is not None and t < self._next:
+            return []
+        self.requested = False
+        self._next = t + timedelta(seconds=self.period_s)
+        return [(vision_topic(self.zone, self.id), self.capture(t, faults))]
+
+    def capture(self, t: datetime, faults: Faults) -> VisionResult:
+        detections, anomaly, surface = [], 0.1, SURFACE_PX * len(self.regions)
+        for emp, region in self.regions.items():
+            bbox = None
+            if region is not None:
+                x, y, w, h = region
+                bbox = (x + w / 4, y + h / 4, w / 2, h / 2)
+            classe = faults.disease(emp, t)
+            espece = self.especes.get(emp, "inconnu")
+            if classe is None:
+                d = Detection(
+                    bbox=bbox,
+                    espece=espece,
+                    espece_conf=0.95,
+                    sante="sain",
+                    sante_conf=0.95,
+                    classe=f"{espece}/sain/sain",
+                    classe_conf=0.93,
+                )
+            else:
+                d = Detection(
+                    bbox=bbox,
+                    espece=classe.split("/")[0],
+                    espece_conf=0.95,
+                    sante="anormal",
+                    sante_conf=0.9,
+                    classe=classe,
+                    classe_conf=0.85,
+                )
+                anomaly, surface = 0.6, surface - SURFACE_PX // 10
+            detections.append(d)  # fmt: skip
+        return VisionResult(
+            ts=t,
+            camera=self.id,
+            image_id=f"{self.id}-{t:%Y%m%dT%H%M%S}",
+            modele=self.modele,
+            detections=detections,
+            score_anomalie=anomaly,
+            surface_verte_px=surface,
+        )

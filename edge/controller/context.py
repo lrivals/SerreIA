@@ -1,6 +1,6 @@
 """Evaluation context of a zone at one controller tick, shared by every level."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -63,8 +63,19 @@ class Ctx:
 def make_ctx(gh: Greenhouse, zs: ZoneState, now: datetime) -> Ctx:
     zcfg = gh.cfg.zone(zs.zone)
     local = now.astimezone(ZoneInfo(gh.cfg.fuseau))
-    sp = gh.setpoints.get(zcfg.id)
+    sp = _with_consignes(gh.setpoints.get(zcfg.id), zs, now)
     ctx = Ctx(gh, zcfg, zs, sp, now, local, False)
     start, end = ctx.window()
     ctx.jour = sp is not None and start <= local < end
     return ctx
+
+
+def _with_consignes(sp: Setpoints | None, zs: ZoneState, now: datetime) -> Setpoints | None:
+    """Setpoints with the temporary changes still running (expired ones are forgotten)."""
+    for name, (_, until) in list(zs.consignes.items()):
+        if now >= until:
+            del zs.consignes[name]
+    if sp is None or "humidite_max" not in zs.consignes:
+        return sp
+    lo, hi = sp.humidite
+    return replace(sp, humidite=(lo, max(lo, hi + zs.consignes["humidite_max"][0])))

@@ -1,0 +1,31 @@
+# Attendus du scénario 2 « Mildiou et agent » (docs/16 §4), vérifiés par sim/attendus.py.
+# J0 = 20 juillet, heure locale. Les dialogues de l'agent sont testés à part
+# (tests/test_scenarios.py, sur l'historique de ce scénario).
+attendus:
+  - {nom: nuit 1 humide → ventilation anti-mildiou sans image, regle: maladie.mildiou.ventilation,
+     zone: z1, de: J1 05:50, a: J1 06:30, preuve_vision: false, actionneur: ventilo,
+     alerte: risque mildiou}
+  - {nom: nuit 2 mildiou confirmé (3 captures) → décision avec preuves vision,
+     regle: maladie.mildiou.ventilation, zone: z1, de: J2 02:00, a: J2 02:10, preuve_vision: true,
+     alerte: mildiou vu sur cam-z1-a, max: 1}
+  - {nom: plante z1-A1 malade, consigne HR abaissée, regle: maladie.mildiou.plante, zone: z1,
+     de: J2 02:00, a: J2 02:10, preuve_vision: true, alerte: mildiou probable, max: 1}
+  - {nom: isolement proposé, regle: maladie.mildiou.isolement, zone: z1, statut: proposee,
+     de: J2 02:00, a: J2 02:10, max: 1}
+  - {nom: isolement non validé → expiré, regle: maladie.mildiou.isolement, zone: z1,
+     statut: expiree, de: J2 02:00, a: J2 02:10, max: 1}
+  - {nom: jour 3 sombre → complément LED, regle: lumiere.photoperiode, zone: z1, de: J3 06:00,
+     a: J3 15:00, actionneur: led, action: pwm}
+  - {nom: arrosage, regle: sol.arrosage, zone: z1, actionneur: pompe_nutri, action: "on"}
+  - nom: une seule décision mildiou par épisode
+    regle: maladie.mildiou.plante
+    de: J2 02:10
+    max: 0
+    connu: >-
+      sans hystérésis, la condition « HR > 85 % » (et T° moyenne ≤ 25 °C) oscille autour du
+      seuil : la cause disparaît puis revient d'une minute à l'autre, l'alerte est close puis
+      rouverte et la décision, sa consigne et la proposition d'isolement sont republiées
+      (docs/16 §6, constats)
+interdits:
+  - {nom: refus de sécurité, statut: bloquee_securite}
+  - {nom: preuve vision avant les captures, preuve_vision: true, a: J2 02:00}

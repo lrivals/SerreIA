@@ -9,7 +9,7 @@ import os
 from datetime import UTC, datetime
 from pathlib import Path
 
-from sqlalchemy import Engine, Table, create_engine
+from sqlalchemy import Engine, Table, create_engine, inspect
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -33,14 +33,35 @@ def make_engine(url: str | None = None) -> Engine:
 
 
 def init_db(engine: Engine) -> None:
-    """Create the missing tables, then the hypertables on PostgreSQL (idempotent)."""
+    """Create the missing tables and columns, then the hypertables on PostgreSQL
+    (idempotent)."""
     Base.metadata.create_all(engine)
+    add_missing_columns(engine)
     if engine.dialect.name != "postgresql":
         return
     statements = [s.strip() for s in _strip_comments(TIMESCALE_SQL.read_text()).split(";")]
     with engine.begin() as conn:
         for stmt in filter(None, statements):
             conn.exec_driver_sql(stmt)
+
+
+def add_missing_columns(engine: Engine) -> list[str]:
+    """`ALTER TABLE … ADD COLUMN` for the nullable columns added to the models since the
+    table was created (e.g. `disposition`, docs/13 §3), until Alembic migrations exist."""
+    existing = inspect(engine)
+    added = []
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if not existing.has_table(table.name):
+                continue
+            have = {c["name"] for c in existing.get_columns(table.name)}
+            for col in table.columns:
+                if col.name in have or not col.nullable:
+                    continue
+                kind = col.type.compile(dialect=engine.dialect)
+                conn.exec_driver_sql(f'ALTER TABLE "{table.name}" ADD COLUMN "{col.name}" {kind}')
+                added.append(f"{table.name}.{col.name}")
+    return added
 
 
 def _strip_comments(sql: str) -> str:

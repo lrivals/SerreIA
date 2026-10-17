@@ -210,12 +210,32 @@ class PrevisionCfg(_Cfg):
     ecart_sigma: float = 4.0  # anomaly when |measure - forecast| > k sigma
 
 
+class ReglesCfg(_Cfg):
+    """Thresholds of the "classification → action" rules (docs/10 §5), `regles.yaml`."""
+
+    confirmations: int = Field(default=3, ge=1)
+    classe_conf_min: float = Field(default=0.6, ge=0, le=1)
+    anomalie_seuil: float = Field(default=0.7, ge=0, le=1)
+    recapture_s: float = 3600.0
+    expiration_s: float = 7200.0
+    hr_abaissement: float = 10.0
+    hr_abaissement_h: float = 72.0
+    surface_baisse: float = Field(default=0.15, gt=0, lt=1)
+    surface_fenetre_h: float = 48.0
+    brumisation_s: float = 30.0
+    validation: dict[str, bool] = Field(default_factory=dict)  # rule id -> born `proposee`
+
+    def needs_validation(self, rule_id: str, default: bool) -> bool:
+        return self.validation.get(rule_id, default)
+
+
 class SerreCfg(_Cfg):
     config_version: int = Field(ge=0)
     nom: str = "serre"
     fuseau: str = "Europe/Paris"
     tarif_kwh: float | None = None  # €/kWh, cost of the estimated consumption (docs/09 §5)
     recettes: Path | dict[str, Recipe] = Path("edge/controller/recettes.yaml")  # or inline
+    regles: Path | ReglesCfg = Path("edge/controller/regles.yaml")  # or inline
     zones: list[ZoneCfg] = Field(min_length=1)
     cuves: list[CuveCfg] = Field(default_factory=list)
     actionneurs: list[ActionneurCfg] = Field(default_factory=list)
@@ -295,8 +315,28 @@ class SerreCfg(_Cfg):
                     return e.plante
         return None
 
+    def emplacement_of(
+        self, camera: str, bbox: tuple[float, float, float, float] | None
+    ) -> str | None:
+        """Emplacement of a detection of `camera` (docs/09 §4), see `resolve_emplacement`."""
+        cam = self.camera(camera)
+        if cam is None:
+            return None
+        return resolve_emplacement(
+            bbox, [(e, cam.regions.get(e)) for e in cam.emplacements_visibles]
+        )
+
     def resolve(self, path: Path) -> Path:
         return path if path.is_absolute() else ROOT / path
+
+    def load_regles(self) -> ReglesCfg:
+        if isinstance(self.regles, ReglesCfg):
+            return self.regles
+        path = self.resolve(self.regles)
+        if not path.exists():
+            log.warning("%s absent : seuils par défaut des règles vision", path)
+            return ReglesCfg()
+        return ReglesCfg.model_validate(yaml.safe_load(path.read_text()) or {})
 
     def load_recipes(self) -> dict[str, Recipe]:
         if isinstance(self.recettes, dict):
@@ -311,6 +351,7 @@ class Greenhouse:
         from .coherence import check, known_species
 
         self.cfg, self.recipes = cfg, recipes
+        self.regles = cfg.load_regles()
         self.especes = known_species() if especes is None else especes
         for z in cfg.zones:
             for p in z.plants:
@@ -352,6 +393,24 @@ class Greenhouse:
             return True
         plants = [p for e in cam.emplacements_visibles if (p := self.cfg.plant_at(e))]
         return not plants or any(p.espece in self.especes for p in plants)
+
+
+def resolve_emplacement(
+    bbox: tuple[float, float, float, float] | None,
+    regions: list[tuple[str, tuple[float, float, float, float] | list[float] | None]],
+) -> str | None:
+    """Emplacement of a detection (docs/09 §4): the region containing the bbox centre;
+    otherwise (phase 1 whole image, or no matching region), the only emplacement seen by
+    the camera if any. `regions`: (visible emplacement, its region or None)."""
+    if bbox is not None:
+        cx, cy = bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2
+        for emplacement, region in regions:
+            if region is None:
+                continue
+            x, y, w, h = region
+            if x <= cx <= x + w and y <= cy <= y + h:
+                return emplacement
+    return regions[0][0] if len(regions) == 1 else None
 
 
 def load_greenhouse(path: Path = DEFAULT_CONFIG) -> Greenhouse:

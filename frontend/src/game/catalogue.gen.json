@@ -1,0 +1,1178 @@
+{
+ "version": "1.3",
+ "tuile": 16,
+ "facteur": 2,
+ "personnages": {
+  "gardener": {
+   "taille": [
+    42,
+    48
+   ],
+   "animations": {
+    "walk_down": {
+     "frames": [
+      "characters/gardener/walk_down/0",
+      "characters/gardener/walk_down/1",
+      "characters/gardener/walk_down/2",
+      "characters/gardener/walk_down/3",
+      "characters/gardener/walk_down/4"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "walk_right": {
+     "frames": [
+      "characters/gardener/walk_right/0",
+      "characters/gardener/walk_right/1",
+      "characters/gardener/walk_right/2",
+      "characters/gardener/walk_right/3",
+      "characters/gardener/walk_right/4"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "walk_left": {
+     "frames": [
+      "characters/gardener/walk_left/0",
+      "characters/gardener/walk_left/1",
+      "characters/gardener/walk_left/2",
+      "characters/gardener/walk_left/3",
+      "characters/gardener/walk_left/4"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "walk_up": {
+     "frames": [
+      "characters/gardener/walk_up/0",
+      "characters/gardener/walk_up/1",
+      "characters/gardener/walk_up/2",
+      "characters/gardener/walk_up/3",
+      "characters/gardener/walk_up/4"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "idle": {
+     "frames": [
+      "characters/gardener/idle/0",
+      "characters/gardener/idle/1"
+     ],
+     "flip_x": false,
+     "fps": 4
+    },
+    "idle_back": {
+     "frames": [
+      "characters/gardener/idle_back/0"
+     ],
+     "flip_x": false,
+     "fps": 4
+    },
+    "watering": {
+     "frames": [
+      "characters/gardener/watering/0",
+      "characters/gardener/watering/1"
+     ],
+     "flip_x": false,
+     "fps": 4
+    },
+    "watering_down": {
+     "frames": [
+      "characters/gardener/watering_down/0",
+      "characters/gardener/watering_down/1",
+      "characters/gardener/watering_down/2",
+      "characters/gardener/watering_down/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "watering_up": {
+     "frames": [
+      "characters/gardener/watering_up/0",
+      "characters/gardener/watering_up/1",
+      "characters/gardener/watering_up/2",
+      "characters/gardener/watering_up/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "inspect_right": {
+     "frames": [
+      "characters/gardener/inspect_right/0",
+      "characters/gardener/inspect_right/1",
+      "characters/gardener/inspect_right/2",
+      "characters/gardener/inspect_right/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "inspect_down": {
+     "frames": [
+      "characters/gardener/inspect_down/0",
+      "characters/gardener/inspect_down/1",
+      "characters/gardener/inspect_down/2",
+      "characters/gardener/inspect_down/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "switch": {
+     "frames": [
+      "characters/gardener/switch/0",
+      "characters/gardener/switch/1",
+      "characters/gardener/switch/2"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "dose": {
+     "frames": [
+      "characters/gardener/dose/0",
+      "characters/gardener/dose/1",
+      "characters/gardener/dose/2",
+      "characters/gardener/dose/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "notebook": {
+     "frames": [
+      "characters/gardener/notebook/0",
+      "characters/gardener/notebook/1",
+      "characters/gardener/notebook/2",
+      "characters/gardener/notebook/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "tap": {
+     "frames": [
+      "characters/gardener/tap/0",
+      "characters/gardener/tap/1",
+      "characters/gardener/tap/2"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "sleep": {
+     "frames": [
+      "characters/gardener/sleep/0",
+      "characters/gardener/sleep/1",
+      "characters/gardener/sleep/2"
+     ],
+     "flip_x": false,
+     "fps": 2
+    },
+    "carry_envelope": {
+     "frames": [
+      "characters/gardener/carry_envelope/0",
+      "characters/gardener/carry_envelope/1",
+      "characters/gardener/carry_envelope/2",
+      "characters/gardener/carry_envelope/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "portrait": {
+     "frames": [
+      "characters/gardener/portrait/0"
+     ],
+     "flip_x": false,
+     "fps": 4
+    }
+   }
+  }
+ },
+ "plantes": {
+  "generique": "plants/generic",
+  "especes": {
+   "tomate": "tomato",
+   "fraisier": "strawberry",
+   "fraise": "strawberry",
+   "poivron": "pepper",
+   "piment": "chili",
+   "aubergine": "eggplant",
+   "concombre": "cucumber",
+   "courgette": "zucchini",
+   "melon": "melon",
+   "basilic": "basil",
+   "laitue": "lettuce",
+   "salade": "lettuce",
+   "laitue rouge": "red_lettuce",
+   "feuille de chêne": "red_lettuce",
+   "epinard": "spinach",
+   "épinard": "spinach",
+   "roquette": "arugula",
+   "mache": "lambs_lettuce",
+   "mâche": "lambs_lettuce",
+   "blette": "chard",
+   "bette": "chard",
+   "chou kale": "kale",
+   "kale": "kale"
+  },
+  "sprites": {
+   "tomato": {
+    "taille": [
+     41,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/tomato/seedling/healthy",
+      "a_surveiller": "plants/tomato/seedling/yellowing",
+      "malade": "plants/tomato/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/tomato/young/healthy",
+      "a_surveiller": "plants/tomato/young/yellowing",
+      "malade": "plants/tomato/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/tomato/flowering/healthy",
+      "a_surveiller": "plants/tomato/flowering/yellowing",
+      "malade": "plants/tomato/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/tomato/green_fruit/healthy",
+      "a_surveiller": "plants/tomato/green_fruit/yellowing",
+      "malade": "plants/tomato/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/tomato/ripe_fruit/healthy",
+      "a_surveiller": "plants/tomato/ripe_fruit/yellowing",
+      "malade": "plants/tomato/ripe_fruit/sick"
+     }
+    }
+   },
+   "strawberry": {
+    "taille": [
+     32,
+     32
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/strawberry/seedling/healthy",
+      "a_surveiller": "plants/strawberry/seedling/yellowing",
+      "malade": "plants/strawberry/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/strawberry/young/healthy",
+      "a_surveiller": "plants/strawberry/young/yellowing",
+      "malade": "plants/strawberry/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/strawberry/flowering/healthy",
+      "a_surveiller": "plants/strawberry/flowering/yellowing",
+      "malade": "plants/strawberry/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/strawberry/green_fruit/healthy",
+      "a_surveiller": "plants/strawberry/green_fruit/yellowing",
+      "malade": "plants/strawberry/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/strawberry/ripe_fruit/healthy",
+      "a_surveiller": "plants/strawberry/ripe_fruit/yellowing",
+      "malade": "plants/strawberry/ripe_fruit/sick"
+     }
+    }
+   },
+   "pepper": {
+    "taille": [
+     55,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/pepper/seedling/healthy",
+      "a_surveiller": "plants/pepper/seedling/yellowing",
+      "malade": "plants/pepper/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/pepper/young/healthy",
+      "a_surveiller": "plants/pepper/young/yellowing",
+      "malade": "plants/pepper/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/pepper/flowering/healthy",
+      "a_surveiller": "plants/pepper/flowering/yellowing",
+      "malade": "plants/pepper/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/pepper/green_fruit/healthy",
+      "a_surveiller": "plants/pepper/green_fruit/yellowing",
+      "malade": "plants/pepper/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/pepper/ripe_fruit/healthy",
+      "a_surveiller": "plants/pepper/ripe_fruit/yellowing",
+      "malade": "plants/pepper/ripe_fruit/sick"
+     }
+    }
+   },
+   "chili": {
+    "taille": [
+     53,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/chili/seedling/healthy",
+      "a_surveiller": "plants/chili/seedling/yellowing",
+      "malade": "plants/chili/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/chili/young/healthy",
+      "a_surveiller": "plants/chili/young/yellowing",
+      "malade": "plants/chili/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/chili/flowering/healthy",
+      "a_surveiller": "plants/chili/flowering/yellowing",
+      "malade": "plants/chili/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/chili/green_fruit/healthy",
+      "a_surveiller": "plants/chili/green_fruit/yellowing",
+      "malade": "plants/chili/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/chili/ripe_fruit/healthy",
+      "a_surveiller": "plants/chili/ripe_fruit/yellowing",
+      "malade": "plants/chili/ripe_fruit/sick"
+     }
+    }
+   },
+   "eggplant": {
+    "taille": [
+     48,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/eggplant/seedling/healthy",
+      "a_surveiller": "plants/eggplant/seedling/yellowing",
+      "malade": "plants/eggplant/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/eggplant/young/healthy",
+      "a_surveiller": "plants/eggplant/young/yellowing",
+      "malade": "plants/eggplant/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/eggplant/flowering/healthy",
+      "a_surveiller": "plants/eggplant/flowering/yellowing",
+      "malade": "plants/eggplant/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/eggplant/green_fruit/healthy",
+      "a_surveiller": "plants/eggplant/green_fruit/yellowing",
+      "malade": "plants/eggplant/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/eggplant/ripe_fruit/healthy",
+      "a_surveiller": "plants/eggplant/ripe_fruit/yellowing",
+      "malade": "plants/eggplant/ripe_fruit/sick"
+     }
+    }
+   },
+   "cucumber": {
+    "taille": [
+     41,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/cucumber/seedling/healthy",
+      "a_surveiller": "plants/cucumber/seedling/yellowing",
+      "malade": "plants/cucumber/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/cucumber/young/healthy",
+      "a_surveiller": "plants/cucumber/young/yellowing",
+      "malade": "plants/cucumber/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/cucumber/flowering/healthy",
+      "a_surveiller": "plants/cucumber/flowering/yellowing",
+      "malade": "plants/cucumber/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/cucumber/green_fruit/healthy",
+      "a_surveiller": "plants/cucumber/green_fruit/yellowing",
+      "malade": "plants/cucumber/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/cucumber/ripe_fruit/healthy",
+      "a_surveiller": "plants/cucumber/ripe_fruit/yellowing",
+      "malade": "plants/cucumber/ripe_fruit/sick"
+     }
+    }
+   },
+   "zucchini": {
+    "taille": [
+     60,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/zucchini/seedling/healthy",
+      "a_surveiller": "plants/zucchini/seedling/yellowing",
+      "malade": "plants/zucchini/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/zucchini/young/healthy",
+      "a_surveiller": "plants/zucchini/young/yellowing",
+      "malade": "plants/zucchini/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/zucchini/flowering/healthy",
+      "a_surveiller": "plants/zucchini/flowering/yellowing",
+      "malade": "plants/zucchini/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/zucchini/green_fruit/healthy",
+      "a_surveiller": "plants/zucchini/green_fruit/yellowing",
+      "malade": "plants/zucchini/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/zucchini/ripe_fruit/healthy",
+      "a_surveiller": "plants/zucchini/ripe_fruit/yellowing",
+      "malade": "plants/zucchini/ripe_fruit/sick"
+     }
+    }
+   },
+   "melon": {
+    "taille": [
+     60,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/melon/seedling/healthy",
+      "a_surveiller": "plants/melon/seedling/yellowing",
+      "malade": "plants/melon/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/melon/young/healthy",
+      "a_surveiller": "plants/melon/young/yellowing",
+      "malade": "plants/melon/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/melon/flowering/healthy",
+      "a_surveiller": "plants/melon/flowering/yellowing",
+      "malade": "plants/melon/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/melon/green_fruit/healthy",
+      "a_surveiller": "plants/melon/green_fruit/yellowing",
+      "malade": "plants/melon/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/melon/ripe_fruit/healthy",
+      "a_surveiller": "plants/melon/ripe_fruit/yellowing",
+      "malade": "plants/melon/ripe_fruit/sick"
+     }
+    }
+   },
+   "basil": {
+    "taille": [
+     32,
+     32
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/basil/seedling/healthy",
+      "a_surveiller": "plants/basil/seedling/yellowing",
+      "malade": "plants/basil/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/basil/growing/healthy",
+      "a_surveiller": "plants/basil/growing/yellowing",
+      "malade": "plants/basil/growing/sick"
+     },
+     "floraison": {
+      "sain": "plants/basil/flowering/healthy",
+      "a_surveiller": "plants/basil/flowering/yellowing",
+      "malade": "plants/basil/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/basil/flowering/healthy",
+      "a_surveiller": "plants/basil/flowering/yellowing",
+      "malade": "plants/basil/flowering/sick"
+     },
+     "recolte": {
+      "sain": "plants/basil/mature/healthy",
+      "a_surveiller": "plants/basil/mature/yellowing",
+      "malade": "plants/basil/mature/sick"
+     }
+    }
+   },
+   "lettuce": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/lettuce/seedling/healthy",
+      "a_surveiller": "plants/lettuce/seedling/yellowing",
+      "malade": "plants/lettuce/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/lettuce/young/healthy",
+      "a_surveiller": "plants/lettuce/young/yellowing",
+      "malade": "plants/lettuce/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/lettuce/bolting/healthy",
+      "a_surveiller": "plants/lettuce/bolting/yellowing",
+      "malade": "plants/lettuce/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/lettuce/mature/healthy",
+      "a_surveiller": "plants/lettuce/mature/yellowing",
+      "malade": "plants/lettuce/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/lettuce/mature/healthy",
+      "a_surveiller": "plants/lettuce/mature/yellowing",
+      "malade": "plants/lettuce/mature/sick"
+     }
+    }
+   },
+   "red_lettuce": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/red_lettuce/seedling/healthy",
+      "a_surveiller": "plants/red_lettuce/seedling/yellowing",
+      "malade": "plants/red_lettuce/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/red_lettuce/young/healthy",
+      "a_surveiller": "plants/red_lettuce/young/yellowing",
+      "malade": "plants/red_lettuce/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/red_lettuce/bolting/healthy",
+      "a_surveiller": "plants/red_lettuce/bolting/yellowing",
+      "malade": "plants/red_lettuce/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/red_lettuce/mature/healthy",
+      "a_surveiller": "plants/red_lettuce/mature/yellowing",
+      "malade": "plants/red_lettuce/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/red_lettuce/mature/healthy",
+      "a_surveiller": "plants/red_lettuce/mature/yellowing",
+      "malade": "plants/red_lettuce/mature/sick"
+     }
+    }
+   },
+   "spinach": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/spinach/seedling/healthy",
+      "a_surveiller": "plants/spinach/seedling/yellowing",
+      "malade": "plants/spinach/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/spinach/young/healthy",
+      "a_surveiller": "plants/spinach/young/yellowing",
+      "malade": "plants/spinach/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/spinach/bolting/healthy",
+      "a_surveiller": "plants/spinach/bolting/yellowing",
+      "malade": "plants/spinach/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/spinach/mature/healthy",
+      "a_surveiller": "plants/spinach/mature/yellowing",
+      "malade": "plants/spinach/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/spinach/mature/healthy",
+      "a_surveiller": "plants/spinach/mature/yellowing",
+      "malade": "plants/spinach/mature/sick"
+     }
+    }
+   },
+   "arugula": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/arugula/seedling/healthy",
+      "a_surveiller": "plants/arugula/seedling/yellowing",
+      "malade": "plants/arugula/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/arugula/young/healthy",
+      "a_surveiller": "plants/arugula/young/yellowing",
+      "malade": "plants/arugula/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/arugula/bolting/healthy",
+      "a_surveiller": "plants/arugula/bolting/yellowing",
+      "malade": "plants/arugula/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/arugula/mature/healthy",
+      "a_surveiller": "plants/arugula/mature/yellowing",
+      "malade": "plants/arugula/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/arugula/mature/healthy",
+      "a_surveiller": "plants/arugula/mature/yellowing",
+      "malade": "plants/arugula/mature/sick"
+     }
+    }
+   },
+   "lambs_lettuce": {
+    "taille": [
+     42,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/lambs_lettuce/seedling/healthy",
+      "a_surveiller": "plants/lambs_lettuce/seedling/yellowing",
+      "malade": "plants/lambs_lettuce/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/lambs_lettuce/young/healthy",
+      "a_surveiller": "plants/lambs_lettuce/young/yellowing",
+      "malade": "plants/lambs_lettuce/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/lambs_lettuce/mature/healthy",
+      "a_surveiller": "plants/lambs_lettuce/mature/yellowing",
+      "malade": "plants/lambs_lettuce/mature/sick"
+     },
+     "fructification": {
+      "sain": "plants/lambs_lettuce/mature/healthy",
+      "a_surveiller": "plants/lambs_lettuce/mature/yellowing",
+      "malade": "plants/lambs_lettuce/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/lambs_lettuce/mature/healthy",
+      "a_surveiller": "plants/lambs_lettuce/mature/yellowing",
+      "malade": "plants/lambs_lettuce/mature/sick"
+     }
+    }
+   },
+   "chard": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/chard/seedling/healthy",
+      "a_surveiller": "plants/chard/seedling/yellowing",
+      "malade": "plants/chard/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/chard/young/healthy",
+      "a_surveiller": "plants/chard/young/yellowing",
+      "malade": "plants/chard/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/chard/bolting/healthy",
+      "a_surveiller": "plants/chard/bolting/yellowing",
+      "malade": "plants/chard/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/chard/mature/healthy",
+      "a_surveiller": "plants/chard/mature/yellowing",
+      "malade": "plants/chard/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/chard/mature/healthy",
+      "a_surveiller": "plants/chard/mature/yellowing",
+      "malade": "plants/chard/mature/sick"
+     }
+    }
+   },
+   "kale": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/kale/seedling/healthy",
+      "a_surveiller": "plants/kale/seedling/yellowing",
+      "malade": "plants/kale/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/kale/young/healthy",
+      "a_surveiller": "plants/kale/young/yellowing",
+      "malade": "plants/kale/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/kale/bolting/healthy",
+      "a_surveiller": "plants/kale/bolting/yellowing",
+      "malade": "plants/kale/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/kale/mature/healthy",
+      "a_surveiller": "plants/kale/mature/yellowing",
+      "malade": "plants/kale/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/kale/mature/healthy",
+      "a_surveiller": "plants/kale/mature/yellowing",
+      "malade": "plants/kale/mature/sick"
+     }
+    }
+   }
+  }
+ },
+ "contenants": [
+  {
+   "cle": "plastic_pot",
+   "type": "pot",
+   "materiau": null,
+   "frame": "containers/plastic_pot",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "terracotta_pot",
+   "type": "pot",
+   "materiau": "terre_cuite",
+   "frame": "containers/terracotta_pot",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "wooden_planter",
+   "type": "jardiniere",
+   "materiau": null,
+   "frame": "containers/wooden_planter",
+   "taille": [
+    64,
+    32
+   ]
+  },
+  {
+   "cle": "fabric_grow_bag",
+   "type": "sac_de_culture",
+   "materiau": null,
+   "frame": "containers/fabric_grow_bag",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "seedling_tray",
+   "type": "godet",
+   "materiau": null,
+   "frame": "containers/seedling_tray",
+   "taille": [
+    64,
+    32
+   ]
+  },
+  {
+   "cle": "hydroponic_nft_channel",
+   "type": "canal_NFT",
+   "materiau": null,
+   "frame": "containers/hydroponic_nft_channel",
+   "taille": [
+    128,
+    32
+   ]
+  },
+  {
+   "cle": "dwc_tub",
+   "type": "bac_DWC",
+   "materiau": null,
+   "frame": "containers/dwc_tub",
+   "taille": [
+    64,
+    64
+   ]
+  },
+  {
+   "cle": "soil_patch",
+   "type": "pleine_terre",
+   "materiau": null,
+   "frame": "containers/soil_patch",
+   "taille": [
+    64,
+    64
+   ]
+  }
+ ],
+ "tuiles": {
+  "soil": {
+   "frame": "tiles/soil",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  "stone_floor": {
+   "frame": "tiles/stone_floor",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  "gravel": {
+   "frame": "tiles/gravel",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  "wooden_path": {
+   "frame": "tiles/wooden_path",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  "greenhouse_glass_front": {
+   "frame": "tiles/greenhouse_glass_front",
+   "taille": [
+    64,
+    64
+   ]
+  },
+  "greenhouse_glass_side": {
+   "frame": "tiles/greenhouse_glass_side",
+   "taille": [
+    32,
+    64
+   ]
+  },
+  "greenhouse_glass_side_narrow": {
+   "frame": "tiles/greenhouse_glass_side_narrow",
+   "taille": [
+    32,
+    64
+   ]
+  },
+  "greenhouse_corner": {
+   "frame": "tiles/greenhouse_corner",
+   "taille": [
+    64,
+    64
+   ]
+  },
+  "brick_border_corner": {
+   "frame": "tiles/brick_border_corner",
+   "taille": [
+    64,
+    32
+   ]
+  },
+  "greenhouse_door": {
+   "frame": "tiles/greenhouse_door",
+   "taille": [
+    32,
+    64
+   ]
+  },
+  "metal_shelf": {
+   "frame": "tiles/metal_shelf",
+   "taille": [
+    32,
+    64
+   ]
+  }
+ },
+ "actionneurs": {
+  "ventilo": {
+   "cle": "fan",
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/fan/off/0"
+    ],
+    "on": [
+     "devices/fan/on/0",
+     "devices/fan/on/1",
+     "devices/fan/on/2",
+     "devices/fan/on/3",
+     "devices/fan/on/4"
+    ]
+   },
+   "effets": {}
+  },
+  "led": {
+   "cle": "grow_light",
+   "taille": [
+    64,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/grow_light/off/0",
+     "devices/grow_light/off/1"
+    ],
+    "on": [
+     "devices/grow_light/on/0",
+     "devices/grow_light/on/1",
+     "devices/grow_light/on/2",
+     "devices/grow_light/on/3"
+    ]
+   },
+   "effets": {
+    "on": "pink_purple_glow"
+   }
+  },
+  "brumisateur": {
+   "cle": "mist_sprayer",
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/mist_sprayer/off/0",
+     "devices/mist_sprayer/off/1"
+    ],
+    "on": [
+     "devices/mist_sprayer/on/0",
+     "devices/mist_sprayer/on/1",
+     "devices/mist_sprayer/on/2",
+     "devices/mist_sprayer/on/3"
+    ]
+   },
+   "effets": {}
+  },
+  "chauffage": {
+   "cle": "heater",
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/heater/off/0",
+     "devices/heater/off/1"
+    ],
+    "on": [
+     "devices/heater/on/0",
+     "devices/heater/on/1",
+     "devices/heater/on/2",
+     "devices/heater/on/3"
+    ]
+   },
+   "effets": {
+    "on": "orange_glow"
+   }
+  },
+  "pompe_nutri": {
+   "cle": "water_pump",
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/water_pump/off/0",
+     "devices/water_pump/off/1",
+     "devices/water_pump/off/2",
+     "devices/water_pump/off/3"
+    ],
+    "on": [
+     "devices/water_pump/on/0",
+     "devices/water_pump/on/1"
+    ]
+   },
+   "effets": {}
+  },
+  "pompe_ph_down": {
+   "cle": "ph_dosing_pump",
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/ph_dosing_pump/off/0",
+     "devices/ph_dosing_pump/off/1",
+     "devices/ph_dosing_pump/off/2"
+    ],
+    "on": [
+     "devices/ph_dosing_pump/on/0",
+     "devices/ph_dosing_pump/on/1",
+     "devices/ph_dosing_pump/on/2"
+    ]
+   },
+   "effets": {}
+  }
+ },
+ "capteurs": [
+  {
+   "cle": "environment_sensor_online",
+   "famille": "air",
+   "statut": "online",
+   "frame": "sensors/environment_sensor_online",
+   "etats": null,
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "environment_sensor_offline",
+   "famille": "air",
+   "statut": "offline",
+   "frame": "sensors/environment_sensor_offline",
+   "etats": null,
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "soil_moisture_probe",
+   "famille": "sol",
+   "statut": null,
+   "frame": "sensors/soil_moisture_probe",
+   "etats": null,
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "light_sensor",
+   "famille": "lumiere",
+   "statut": null,
+   "frame": "sensors/light_sensor",
+   "etats": null,
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "security_camera",
+   "famille": "camera",
+   "statut": null,
+   "frame": null,
+   "etats": {
+    "normal": [
+     "sensors/security_camera/normal/0"
+    ],
+    "flash": [
+     "sensors/security_camera/flash/0"
+    ]
+   },
+   "taille": [
+    32,
+    64
+   ]
+  },
+  {
+   "cle": "water_tank",
+   "famille": "cuve",
+   "statut": null,
+   "frame": null,
+   "etats": {
+    "full": [
+     "sensors/water_tank/full/0"
+    ],
+    "half": [
+     "sensors/water_tank/half/0"
+    ],
+    "low": [
+     "sensors/water_tank/low/0"
+    ]
+   },
+   "taille": [
+    32,
+    64
+   ]
+  }
+ ],
+ "ui": {
+  "alert": {
+   "taille": [
+    32,
+    32
+   ],
+   "frame": "ui/alert"
+  },
+  "question": {
+   "taille": [
+    32,
+    32
+   ],
+   "frame": "ui/question"
+  },
+  "thinking": {
+   "taille": [
+    32,
+    32
+   ],
+   "frame": "ui/thinking"
+  },
+  "heart": {
+   "taille": [
+    32,
+    32
+   ],
+   "frame": "ui/heart"
+  },
+  "sparkles": {
+   "taille": [
+    32,
+    32
+   ],
+   "frame": "ui/sparkles"
+  },
+  "spore_particles": {
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "green": [
+     "ui/spore_particles/green/0"
+    ],
+    "purple": [
+     "ui/spore_particles/purple/0"
+    ],
+    "brown": [
+     "ui/spore_particles/brown/0"
+    ]
+   }
+  },
+  "dialogue_box": {
+   "taille": [
+    192,
+    96
+   ],
+   "frame": "ui/dialogue_box",
+   "fichier": "sprites/ui/dialogue_box.png"
+  }
+ }
+}

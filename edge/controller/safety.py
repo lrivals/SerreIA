@@ -216,7 +216,7 @@ def watch_zone(ctx: Ctx) -> list[Proposal]:
 
     window = timedelta(seconds=lim.capteur_fige_s)
     for sensor in FROZEN_CHECK:
-        pts = [v for t, v in ctx.zs.history.get(sensor, ()) if ctx.now - t <= window]
+        pts = ctx.zs.recent(sensor, ctx.now, window)
         first = ctx.zs.history.get(sensor)
         if (
             len(pts) >= 10

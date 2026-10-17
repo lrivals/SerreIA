@@ -63,6 +63,8 @@ class ZoneState:
     last_on: dict[str, datetime] = field(default_factory=dict)  # last "on" sent per actuator
     owner: dict[str, str] = field(default_factory=dict)  # rule that switched an actuator on
     rule_fired: dict[str, datetime] = field(default_factory=dict)  # last decision per rule id
+    # Temporary setpoint changes decided by a rule: name -> (delta, until), docs/10 §5.
+    consignes: dict[str, tuple[float, datetime]] = field(default_factory=dict)
     vision: deque[VisionResult] = field(default_factory=deque)
     spells: dict[float, Spell] = field(default_factory=dict)  # humidity threshold -> spell
     dli: float = 0.0  # mol/m², measured light of the current local day
@@ -138,8 +140,18 @@ class ZoneState:
     def emplacements(self, sensor: str) -> list[str]:
         return sorted(e for s, e in self.readings if s == sensor and e is not None)
 
+    def recent(self, sensor: str, now: datetime, window: timedelta) -> list[float]:
+        """Values of the last `window` (latest first); the history is in time order, so
+        only its end is read (this runs at every tick)."""
+        out = []
+        for t, v in reversed(self.history.get(sensor, ())):
+            if now - t > window:
+                break
+            out.append(v)
+        return out
+
     def mean(self, sensor: str, now: datetime, window: timedelta) -> float | None:
-        values = [v for t, v in self.history.get(sensor, ()) if now - t <= window]
+        values = self.recent(sensor, now, window)
         return sum(values) / len(values) if values else None
 
     def spell(self, seuil: float) -> Spell:

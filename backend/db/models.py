@@ -55,6 +55,8 @@ class Cuve(Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     serre_id: Mapped[str] = mapped_column(ForeignKey("serre.id"))
     volume_l: Mapped[float | None] = mapped_column(Float)
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class Zone(Base):
@@ -66,6 +68,8 @@ class Zone(Base):
     cuve_id: Mapped[str | None] = mapped_column(ForeignKey("cuve.id"))
     jour_debut: Mapped[str] = mapped_column(String(5), default="06:00")  # local time
     presence_autorisee: Mapped[list | None] = mapped_column(Json)  # [{debut, fin}]
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class Contenant(Base):
@@ -88,6 +92,8 @@ class Emplacement(Base):
     rangee: Mapped[int | None] = mapped_column(Integer)
     colonne: Mapped[int | None] = mapped_column(Integer)
     contenant_id: Mapped[int | None] = mapped_column(ForeignKey("contenant.id"))
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class Recette(Base):
@@ -152,6 +158,8 @@ class Capteur(Base):
     etalonnage: Mapped[dict | None] = mapped_column(Json)
     plage_min: Mapped[float | None] = mapped_column(Float)
     plage_max: Mapped[float | None] = mapped_column(Float)
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class CapteurEmplacement(Base):
@@ -177,6 +185,8 @@ class Actionneur(Base):
     duree_max_s: Mapped[float | None] = mapped_column(Float)
     # Controller timings of serre.yaml (duree_s, impulsion_s, melange_s, delai_min_s…).
     parametres: Mapped[dict | None] = mapped_column(Json)
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class Camera(Base):
@@ -184,6 +194,8 @@ class Camera(Base):
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     zone_id: Mapped[str] = mapped_column(ForeignKey("zone.id"))
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class ConfigExport(Base):
@@ -298,8 +310,8 @@ class NoeudStatus(Base):
 
 
 class Decision(Base):
-    """Minimal `Decision` of the MQTT contract (docs/10 §2), upserted by id (a decision
-    changes status). Not a hypertable: the separate `action` table comes with G3."""
+    """`Decision` of the MQTT contract (docs/10 §2), upserted by id: a decision changes
+    status (proposee → validee → executee → terminee…). Not a hypertable (updated rows)."""
 
     __tablename__ = "decision"
     __table_args__ = (Index("ix_decision_zone_ts", "zone", "ts"),)
@@ -317,7 +329,30 @@ class Decision(Base):
     preuves: Mapped[dict] = mapped_column(Json)
     explication: Mapped[str] = mapped_column(Text)
     actions: Mapped[list] = mapped_column(Json)
+    ordres: Mapped[list | None] = mapped_column(Json)
     statut: Mapped[str] = mapped_column(String(16))
+    expire: Mapped[datetime | None] = mapped_column(Ts)
+
+
+class Action(Base):
+    """One action of a decision (docs/10 §3), derived by `backend/traceability.py` from
+    the labels of the decision and the commands that point to it (`Command.raison`).
+    `resultat`: en_attente | confirmee | non_confirmee | bloquee | echec | proposee |
+    annulee (a proposal expired or rejected)."""
+
+    __tablename__ = "action"
+    __table_args__ = (Index("ix_action_zone_ts", "zone", "ts_debut"),)
+
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)  # act-<decision>-NN
+    decision_id: Mapped[str] = mapped_column(String(64), index=True)
+    zone: Mapped[str] = mapped_column(String(16))
+    type: Mapped[str] = mapped_column(String(16))  # routine | exceptionnelle | securite | manuelle
+    cible: Mapped[str] = mapped_column(String(64))  # actionneur:ventilo, alerte, camera:…, plante:…
+    label: Mapped[str] = mapped_column(Text)
+    commande: Mapped[dict | None] = mapped_column(Json)  # the Command, as published
+    resultat: Mapped[str] = mapped_column(String(16))
+    ts_debut: Mapped[datetime] = mapped_column(Ts)
+    ts_fin: Mapped[datetime | None] = mapped_column(Ts)
 
 
 # --- daily aggregates (backend/consumption.py) ---------------------------------------
@@ -351,3 +386,61 @@ class LumiereJour(Base):
     dli_led: Mapped[float] = mapped_column(Float)
     dli_naturel: Mapped[float | None] = mapped_column(Float)
     couverture: Mapped[float] = mapped_column(Float)  # share of the day covered by lux data
+
+
+# --- conversational agent (docs/11) ----------------------------------------------------
+
+
+class AgentConversation(Base):
+    """One conversation with the agent; `messages` is the history in the format of the
+    Claude API (content blocks as returned, thinking included), replayed at each turn."""
+
+    __tablename__ = "agent_conversation"
+
+    id: Mapped[str] = mapped_column(String(40), primary_key=True)  # conv-<hex>
+    ts_debut: Mapped[datetime] = mapped_column(Ts)
+    ts_maj: Mapped[datetime] = mapped_column(Ts)
+    utilisateur: Mapped[str] = mapped_column(String(64))
+    modele: Mapped[str] = mapped_column(String(64))
+    titre: Mapped[str] = mapped_column(Text, default="")
+    messages: Mapped[list] = mapped_column(Json)
+
+
+class AgentJournal(Base):
+    """Full log of the agent (docs/11 §4.6): messages, tool calls with their arguments and
+    results, model and tokens of each API call. `type`: utilisateur | assistant |
+    appel_outil | resultat_outil | erreur."""
+
+    __tablename__ = "agent_journal"
+    __table_args__ = (Index("ix_agent_journal_conv_ts", "conversation_id", "ts"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    conversation_id: Mapped[str] = mapped_column(String(40))
+    ts: Mapped[datetime] = mapped_column(Ts, index=True)
+    type: Mapped[str] = mapped_column(String(16))
+    contenu: Mapped[dict] = mapped_column(Json)
+    modele: Mapped[str | None] = mapped_column(String(64))
+    tokens_entree: Mapped[int] = mapped_column(Integer, default=0)
+    tokens_sortie: Mapped[int] = mapped_column(Integer, default=0)
+    tokens_cache_lus: Mapped[int] = mapped_column(Integer, default=0)
+    tokens_cache_ecrits: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class AgentProposition(Base):
+    """What the agent proposed with a decision (docs/11 §3): its justification and
+    references, and for `proposer_consigne` the recipe change, applied by the server on
+    validation (`backend/agent/consignes.py`): previous value, end of a temporary change."""
+
+    __tablename__ = "agent_proposition"
+
+    decision_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    conversation_id: Mapped[str | None] = mapped_column(String(40), index=True)
+    outil: Mapped[str] = mapped_column(String(32))
+    justification: Mapped[str] = mapped_column(Text)
+    preuves_refs: Mapped[list] = mapped_column(Json)
+    # {recette_id, stade, grandeur, valeur, duree_h}
+    consigne: Mapped[dict | None] = mapped_column(Json)
+    ancienne: Mapped[dict | None] = mapped_column(Json)  # {"valeur": …} before the change
+    appliquee: Mapped[datetime | None] = mapped_column(Ts)
+    fin: Mapped[datetime | None] = mapped_column(Ts)  # temporary change: restored at `fin`
+    restauree: Mapped[datetime | None] = mapped_column(Ts)

@@ -1,9 +1,11 @@
 """Proposals of the rules and the Decision records that precede every command (docs/10).
 
-A rule (safety, regulation, risk, forecast) returns `Proposal`s: the orders it wants on
-actuators, an optional alert, its evidence and a deterministic explanation. The controller
-arbitrates them, checks each order with `safety.py`, then publishes the `Decision` first
-and the `Command`s next, with `raison = "<decision id> | <short text>"`.
+A rule (safety, regulation, risk, forecast, vision) returns `Proposal`s: the orders it wants
+on actuators, the captures and plant health states it asks for, an optional alert, its
+evidence and a deterministic explanation. The controller arbitrates them, checks each order
+with `safety.py`, then publishes the `Decision` first and the `Command`s next, with
+`raison = "<decision id> | <short text>"`. A proposal with `validation` gives a decision
+born `proposee`: nothing runs until the user (or the agent's validated proposal) answers.
 """
 
 from collections import defaultdict
@@ -15,6 +17,7 @@ from common.mqtt import (
     Actuator,
     Command,
     Decision,
+    Ordre,
     PreuveCapteur,
     Preuves,
     RegleRef,
@@ -51,6 +54,36 @@ class Order:
             s += f" {self.duree_s:g} s"
         return s
 
+    def ordre(self) -> Ordre | None:
+        """None for an order the contract rejects (pump without duration…): safety refuses
+        it anyway, and the decision must stay a valid message."""
+        try:
+            return Ordre(
+                cible=f"actionneur:{self.actuator}",
+                action=self.action,
+                valeur=self.valeur,
+                duree_s=self.duree_s,
+                texte=self.texte,
+            )
+        except ValueError:
+            return None
+
+    @classmethod
+    def of(cls, o: Ordre) -> "Order":
+        return cls(Actuator(o.subject), o.action, o.valeur, o.duree_s, o.texte)
+
+
+@dataclass(frozen=True)
+class Consigne:
+    """Temporary change of a setpoint (mildew: humidity max lowered for 72 h)."""
+
+    nom: Literal["humidite_max"]
+    delta: float
+    duree_s: float
+
+    def label(self) -> str:
+        return f"{self.nom.replace('_', ' ')} {self.delta:+g} pts {self.duree_s / 3600:g} h"
+
 
 @dataclass
 class AlertSpec:
@@ -72,10 +105,25 @@ class Proposal:
     preuves: Preuves = field(default_factory=Preuves)
     emplacements: list[str] = field(default_factory=list)
     origine: str = "controller"
+    captures: list[str] = field(default_factory=list)  # cameras to capture again
+    plantes: list[tuple[str, str]] = field(default_factory=list)  # (emplacement, health state)
+    consigne: Consigne | None = None
+    validation: bool = False  # born `proposee`, waits for the user
+    # Latch of the plant states, setpoint change and proposal: once while the condition
+    # holds (like the alerts), so that a rejected proposal is not proposed again at once.
+    key: str | None = None
 
     @property
     def priority(self) -> int:
         return PRIORITY[self.type] + self.niveau
+
+    def ordres(self) -> list[Ordre]:
+        """Everything the proposal asks for, as the structured orders of the decision."""
+        return (
+            [o for o in map(Order.ordre, self.orders) if o is not None]
+            + [Ordre(cible=f"camera:{c}", action="capture") for c in self.captures]
+            + [Ordre(cible=f"plante:{e}", action=etat) for e, etat in self.plantes]
+        )
 
 
 def rule(rule_id: str, version: int = 1) -> RegleRef:
@@ -132,6 +180,8 @@ class DecisionFactory:
         actions: list[str],
         statut: str,
         explication: str | None = None,
+        ordres: list[Ordre] | None = None,
+        expire: datetime | None = None,
     ) -> Decision:
         return Decision(
             id=self.new_id(ts, p.zone),
@@ -146,11 +196,14 @@ class DecisionFactory:
             preuves=p.preuves,
             explication=explication or p.explication,
             actions=actions,
+            ordres=p.ordres() if ordres is None else ordres,
             statut=statut,
+            expire=expire,
         )
 
     @staticmethod
     def command(order: Order, decision: Decision, ts: datetime, source: str) -> Command:
+        """The `Command` of one order, its `raison` pointing to the decision."""
         return Command(
             ts=ts,
             action=order.action,

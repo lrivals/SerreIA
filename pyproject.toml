@@ -53,12 +53,14 @@ notebook = [
     "nbformat",
     "ipywidgets",
 ]
-backend = [  # server (docs/09, 12): database, MQTT ingestion, API
+backend = [  # server (docs/09, 11, 12): database, MQTT ingestion, API, agent
     "sqlalchemy>=2",
     "psycopg[binary]",
     "pyyaml",
     "fastapi",
     "uvicorn",
+    "websockets",  # WS /ws/live (docs/12)
+    "anthropic>=1.15",
 ]
 
 [dependency-groups]

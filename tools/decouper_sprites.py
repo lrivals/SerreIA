@@ -28,6 +28,9 @@ DISTANCE_FRAGMENT = 20
 # cadre qu'elle recouvre horizontalement : motte de terre séparée de sa plante.
 HAUTEUR_BANDE = 40
 ECART_BANDE = 10
+# Morceau dont le cadre chevauche celui d'un sprite bien plus grand (aire < ce ratio) :
+# objet tenu à la main (flacon, outil), plus gros qu'un simple fragment.
+RATIO_CHEVAUCHEMENT = 0.25
 MARGE = 4
 
 
@@ -63,6 +66,10 @@ def detecter(image: np.ndarray) -> list[tuple[int, int, int, int]]:
             and ecart_v <= ECART_BANDE
         )
 
+    def chevauche(a, b):
+        """Petit cadre dont la boîte recouvre en partie celle d'un cadre bien plus grand."""
+        return distance(a, b) == 0 and a[2] * a[3] < RATIO_CHEVAUCHEMENT * b[2] * b[3]
+
     # Rattacher les fragments au cadre le plus proche, jusqu'à stabilité
     fusion = True
     while fusion:
@@ -77,7 +84,7 @@ def detecter(image: np.ndarray) -> list[tuple[int, int, int, int]]:
                 petit[2] * petit[3] < AIRE_FRAGMENT and distance(petit, proche) <= DISTANCE_FRAGMENT
             )
             if not fragment:
-                proche = next((c for c in autres if empile(petit, c)), None)
+                proche = next((c for c in autres if empile(petit, c) or chevauche(petit, c)), None)
                 if proche is None:
                     continue
             x0, y0 = min(petit[0], proche[0]), min(petit[1], proche[1])

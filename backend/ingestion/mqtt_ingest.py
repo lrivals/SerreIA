@@ -29,8 +29,10 @@ from common.mqtt.schemas import (
     SensorReading,
     VisionResult,
 )
-from edge.controller.config import capteur_id
+from edge.controller.config import capteur_id, resolve_emplacement
 
+from .. import traceability
+from ..agent import consignes
 from ..db import models as m
 from ..db.session import insert, utc
 
@@ -196,22 +198,7 @@ class Ingestor:
         )
 
     def _decision(self, d: Decision) -> None:
-        self.decisions[d.id] = dict(  # the last status received wins
-            id=d.id,
-            ts=utc(d.ts),
-            zone=d.zone,
-            emplacements=list(d.emplacements),
-            niveau=str(d.niveau),
-            origine=d.origine,
-            regle_id=d.regle.id,
-            regle_version=d.regle.version,
-            type=d.type,
-            config_version=d.config_version,
-            preuves=d.preuves.model_dump(mode="json"),
-            explication=d.explication,
-            actions=list(d.actions),
-            statut=d.statut,
-        )
+        self.decisions[d.id] = traceability.stored_row(d)  # the last status received wins
 
     # --- writing ---------------------------------------------------------------------
 
@@ -262,6 +249,14 @@ class Ingestor:
                 index_elements=["id"], set_={c: stmt.excluded[c] for c in cols}
             )
             s.execute(stmt, list(self.decisions.values()))
+        # Actions of the decisions (docs/10 §3), then their confirmation by etat/.
+        traced = set(self.decisions)
+        commands = self.rows.get(m.Commande.__table__, ())
+        traced |= {r["decision_id"] for r in commands if r["decision_id"]}
+        if traced:
+            traceability.sync_actions(s, traced)
+        traceability.reconcile(s, self.clock())
+        consignes.restore_expired(s, self.clock())  # temporary setpoints of the agent
 
     def _clear(self) -> None:
         self.rows.clear()
@@ -270,21 +265,3 @@ class Ingestor:
 
     def close(self) -> None:
         self.flush()
-
-
-def resolve_emplacement(
-    bbox: tuple[float, float, float, float] | None,
-    regions: list[tuple[str, list[float] | None]],
-) -> str | None:
-    """Emplacement of a detection (docs/09 §4): the region containing the bbox centre;
-    otherwise (phase 1 whole image, or no matching region), the only emplacement seen by
-    the camera if any. `regions`: (visible emplacement, its region or None)."""
-    if bbox is not None:
-        cx, cy = bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2
-        for emplacement, region in regions:
-            if region is None:
-                continue
-            x, y, w, h = region
-            if x <= cx <= x + w and y <= cy <= y + h:
-                return emplacement
-    return regions[0][0] if len(regions) == 1 else None
