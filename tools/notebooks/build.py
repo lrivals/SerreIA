@@ -177,7 +177,9 @@ NB_DONNEES = Notebook(
     intro="""
     Exploration de `data/index.parquet` (docs/02-donnees.md) : effectifs par source, split et
     classe, groupes contradictoires écartés, exemples d'images, augmentations fortes et
-    remplacement de fond (docs/03-classifieur.md §3). Pas de GPU nécessaire.
+    remplacement de fond (docs/03-classifieur.md §3). Pas de GPU nécessaire. Statistiques
+    détaillées (déséquilibre, couverture, splits, photométrie, doublons) :
+    `06_stats_classifieur` (docs/19).
     """,
     params="""
     DATASETS = ["index", "plantvillage", "ccmt", "plantdoc"]
@@ -605,7 +607,597 @@ NB_DETECTION = Notebook(
     ],
 )
 
-NOTEBOOKS = [NB_DONNEES, NB_ENTRAINEMENT, NB_EVALUATION, NB_ABLATIONS, NB_DETECTION]
+# ----------------------------------------------------------- 06 statistiques classifieur
+
+NB_STATS_CLF = Notebook(
+    name="06_stats_classifieur.ipynb",
+    title="06 — Statistiques du jeu du classifieur",
+    intro="""
+    Vue statistique de `data/index.parquet` (docs/19 §3) : effectifs et déséquilibre,
+    couverture de la taxonomie par source, cohérence des splits, géométrie, photométrie et
+    écart de domaine PlantVillage / CCMT vs PlantDoc, quasi-doublons et bruit d'étiquetage,
+    embeddings (optionnel). Le calcul est dans `vision/datasets/stats.py` ; les chiffres clés
+    et les figures vont dans `reports/datasets/classifieur/`. CPU seulement.
+    """,
+    params="""
+    N_SAMPLE = 4000  # images de l'échantillon photométrique (stratifié source × classe)
+    MIN_VAL_TEST = 20  # alerte : classes sous ce seuil en val ou en test
+    CLF_RUN = None  # classifieur des embeddings (runs/<CLF_RUN>/best.pt) ; None : sautés
+    SEED = 0
+    DATASETS = ["index", "plantvillage", "ccmt", "plantdoc"]
+    """,
+    extras="vision,stats",
+    body=[
+        md("## Index"),
+        code("""
+        import pandas as pd
+        from IPython.display import Markdown, display
+
+        from common.report import REPORTS_DIR, file_sha256, write_report
+        from vision.datasets import stats as st
+        from vision.datasets import stats_plots as sp
+        from vision.datasets.build_index import (
+            DATA_DIR, INDEX_NAME, REJECTS_NAME, low_eval_classes, read_index_meta,
+        )
+        from vision.datasets.dataset import load_index
+
+        OUT = REPORTS_DIR / "classifieur"
+        OUT.mkdir(parents=True, exist_ok=True)
+        raw = pd.read_parquet(DATA_DIR / INDEX_NAME)  # avec les groupes contradictoires
+        df = load_index(DATA_DIR / INDEX_NAME)  # ce que voit l'entraînement
+        meta = read_index_meta(DATA_DIR / INDEX_NAME)
+        SUMMARY = {
+            "taxonomy_version": meta["taxonomy_version"],
+            "index_sha256": file_sha256(DATA_DIR / INDEX_NAME),
+            "n_images_index": len(raw),
+            "n_images": len(df),
+            "ecartees_contradictoires": len(raw) - len(df),
+            "n_especes": df["espece"].nunique(),
+            "n_classes": df["classe"].nunique(),
+        }
+        SECTIONS = {}
+        display(pd.Series(SUMMARY).to_frame("valeur"))
+        """),
+        md("""
+        ## 3.1 Effectifs et déséquilibre
+
+        Tables après retrait des groupes contradictoires (ce que voit l'entraînement), puis
+        source × split avant retrait. Indicateurs sur train : ratio max/min, entropie
+        normalisée (1 : uniforme), Gini (0 : uniforme), nombre effectif de classes.
+        """),
+        code("""
+        for rows in ["source", "espece", "classe"]:
+            print(f"{rows} × split")
+            display(st.counts(df, rows))
+        print("source × split avant retrait des groupes contradictoires")
+        display(st.counts(raw, "source"))
+        SECTIONS["Source × split"] = st.counts(df, "source")
+        """),
+        code("""
+        levels = st.imbalance_by_level(df)
+        display(levels)
+        tail = st.long_tail(df)
+        display(sp.plot_long_tail(tail, OUT / "longue_traine.png"))
+        low = low_eval_classes(df, MIN_VAL_TEST)
+        print(f"classes sous {MIN_VAL_TEST} images en val ou en test : {len(low)}")
+        display(pd.Series(low, name="effectifs", dtype=str).to_frame())
+        SUMMARY.update(desequilibre_train=levels.to_dict(orient="index"), classes_sous_min=low)
+        SECTIONS["Déséquilibre (train)"] = levels
+        """),
+        md("""
+        ## 3.2 Couverture de la taxonomie
+
+        Les classes **mono-source** sont celles où le modèle peut apprendre la source (fond
+        uni PlantVillage…) plutôt que le symptôme : à rapporter à part en cross-domain.
+        """),
+        code("""
+        ct, share = st.coverage(df)
+        display(ct)
+        display(share.round(2))
+        mono = st.mono_source(df)
+        print(f"{len(mono)} classes mono-source sur {df['classe'].nunique()}")
+        display(mono)
+        amb = st.ambiguous_weight(df)
+        print(f"classes ambiguës : {len(amb['classes'])}, {amb['n_images']} images "
+              f"({amb['part']:.1%})", amb["par_classe"])
+        masks = st.mask_share(df)
+        display(masks.to_frame())
+        SUMMARY.update(classes_mono_source=mono["source"].to_dict(), ambigues=amb,
+                       part_masque=masks.to_dict())
+        SECTIONS["Classes mono-source"] = mono
+        """),
+        md("""
+        ## 3.3 Cohérence des splits
+
+        Divergence de Jensen-Shannon (bits, 0 : distributions identiques) entre les
+        distributions de classes, χ² classe × split par source (p élevée attendue : splits
+        stratifiés), fuite de groupes (doit afficher 0), classes de `test_xdomain` absentes
+        du train.
+        """),
+        code("""
+        div = st.split_divergence(df)
+        display(pd.Series(div["js"], name="JS (bits)").to_frame())
+        display(pd.DataFrame(div["chi2"]).T)
+        leaks = st.group_leaks(df)
+        print(f"groupes dans plusieurs splits : {len(leaks)} (attendu : 0)")
+        gaps = st.xdomain_gaps(df)
+        print("test_xdomain sans train :", gaps["xdomain_sans_train"])
+        print("train sans test_xdomain :", len(gaps["train_sans_xdomain"]), "classes")
+        SUMMARY.update(js_splits=div["js"], chi2_par_source=div["chi2"],
+                       fuites_groupes=len(leaks), xdomain=gaps)
+        """),
+        md("""
+        ## 3.4 Géométrie
+
+        Part des images dont le petit côté est sous la résolution d'entrée (agrandies au
+        redimensionnement).
+        """),
+        code("""
+        geo = st.geometry(df, st.INPUT_SIZE)
+        display(geo)
+        display(sp.plot_distributions(df.assign(aspect=df["width"] / df["height"]),
+                                      ["width", "height", "aspect"], log=(),
+                                      path=OUT / "geometrie.png"))
+        SUMMARY["part_petites_images"] = geo[("petite", f"part<{st.INPUT_SIZE}")].to_dict()
+        """),
+        md("""
+        ## 3.5 Photométrie et écart de domaine
+
+        Sur `N_SAMPLE` images : luminosité, contraste, saturation, teinte dominante, netteté
+        (variance du laplacien), part de fond uni (bordure proche de sa médiane). L'écart
+        PlantDoc vs PV + CCMT explique la chute cross-domain (docs/14) ; `hors_plage_ref` est
+        la part de PlantDoc hors du [p1, p99] du domaine d'entraînement.
+        """),
+        code("""
+        photo = st.photometry_table(df, DATA_DIR, N_SAMPLE, SEED)
+        photo.to_csv(OUT / "photometrie.csv", index=False)
+        display(sp.plot_distributions(photo, list(st.DESCRIPTORS), path=OUT / "photometrie.png"))
+        display(sp.plot_pca(st.descriptor_pca(photo), path=OUT / "photometrie_pca.png"))
+        gap = st.domain_gap(photo)
+        display(gap)
+        SUMMARY["ecart_domaine"] = gap.to_dict(orient="index")
+        SECTIONS["Écart de domaine (PlantDoc vs PV + CCMT)"] = gap
+        """),
+        code("""
+        # Mêmes descripteurs après les augmentations fortes (docs/03 §3, sans remplacement de
+        # fond) : couvrent-elles la plage de PlantDoc ? hors_plage_ref : PlantDoc hors du batch.
+        import torch
+
+        from vision.datasets.augment import build_transform
+        from vision.datasets.batch_augment import BatchAugment
+        from vision.datasets.dataset import read_rgb
+        from vision.eval.gradcam import denormalize
+
+        torch.manual_seed(SEED)
+        labo = st.stratified_sample(df[df["source"].isin(["plantvillage", "ccmt"])], 256, SEED)
+        strong = build_transform("strong", st.INPUT_SIZE)
+        x = torch.stack([strong(image=read_rgb(DATA_DIR / p))["image"] for p in labo["path"]])
+        aug = st.photometry_images(denormalize(BatchAugment("strong")(x)), source="augmenté")
+        both = pd.concat([photo, aug], ignore_index=True)
+        display(sp.plot_distributions(both, list(st.DESCRIPTORS),
+                                      path=OUT / "photometrie_augmente.png"))
+        gap_aug = st.domain_gap(both, ref=["augmenté"])
+        display(gap_aug)
+        SUMMARY["ecart_plantdoc_vs_augmente"] = gap_aug.to_dict(orient="index")
+        """),
+        md("""
+        ## 3.6 Quasi-doublons et bruit d'étiquetage
+
+        Paires candidates (pHash ≤ 6) et leur distance dHash : la bimodalité justifie le seuil
+        de confirmation dHash ≤ 8 (docs/02 §3). Puis les groupes contradictoires (même image
+        dans plusieurs classes) et les fichiers rejetés.
+        """),
+        code("""
+        gs = st.group_sizes(raw)
+        print(f"{gs['n_groupes_doublons']} groupes de quasi-doublons, {gs['images_en_doublon']} "
+              f"images, plus gros groupe : {gs['max']} (attendu : 21)")
+        display(pd.Series(gs["distribution"], name="groupes").rename_axis("taille").to_frame().T)
+        pairs = st.candidate_pair_distances(raw["phash"].to_numpy(), raw["dhash"].to_numpy(),
+                                            meta["max_hamming"])
+        confirmed = (pairs["d_dhash"] <= meta["max_hamming_confirm"]).sum()
+        print(f"{len(pairs)} paires candidates (pHash ≤ {meta['max_hamming']}), "
+              f"{confirmed} confirmées (dHash ≤ {meta['max_hamming_confirm']})")
+        display(sp.plot_hash_distances(pairs, meta["max_hamming_confirm"],
+                                       OUT / "distances_hash.png"))
+        SUMMARY.update(groupes=gs, paires_candidates=len(pairs), paires_confirmees=confirmed)
+        """),
+        code("""
+        contra = st.contradictory_groups(raw)
+        print(f"{contra['n_groupes']} groupes contradictoires, {contra['n_images']} images",
+              contra["par_source"])
+        display(contra["paires"].head(20))
+        classe_of = raw.set_index("path")["classe"].astype(str)
+        ex = [p for ps in contra["groupes"]["paths"].head(8) for p in ps[:3]]
+        if ex:
+            display(sp.plot_image_grid([DATA_DIR / p for p in ex],
+                                       [classe_of[p].split("/", 1)[1] for p in ex],
+                                       path=OUT / "contradictoires.png"))
+        rejects = st.read_rejects(DATA_DIR / REJECTS_NAME)
+        print(f"{len(rejects)} fichiers rejetés")
+        display(rejects.groupby(["source", "dossier"]).size().rename("n").to_frame())
+        SUMMARY.update(contradictoires={k: contra[k] for k in ["n_groupes", "n_images",
+                                                               "par_source"]},
+                       rejets=rejects["source"].value_counts().to_dict())
+        SECTIONS["Paires de classes des groupes contradictoires"] = contra["paires"].head(20)
+        """),
+        md("""
+        ## 3.7 Embeddings (optionnel)
+
+        Features du classifieur `CLF_RUN` sur un échantillon, projetées en 2D (UMAP, sinon
+        t-SNE). Une séparation nette par source au sein d'une même espèce signale un
+        raccourci de domaine. Seule cellule qui profite d'un GPU.
+        """),
+        code("""
+        if CLF_RUN is None:
+            print("CLF_RUN = None : embeddings sautés")
+        else:
+            from vision.train.train_classifier import pick_device
+
+            emb = st.stratified_sample(df, min(N_SAMPLE, 2000), SEED)
+            feats = st.extract_features(ROOT / "runs" / CLF_RUN / "best.pt", emb["path"].tolist(),
+                                        DATA_DIR, str(pick_device(None)))
+            xy, method = st.embed_2d(feats, seed=SEED)
+            display(sp.plot_embedding(xy, emb["source"], f"{method} : source",
+                                      OUT / "embeddings_source.png"))
+            display(sp.plot_embedding(xy, emb["espece"], f"{method} : espèce",
+                                      OUT / "embeddings_espece.png"))
+        """),
+        md("## Rapport"),
+        code("""
+        write_report(OUT, SUMMARY, SECTIONS)
+        drive_data.sync_all(DRIVE_DIR)
+        display(Markdown((OUT / "summary.md").read_text(encoding="utf-8")))
+        """),
+        md("""
+        ## Résumé
+
+        `reports/datasets/classifieur/` : `summary.json` (chiffres clés, version de la
+        taxonomie, hash de l'index), `summary.md`, `photometrie.csv` et les figures. À recouper
+        avec docs/02 : PlantVillage train 43 434, CCMT train 20 111, crops PlantDoc 8 704, plus
+        gros groupe 21, `pomme_de_terre/sain` à 15 en val et en test. Décisions (docs/19 §9) :
+        classes mono-source à suivre en cross-domain, augmentations au vu de l'écart de
+        domaine, nettoyage des groupes contradictoires CCMT.
+        """),
+    ],
+)
+
+# ------------------------------------------------------------------ 07 statistiques YOLO
+
+NB_STATS_YOLO = Notebook(
+    name="07_stats_yolo.ipynb",
+    title="07 — Statistiques du jeu de détection",
+    intro="""
+    Vue statistique de `data/yolo/` (docs/19 §4) : effectifs par split, source et classe,
+    géométrie des boîtes (petits objets, cadrage), qualité des annotations (doublons, boîtes
+    imbriquées, dégénérées), fuite de groupes, planches d'exemples. Calcul dans
+    `vision/datasets/stats.py` ; sorties dans `reports/datasets/yolo/`. CPU seulement.
+    """,
+    params="""
+    IMG_SIZE = 640  # entrée du détecteur (letterbox : grand côté -> IMG_SIZE)
+    N_EXAMPLES = 8  # images par planche
+    SEED = 0
+    SOURCE = None  # planches : "plantdoc" ou "plantvillage" ; None : toutes
+    PV_PER_CLASS = 40  # si data/yolo/ doit être reconstruit (docs/04 §2)
+    DATASETS = ["index"]  # data/yolo/ : jeu `yolo` du Drive, sinon reconstruit ci-dessous
+    """,
+    body=[
+        md("## Jeu `data/yolo/`"),
+        code("""
+        import pandas as pd
+        import yaml
+        from IPython.display import Markdown, display
+
+        from common.report import REPORTS_DIR, write_report
+        from vision.datasets import stats as st
+        from vision.datasets import stats_plots as sp
+        from vision.datasets.build_index import DATA_DIR, INDEX_NAME
+        from vision.labeling import build_yolo_dataset as byd
+
+        YOLO_DIR = DATA_DIR / byd.OUT_NAME
+        try:
+            drive_data.ensure(["yolo"], DRIVE_DIR if COLAB else None)
+        except RuntimeError as e:
+            print(e, "\\n-> reconstruction depuis PlantVillage et PlantDoc")
+            drive_data.ensure(["plantvillage", "plantdoc"], DRIVE_DIR if COLAB else None)
+            byd.build(DATA_DIR, YOLO_DIR, PV_PER_CLASS, os.cpu_count())
+
+        OUT = REPORTS_DIR / "yolo"
+        OUT.mkdir(parents=True, exist_ok=True)
+        manifest = pd.read_parquet(YOLO_DIR / byd.MANIFEST)
+        names = yaml.safe_load((YOLO_DIR / "data.yaml").read_text())["names"]
+        NAMES = [names[i] for i in sorted(names)]
+        boxes = st.read_yolo_labels(YOLO_DIR, manifest)
+        counts = st.yolo_counts(manifest, boxes, NAMES)
+        SUMMARY = {"n_images": counts["n_images"], "n_boites": counts["n_boites"],
+                   "classes": NAMES, "classes_sans_annotation": counts["classes_sans_annotation"],
+                   "images_sans_boite": len(counts["images_sans_boite"])}
+        SECTIONS = {}
+        """),
+        code("""
+        # À lire avant toute métrique par classe du détecteur.
+        empty = counts["classes_sans_annotation"]
+        if empty:
+            display(Markdown(
+                f"> ⚠️ **{len(empty)} classe(s) sans aucune annotation : {', '.join(empty)}.** "
+                f"Elles sont déclarées dans `data.yaml`, mais seules les métriques de "
+                f"{', '.join(n for n in NAMES if n not in empty)} ont un sens. "
+                f"{SUMMARY['images_sans_boite']} image(s) sans boîte."
+            ))
+        display(pd.Series(SUMMARY).to_frame("valeur"))
+        """),
+        md("## 4.1 Effectifs"),
+        code("""
+        print("images source × split")
+        display(counts["images"])
+        print("boîtes source × split")
+        display(counts["boites"])
+        display(counts["boites_par_classe"])
+        print(f"{len(counts['images_sans_boite'])} images sans boîte (négatifs)")
+        display(counts["images_sans_boite"].head(20))
+        neg = counts["images_sans_boite"].head(N_EXAMPLES)
+        if len(neg):
+            display(sp.plot_image_grid([YOLO_DIR / p for p in neg["image"]], list(neg["source"]),
+                                       cols=4, path=OUT / "sans_boite.png"))
+        bad = st.nboxes_consistency(manifest, boxes)
+        print(f"n_boxes du manifest ≠ lignes de labels/ : {len(bad)} images (attendu : 0)")
+        display(bad.head(20))
+        SUMMARY["incoherences_n_boxes"] = len(bad)
+        SECTIONS["Images source × split"] = counts["images"]
+        SECTIONS["Boîtes source × split"] = counts["boites"]
+        """),
+        md("""
+        ## 4.2 Géométrie des boîtes
+
+        Tailles à l'entrée du réseau (`IMG_SIZE`) : catégories COCO small (< 32²), medium
+        (< 96²), large. La mAP chute sur les petits objets : leur part guide le choix de la
+        taille d'entrée (640 vs 960) ou du tuilage.
+        """),
+        code("""
+        geom = st.box_geometry(boxes, IMG_SIZE)
+        per_img = st.boxes_per_image(manifest, boxes)
+        display(per_img.groupby("source")["n_lignes"].describe())
+        display(geom.groupby("source")[["aire_rel", "w_px", "h_px", "aspect"]].median())
+        coco = st.coco_share(geom)
+        display(coco)
+        display(sp.plot_box_geometry(geom, OUT / "geometrie_boites.png"))
+        maps = {s: st.center_heatmap(g) for s, g in geom.groupby("source")}
+        display(sp.plot_heatmaps(maps, OUT / "centres.png"))
+        SUMMARY.update(part_coco=coco.to_dict(orient="index"),
+                       boites_par_image=per_img.groupby("source")["n_lignes"].mean().to_dict())
+        SECTIONS["Catégories COCO à IMG_SIZE"] = coco
+        """),
+        md("""
+        ## 4.3 Qualité des annotations
+
+        Doublons probables (IoU > 0,9), boîtes imbriquées, boîtes dégénérées (< 2 px à
+        `IMG_SIZE`) ou débordant de l'image ; fuite de groupes entre splits. Le manifest n'a
+        pas de `groupe` pour PlantVillage : il est repris de `index.parquet` par `path`.
+        """),
+        code("""
+        q = st.box_quality(boxes, IMG_SIZE)
+        display(pd.Series({k: len(v) for k, v in q.items()}, name="n").to_frame())
+        for k in ["doublons", "imbriquees"]:
+            if len(q[k]):
+                print(k)
+                display(q[k].head(10))
+        index = pd.read_parquet(DATA_DIR / INDEX_NAME, columns=["path", "groupe"])
+        leaks = st.yolo_group_leaks(manifest, index)
+        print(f"groupes dans plusieurs splits : {leaks['n_fuites']} (attendu : 0) ; "
+              f"images non contrôlées : {leaks['non_controlees']}",
+              leaks["non_controlees_par_source"])
+        display(leaks["fuites"].head(10))
+        SUMMARY.update(qualite={k: len(v) for k, v in q.items()},
+                       fuites_groupes=leaks["n_fuites"], non_controlees=leaks["non_controlees"])
+        """),
+        md("## 4.4 Exemples"),
+        code("""
+        sel = manifest if SOURCE is None else manifest[manifest["source"] == SOURCE]
+        for split in ["train", "val", "test"]:
+            sub = sel[sel["split"] == split]
+            if len(sub):
+                print(split)
+                display(sp.plot_yolo_examples(YOLO_DIR, sub, boxes, N_EXAMPLES, SEED,
+                                              OUT / f"exemples_{split}.png"))
+        """),
+        md("## Rapport"),
+        code("""
+        write_report(OUT, SUMMARY, SECTIONS)
+        drive_data.sync_all(DRIVE_DIR)
+        display(Markdown((OUT / "summary.md").read_text(encoding="utf-8")))
+        """),
+        md("""
+        ## Résumé
+
+        `reports/datasets/yolo/` : `summary.json`, `summary.md`, figures. Attendu (docs/19
+        §4) : 4 427 images, 10 743 boîtes, toutes `feuille`. Décisions (docs/19 §9) : retirer
+        `plante` et `fruit` de `data.yaml` ou lancer leur annotation ; taille d'entrée selon la
+        part de petites boîtes.
+        """),
+    ],
+)
+
+# -------------------------------------------------------------- 08 statistiques capteurs
+
+NB_STATS_CAPTEURS = Notebook(
+    name="08_stats_capteurs.ipynb",
+    title="08 — Statistiques des capteurs et actionneurs",
+    intro="""
+    Séries temporelles de la serre (docs/19 §5) : couverture et trous, qualité,
+    distributions et valeurs aberrantes, profils journaliers, DLI, autocorrélations
+    (horizon de prévision), corrélations, cycles des actionneurs et délai commande → effet,
+    alertes et vision. Source : un scénario figé (`data/scenarios/<nom>/serre.db`, figé à la
+    volée s'il manque), l'historique simulé de `sim.dataset.generate` ou une base SQLite.
+    Calcul dans `sim/stats.py` ; sorties dans `reports/datasets/capteurs/<source>/`.
+    """,
+    params="""
+    SOURCE = "scenario:journee"  # "scenario:<nom>", "sim" ou chemin d'une base SQLite
+    SIM_DAYS = 30  # SOURCE = "sim" : jours simulés (pas de 10 min)
+    SIM_SEED = 0
+    GAP_FACTOR = 2  # trou : écart > GAP_FACTOR × la cadence médiane du capteur
+    FUSEAU = "Europe/Paris"  # heure locale des profils ; None : celui de la table serre
+    PANNES = []  # sim/faults.py, ex. ["fige:z1/temperature@30-90", "deconnexion:esp32-02@10-40"]
+    DATASETS = []  # aucune archive Drive : scénarios figés à la volée, `sim` généré
+    """,
+    extras="vision,controle,backend",
+    body=[
+        md("## Données"),
+        code("""
+        import re
+
+        import pandas as pd
+        from IPython.display import Markdown, display
+
+        from common.report import REPORTS_DIR, write_report
+        from sim import stats as ss
+        from sim import stats_plots as sp
+
+        src = ss.load_source(SOURCE, SIM_DAYS, SIM_SEED)
+        L = ss.inject_faults(src.mesures, PANNES)  # mesures en format long
+        TZ = FUSEAU or src.serre.get("fuseau", "Europe/Paris")
+        STEP = "10min"
+        W = ss.wide(L, STEP)  # table large (zone, type), pas régulier
+        OUT = REPORTS_DIR / "capteurs" / re.sub(r"[^\\w-]+", "_", SOURCE).strip("_")
+        OUT.mkdir(parents=True, exist_ok=True)
+        SUMMARY = {"source": SOURCE, "pannes": PANNES, "debut": L["ts"].min(),
+                   "fin": L["ts"].max(), "n_mesures": len(L),
+                   "n_capteurs": L["capteur_id"].nunique(), "n_etats": len(src.etats),
+                   "fuseau": TZ}
+        SECTIONS = {}
+        display(pd.Series(SUMMARY).to_frame("valeur"))
+        """),
+        md("""
+        ## 5.1 Couverture et qualité
+
+        Trou : écart entre deux mesures > `GAP_FACTOR` × la cadence médiane du capteur. Les
+        scénarios n'ont que des mesures `ok` : cela ne prouve pas l'absence de défaut ;
+        renseigner `PANNES` pour vérifier que ces statistiques révèlent les pannes simulées.
+        """),
+        code("""
+        cov = ss.coverage(L, GAP_FACTOR)
+        display(cov)
+        gaps = ss.gaps(L, GAP_FACTOR)
+        display(sp.plot_timeline(L, gaps, OUT / "couverture.png"))
+        share, only_ok = ss.quality_share(L)
+        display(share)
+        if only_ok:
+            print("Toutes les mesures sont `ok` : aucun défaut signalé, ce qui ne veut pas dire "
+                  "qu'il n'y en a pas (injecter des PANNES).")
+        SUMMARY.update(trous=int(cov["n_trous"].sum()), trou_max_s=float(cov["trou_max_s"].max()),
+                       que_des_ok=only_ok)
+        SECTIONS["Couverture"] = cov
+        """),
+        md("""
+        ## 5.2 Distributions
+
+        Résumés par type × zone, valeurs hors bornes physiques (`ss.PHYSICAL_BOUNDS`),
+        saturation du capteur de lumière, valeurs aberrantes par z-score robuste (médiane,
+        MAD) sur fenêtre glissante d'une heure.
+        """),
+        code("""
+        display(ss.summaries(L))
+        display(sp.plot_histograms(L, OUT / "histogrammes.png"))
+        oob = ss.out_of_bounds(L)
+        print(f"{len(oob)} valeurs hors bornes physiques")
+        display(oob.groupby(["zone", "type"]).size().rename("n").to_frame())
+        display(ss.saturation(L))
+        outl = ss.robust_outliers(L)
+        print(f"{len(outl)} valeurs aberrantes (|z robuste| > 5)")
+        display(outl.groupby(["zone", "type"]).size().rename("n").to_frame())
+        SUMMARY.update(hors_bornes=len(oob), aberrantes=len(outl))
+        SECTIONS["Résumés"] = ss.summaries(L)
+        """),
+        md("""
+        ## 5.3 Dynamique temporelle
+
+        Profils journaliers en heure locale (médiane et IQR), DLI (même conversion lux → PPFD
+        que la serre), autocorrélations : l'horizon où l'ACF passe sous 0,5 borne ce que la
+        persistance prévoit seule (niveau 2, docs/11). Décomposition tendance / journalier /
+        résidu, corrélations entre capteurs d'une zone.
+        """),
+        code("""
+        prof = ss.daily_profile(L, ["temperature", "humidite", "lux", "co2"], TZ)
+        display(sp.plot_daily_profiles(prof, OUT / "profils_journaliers.png"))
+        dli = ss.dli(L, src.serre.get("lux_vers_ppfd", ss.LUX_VERS_PPFD), TZ)
+        display(dli)
+        acfs = ss.autocorrelations(W, "24h")
+        horizon = ss.useful_horizon(acfs)
+        display(horizon.rename("horizon ACF < 0,5 (h)").to_frame())
+        display(sp.plot_acf(acfs, path=OUT / "autocorrelations.png"))
+        SUMMARY.update(dli=dli.to_dict(orient="records"),
+                       horizon_h={" ".join(k): v for k, v in horizon.items()})
+        SECTIONS["Horizon ACF < 0,5 (h)"] = horizon.to_frame("h")
+        """),
+        code("""
+        for zone in sorted(W.columns.get_level_values(0).unique()):
+            if (zone, "temperature") in W.columns:
+                comps, parts = ss.decompose(W[(zone, "temperature")])
+                print(zone, "température :", parts)
+                display(sp.plot_decomposition(comps, f"{zone} température",
+                                              OUT / f"decomposition_{zone}.png"))
+            corr = ss.correlations(W, zone)
+            display(sp.plot_corr(corr, zone, OUT / f"correlations_{zone}.png"))
+        """),
+        md("""
+        ## 5.4 Actionneurs, alertes, vision
+
+        Taux d'activation et durées des cycles ; délai commande → effet : décalage du pic de
+        corrélation croisée entre l'état d'un actionneur et la dérivée du capteur visé
+        (ventilateur → T°, brumisateur → HR, pompe → humidité du sol).
+        """),
+        code("""
+        duty = ss.duty_cycles(src.etats)
+        display(duty)
+        display(sp.plot_states(src.etats, path=OUT / "actionneurs.png"))
+        lag = ss.lag_effect(src.etats, L)
+        display(lag)
+        SUMMARY.update(taux_activation={" ".join(k): v for k, v in
+                                        duty["taux_activation"].items()},
+                       delai_effet=lag.to_dict(orient="records"))
+        SECTIONS["Actionneurs"] = duty
+        SECTIONS["Délai commande → effet"] = lag
+        """),
+        code("""
+        al = ss.alerts_summary(src.alertes)
+        print(f"{al['n']} alertes")
+        if al["n"]:
+            display(al["niveau_zone"])
+            display(al["par_source"].to_frame())
+            display(sp.plot_alerts(src.alertes, OUT / "alertes.png"))
+        vi = ss.vision_summary(src.vision)
+        print(f"{vi['n']} analyses vision")
+        if vi["n"]:
+            display(vi["par_zone"].to_frame())
+            display(vi["sante"])
+            display(vi["confiances"])
+        SUMMARY.update(alertes=al["n"], analyses_vision=vi["n"])
+        """),
+        md("## Rapport"),
+        code("""
+        write_report(OUT, SUMMARY, SECTIONS)
+        drive_data.sync_all(DRIVE_DIR)
+        display(Markdown((OUT / "summary.md").read_text(encoding="utf-8")))
+        """),
+        md("""
+        ## Résumé
+
+        `reports/datasets/capteurs/<source>/` : `summary.json`, `summary.md`, figures.
+        Décisions (docs/19 §9) : horizon de prévision du niveau 2 au vu des autocorrélations,
+        seuils de trous (`capteur_muet_s`) et de valeurs aberrantes du contrôleur. Ce notebook
+        passe en P1 dès que la base réelle de la serre existe (`SOURCE` = son chemin).
+        """),
+    ],
+)
+
+NOTEBOOKS = [
+    NB_DONNEES,
+    NB_ENTRAINEMENT,
+    NB_EVALUATION,
+    NB_ABLATIONS,
+    NB_DETECTION,
+    NB_STATS_CLF,
+    NB_STATS_YOLO,
+    NB_STATS_CAPTEURS,
+]
 
 
 def main() -> None:

@@ -47,6 +47,9 @@ controle = [  # controller and simulator (docs/06); torch (vision extra) only to
     "pyyaml",
     "onnxruntime",
 ]
+stats = [  # dataset statistics notebooks (docs/19): embeddings of the notebook 06
+    "umap-learn",
+]
 notebook = [
     "ipykernel",
     "nbclient",

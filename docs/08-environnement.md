@@ -28,6 +28,7 @@ Le `pyproject.toml` existe déjà. Les dépendances sont réparties en groupes :
 | `vision` | torch, torchvision, timm, albumentations, OpenCV, pandas, pyarrow, imagehash, scikit-learn, MLflow, grad-cam, ONNX… | `uv sync --extra vision` |
 | `detection` | ultralytics (YOLO, AGPL-3.0), sam2, scipy (phase 2, doc 04) | `uv sync --extra vision --extra detection` |
 | `controle` | numpy, pandas, pyyaml, onnxruntime (contrôleur et simulateur, doc 06 ; torch de `vision` pour entraîner le GRU) | `uv sync --extra controle` |
+| `stats` | umap-learn (embeddings du notebook 06, doc 19 ; sinon t-SNE) | `uv sync --extra vision --extra stats` |
 | `notebook` | ipykernel, nbclient, nbformat, ipywidgets (notebooks en local) | `uv sync --extra notebook` |
 | `backend` | SQLAlchemy, psycopg, pyyaml, FastAPI, uvicorn, websockets, anthropic (base, ingestion, API, agent ; docs 09, 11, 12) | `uv sync --extra backend --extra controle` |
 | `dev` | pytest, ruff | inclus par défaut dans `uv sync` |

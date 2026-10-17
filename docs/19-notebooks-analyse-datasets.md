@@ -219,6 +219,13 @@ n'est dupliquée entre les deux.
 | D8 | embeddings UMAP (§3.7) | P2 | S | `vision/datasets/stats.py`, extra `umap-learn` |
 | D9 | renvoi de `01_donnees` vers 06 et ligne dans [07](07-roadmap.md) | P2 | S | `tools/notebooks/build.py`, `docs/07-roadmap.md` |
 
+**État (17/10/2026)** : D1–D9 implémentés. Calcul dans `vision/datasets/stats.py` (tracés
+`stats_plots.py`) et `sim/stats.py` (tracés `sim/stats_plots.py`), rapports
+`summary.json` / `summary.md` par `common/report.py`, tests `tests/test_dataset_stats.py` et
+`tests/test_sim_stats.py`. Les notebooks 06–08 restent à exécuter pour recouper les chiffres
+(§8). `08_stats_capteurs` fige le scénario demandé s'il manque dans `data/scenarios/`, et
+`07_stats_yolo` reconstruit `data/yolo/` si le jeu n'est pas sur le Drive.
+
 Ordre : D1 → D4 → D3 → D5 (sans pixels), puis D2, puis D6–D7. Le notebook 08 passe en P1
 dès que la base réelle de la serre existe.
 

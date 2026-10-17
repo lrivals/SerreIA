@@ -56,7 +56,7 @@ Choix structurants :
 - ✅ **Vue jeu pixel art** (J1–J5, doc 13) : `/jeu` en Phaser 3, serre construite case par case depuis un inventaire, jardinier qui rejoue les événements réels, bulles de stats, rejeu 24 h / 7 j, démo hors ligne `/jeu?demo=1` ; sprites générés (planches 01 à 04 : jardinier et ses actions, 16 espèces) → atlas par `make sprites`, prompts des planches suivantes dans [`sprites-src/PROMPTS.md`](sprites-src/PROMPTS.md).
 - 🔄 **Test système simulé** (T1, doc 16) : scénarios scriptés `sim --scenario journee|mildiou` (forçages, pannes, vision factice) rejoués au plus vite et vérifiés contre leurs attendus (`make scenario`, `tests/test_scenarios.py`), historique figé pour l'UI, la vue jeu (`/jeu?demo=mildiou`) et l'agent (`make scenario-figer`, `make api-historique`) ; premier passage fait, 5 constats sur le contrôleur et la consommation à traiter, parcours UI et agent avec Claude réel restants — cf. [16 §6](docs/16-test-systeme-simule.md#6-journal-de-test).
 - 📋 **Analyse et qualité logicielle** (docs 17 et 18) : état des lieux complet (10 risques principaux, dont chauffage non borné sur sonde muette et bus MQTT sans authentification) et plan d'améliorations sans matériel en 5 lots, Q1 (sécurité et justesse) avant toute mise en serre — cf. [18 §11](docs/18-ameliorations-logicielles.md#11-ordre-proposé).
-- 📋 **Notebooks d'analyse des datasets** (doc 19) : `06_stats_classifieur` (déséquilibre, classes mono-source, écart de domaine, doublons), `07_stats_yolo` (boîtes : toutes de classe `feuille` aujourd'hui) et `08_stats_capteurs` (trous, profils journaliers, actionneurs), calculs dans `vision/datasets/stats.py` et `sim/stats.py` — cf. [19 §7](docs/19-notebooks-analyse-datasets.md#7-plan-de-travail).
+- ✅ **Notebooks d'analyse des datasets** (doc 19) écrits : `06_stats_classifieur` (déséquilibre, classes mono-source, écart de domaine, doublons), `07_stats_yolo` (boîtes : toutes de classe `feuille` aujourd'hui) et `08_stats_capteurs` (trous, profils journaliers, actionneurs), calculs testés dans `vision/datasets/stats.py` et `sim/stats.py`, rapports dans `reports/datasets/` ; à exécuter pour recouper les chiffres — cf. [19](docs/19-notebooks-analyse-datasets.md).
 
 ## Démarrage rapide
 
@@ -168,10 +168,14 @@ Notebooks (`notebooks/`, ouvrables dans Colab via leur badge) :
 | `02_entrainement.ipynb` | un run complet : entraînement, évaluation, Grad-CAM, ONNX |
 | `03_evaluation.ipynb` | évaluation d'un run existant |
 | `04_ablations.ipynb` | ablations A–E à la suite (reprise possible) → `reports/phase1.md` |
+| `05_detection.ipynb` | jeu YOLO, entraînement du détecteur, pipeline deux étages (doc 04) |
+| `06_stats_classifieur.ipynb` | statistiques de l'index : déséquilibre, couverture, splits, photométrie, doublons → `reports/datasets/classifieur/` |
+| `07_stats_yolo.ipynb` | statistiques du jeu YOLO : effectifs, géométrie et qualité des boîtes → `reports/datasets/yolo/` |
+| `08_stats_capteurs.ipynb` | séries capteurs et actionneurs d'un scénario, de `sim` ou d'une base → `reports/datasets/capteurs/` |
 
 ```bash
 tools/get_datasets.sh check                            # état des jeux (data/ ↔ Google Drive)
 tools/get_datasets.sh pull plantvillage                # récupérer un jeu depuis le Drive
 make harvest                                           # rapatrier les sorties Colab (runs/, reports/, mlruns/colab/)
-make notebooks                                         # régénérer notebooks/ (tools/notebooks/build.py)
+make notebooks                                         # régénérer notebooks/ (efface les sorties enregistrées)
 ```
