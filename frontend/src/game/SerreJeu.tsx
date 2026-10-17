@@ -1,7 +1,8 @@
 // Game view in pixel art (docs/13): the same greenhouse as the classic UI, built tile by
 // tile and brought to life by a gardener who replays the real events. Phaser draws, React
 // owns the data (TanStack Query), the overlays and every API call. `/jeu?demo=1`: offline
-// demonstration from public/demo/serre-demo.json.
+// demonstration from public/demo/serre-demo.json; `/jeu?demo=journee`: the frozen history
+// of a simulated scenario (docs/16, `make scenario-figer NOM=journee`).
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -32,7 +33,8 @@ import { useRejeu } from "./useRejeu";
 
 export default function SerreJeu() {
   const [params] = useSearchParams();
-  return params.get("demo") === "1" ? <JeuDemo /> : <JeuApi />;
+  const demo = params.get("demo");
+  return demo ? <JeuDemo nom={demo} /> : <JeuApi />;
 }
 
 function JeuApi() {
@@ -41,8 +43,8 @@ function JeuApi() {
   return <Jeu source={source} setConstruction={setConstruction} />;
 }
 
-function JeuDemo() {
-  const source = useDonneesDemo();
+function JeuDemo({ nom }: { nom: string }) {
+  const source = useDonneesDemo(nom);
   return <Jeu source={source} setConstruction={() => undefined} demo={source.evenements} />;
 }
 

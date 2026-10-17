@@ -1,0 +1,38 @@
+# Attendus du scénario 1 « Journée capteurs » (docs/16 §3), vérifiés par sim/attendus.py
+# (tests/test_scenarios.py, `python -m sim --scenario journee`). Heures « J1 hh:mm » :
+# 15 juillet, heure locale. Les invariants de §3 (commandes tracées, pompes bornées, refus
+# tracé une fois, marche_min_s, impulsions espacées) sont vérifiés en plus sur tout le bus.
+attendus:
+  - {nom: nuit humide → ventilation anti-mildiou sans image, regle: maladie.mildiou.ventilation,
+     zone: z1, de: J1 05:50, a: J1 06:30, preuve_vision: false, actionneur: ventilo,
+     alerte: risque mildiou, max: 1}
+  - {nom: début de photopériode, regle: lumiere.photoperiode, zone: z1, de: J1 06:00,
+     a: J1 06:15, actionneur: led, action: pwm}
+  - {nom: complément LED d'après le DLI (journée sombre), regle: lumiere.photoperiode,
+     zone: z1, de: J1 09:00, a: J1 12:00, actionneur: led, action: pwm, maintien_s: 1800}
+  - {nom: capteur de T° figé, regle: securite.capteur_fige, zone: z1, de: J1 10:25,
+     a: J1 10:40, alerte: figé, max: 1}
+  - {nom: fin du capteur figé, zone: z1, de: J1 11:30, a: J1 11:35, alerte: de nouveau variable}
+  - {nom: montée de T° → ventilation, regle: climat.temperature.ventilation, zone: z1,
+     de: J1 12:00, a: J1 14:30, actionneur: ventilo, action: pwm, min: 2}
+  - {nom: arrêt de la ventilation de T°, regle: climat.temperature.ventilation, zone: z1,
+     de: J1 12:00, a: J1 14:30, actionneur: ventilo, action: "off", min: 2}
+  - {nom: dérive du pH → impulsions espacées, regle: ph.dosage, zone: z2, de: J1 13:00,
+     a: J1 14:30, actionneur: pompe_ph_down, action: "on", min: 1, max: 3}
+  - {nom: nœud sol hors ligne, regle: securite.noeud_offline, zone: z1, de: J1 13:00,
+     a: J1 13:05, alerte: hors ligne, max: 1}
+  - {nom: nœud sol de retour, zone: z1, de: J1 13:40, a: J1 13:45, alerte: de nouveau en ligne}
+  - {nom: sol sec → arrosage borné, regle: sol.arrosage, zone: z1, de: J1 15:00, a: J1 15:10,
+     actionneur: pompe_nutri, action: "on"}
+  - {nom: cuve vide, regle: securite.cuve_vide, zone: z2, de: J1 20:00, a: J1 20:05,
+     alerte: cuve vide, max: 1}
+  - {nom: pompe z2 refusée, tracée une seule fois, regle: hydro.circulation, zone: z2,
+     statut: bloquee_securite, de: J1 20:00, max: 1}
+  - {nom: présence de nuit, regle: presence.intrusion, zone: z1, de: J1 23:00, a: J1 23:10,
+     alerte: intrusion}
+interdits:
+  - {nom: preuve vision sans caméra, preuve_vision: true}
+  - {nom: pompe z2 lancée cuve vide, zone: z2, actionneur: pompe_nutri, action: "on",
+     de: J1 20:00}
+  - {nom: arrosage pendant la déconnexion du nœud sol, regle: sol.arrosage, de: J1 13:00,
+     a: J1 13:40}

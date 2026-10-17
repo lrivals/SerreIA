@@ -7,7 +7,9 @@ consumption are there from the start), then runs at `accel` × real time. The AP
 is the simulated clock. What the API publishes (validations, manual actions) is queued
 and published by the simulation thread between two steps, so that the controller never
 runs on two threads. `pannes`: faults of sim/faults.py, in minutes from the start of the
-catch-up (e.g. a mildew seen on z1-A1, for a proposal to validate).
+catch-up (e.g. a mildew seen on z1-A1, for a proposal to validate). `scenario`: a scripted
+scenario (sim/scenario.py, docs/16) played from its own start: `prefill_h` hours of it
+caught up, then live; the forcings stop at its end, the greenhouse keeps running.
 """
 
 import logging
@@ -43,15 +45,22 @@ class QueuedPublisher:
 
 class SimRunner:
     def __init__(self, sessions, config: Path | None = None, accel: float = 1.0,
-                 prefill_h: float = 24.0, seed: int = 0, pannes: list[str] = ()):  # fmt: skip
+                 prefill_h: float = 24.0, seed: int = 0, pannes: list[str] = (),
+                 scenario=None):  # fmt: skip
         from edge.controller.config import DEFAULT_CONFIG
         from edge.controller.service import NODE as CONTROLLER
         from edge.controller.service import build
         from sim.faults import Faults, parse_fault
         from sim.simulation import Simulation
 
-        now = datetime.now(UTC).replace(microsecond=0)
-        start = now - timedelta(hours=prefill_h)
+        if scenario is not None:
+            start, seed = scenario.debut, scenario.seed
+            now = start + timedelta(hours=prefill_h)
+            faults = scenario.faults(pannes)
+        else:
+            now = datetime.now(UTC).replace(microsecond=0)
+            start = now - timedelta(hours=prefill_h)
+            faults = Faults([parse_fault(f, start) for f in pannes])
         self.accel, self.live_from, self.start_t = accel, now, start
         self.sim = None
         self.bus = LoopbackBus()
@@ -59,10 +68,8 @@ class SimRunner:
         self.ingestor = Ingestor(sessions, clock=self.clock)
         self.ingestor.attach(self.bus)
         controller = build(config or DEFAULT_CONFIG, LoopbackPublisher(CONTROLLER, self.bus))
-        faults = Faults([parse_fault(f, start) for f in pannes])
-        self.sim = Simulation(
-            LoopbackPublisher("sim", self.bus), start, seed, faults, controller=controller
-        )
+        self.sim = Simulation(LoopbackPublisher("sim", self.bus), start, seed, faults,
+                              controller=controller, scenario=scenario)  # fmt: skip
         self.api = LoopbackPublisher("backend-api", self.bus)
         self.job = ConsumptionJob(sessions)
         self.stop = threading.Event()

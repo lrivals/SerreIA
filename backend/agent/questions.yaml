@@ -4,7 +4,8 @@
 #
 # outils      : outils à appeler (une liste interne = au moins un de ces outils) ;
 # citer       : textes attendus dans la réponse (liste interne = au moins un) ; {mildiou},
-#               {isolement}, {image} sont remplacés par les identifiants de l'historique ;
+#               {isolement}, {image}, {humectation} (h), {litres} / {litres_point} sont
+#               remplacés par les valeurs de l'historique (fixtures.py ou scénario simulé) ;
 # propositions: outils proposer_* qui doivent avoir créé une proposition ;
 # aucune_proposition : true pour une question d'information ou un refus attendu ;
 # ordre       : champs attendus dans l'ordre d'une proposition créée.
@@ -14,7 +15,8 @@
 - id: pourquoi-ventilation
   question: "Pourquoi la ventilation a tourné cette nuit vers 2 h 30 ?"
   outils: [[get_decisions, get_arbre_actions]]
-  citer: ["{mildiou}", maladie.mildiou.ventilation, "{image}", [11 h, "11 heures"]]
+  citer: ["{mildiou}", maladie.mildiou.ventilation, "{image}",
+          ["{humectation} h", "{humectation} heures"]]
   aucune_proposition: true
 
 - id: que-faire-a1
@@ -32,7 +34,7 @@
 - id: eau-semaine
   question: "Combien d'eau la serre a-t-elle consommé cette semaine ?"
   outils: [get_consommation]
-  citer: [["4,5", "4.5"]]
+  citer: [["{litres}", "{litres_point}"]]
   aucune_proposition: true
 
 - id: dli-jour

@@ -2,7 +2,7 @@
 
 Une vue de l'interface inspirée d'Animal Crossing / Stardew Valley : on **construit** sa serre case par case, puis, une fois en fonctionnement, un **petit jardinier** la parcourt et **rejoue les actions réelles** du contrôleur (ventiler, arroser, inspecter une plante malade). Approcher ou cliquer une plante ou une station de culture affiche ses **stats** dans une bulle de dialogue.
 
-> Statut : **implémenté (J1–J5)**, avec les sprites de `planche_01` à `planche_04` (jardinier et ses actions, 16 espèces) : vue `/jeu` (Phaser 3), pipeline sprites → atlas piloté par le manifeste (§2), champ `disposition` en base (§3), construction, serre vivante, inspection, rejeu, démo hors ligne `/jeu?demo=1` ; détail en §11. Interface classique et API : [12](12-interface-utilisateur.md) ; modèle de données : [09](09-modele-gestion-serre.md) ; décisions : [10](10-decisions-tracabilite.md) ; agent : [11](11-agent-decision.md).
+> Statut : **implémenté (J1–J5)**, avec les sprites de `planche_01` à `planche_04` (jardinier et ses actions, 16 espèces) : vue `/jeu` (Phaser 3), pipeline sprites → atlas piloté par le manifeste (§2), champ `disposition` en base (§3), construction, serre vivante, inspection, rejeu, démo hors ligne `/jeu?demo=1`, ou `/jeu?demo=<scénario>` sur l'historique figé d'un scénario simulé ([16](16-test-systeme-simule.md)) ; détail en §11. Interface classique et API : [12](12-interface-utilisateur.md) ; modèle de données : [09](09-modele-gestion-serre.md) ; décisions : [10](10-decisions-tracabilite.md) ; agent : [11](11-agent-decision.md).
 
 ## 1. Principe
 
@@ -252,9 +252,9 @@ sprites-src/                 # planches brutes, sprites découpés, manifeste sp
 
 Avec le simulateur ([06 §5](06-capteurs-controle.md#5-simulateur--sim)) et le faux `camera_service` ([12 §5](12-interface-utilisateur.md#5-développement-sans-matériel)), la serre vit déjà : les actionneurs s'animent et le jardinier fait ses tâches.
 
-On ajoute un **scénario démo** (`sim --scenario mildiou`) qui fait monter l'HR, publie une classification `mildiou` sur `z1-A1` et laisse le contrôleur décider. On voit alors toute la chaîne : bulle `?`, jardinier qui inspecte, ventilation, fiche décision.
+Le **scénario démo** `mildiou` ([16 §4](16-test-systeme-simule.md#4-scénario-2--mildiou-et-agent)) fait monter l'HR, publie trois classifications `mildiou` sur `z1-A1` et laisse le contrôleur décider. On voit alors toute la chaîne : bulle `?`, jardinier qui inspecte, ventilation, fiche décision. En direct : `make api-sim SCENARIO=mildiou`.
 
-Un mode **« hors ligne »** charge une serre et une journée d'événements depuis un fichier JSON de démonstration. Il sert pour travailler les sprites sans backend.
+Un mode **« hors ligne »** charge une serre et des événements depuis un fichier JSON de démonstration. Il sert pour travailler les sprites sans backend : `/jeu?demo=1` (`public/demo/serre-demo.json`, écrit à la main) ou `/jeu?demo=<scénario>` (`public/demo/scenario-<nom>.json`, généré par `make scenario-figer NOM=<nom>`, non suivi par git).
 
 ## 9. Tests
 

@@ -80,10 +80,20 @@ export interface Demo {
 
 const BASE = import.meta.env.BASE_URL ?? "/";
 
-export function useDonneesDemo(): Source & { evenements: Demo["evenements"] } {
+/** File of an offline demonstration: "1" the hand-made one, a name the frozen history of
+ * that scenario (`sim --scenario <nom> --figer`, copied by `make scenario-figer`). */
+export function fichierDemo(nom: string): string {
+  return nom === "1" || !/^[a-z0-9_-]+$/.test(nom) ? "demo/serre-demo.json" : `demo/scenario-${nom}.json`;
+}
+
+export function useDonneesDemo(nom = "1"): Source & { evenements: Demo["evenements"] } {
   const q = useQuery({
-    queryKey: ["jeu", "demo"],
-    queryFn: async () => (await (await fetch(`${BASE}demo/serre-demo.json`)).json()) as Demo,
+    queryKey: ["jeu", "demo", nom],
+    queryFn: async () => {
+      const r = await fetch(`${BASE}${fichierDemo(nom)}`);
+      if (!r.ok) throw new Error(`${fichierDemo(nom)} : ${r.status} (make scenario-figer NOM=${nom})`);
+      return (await r.json()) as Demo;
+    },
     staleTime: Infinity,
   });
   return {

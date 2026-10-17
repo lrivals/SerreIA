@@ -1,0 +1,26 @@
+# Scénario 1 « Journée capteurs » (docs/16 §3) : une journée d'été sur la serre de
+# edge/controller/serre.yaml, sans images ni agent. Commence la veille à 20 h : la règle
+# mildiou demande HR > 90 % depuis plus de 10 h. Heures « J1 hh:mm » = 15 juillet, heure
+# locale ; pannes en minutes depuis le début (J0 20:00). Attendus : journee.attendus.yaml.
+#   python -m sim --scenario journee --mqtt none --accel 0
+nom: journee
+debut: 2026-07-14T20:00+02:00
+duree_h: 28
+seed: 1
+meteo: {nuages: [{de: J1 09:00, a: J1 12:00, couverture: 1.0}]}
+pannes:
+  - {panne: "fige:z1/temperature", de: J1 10:00, a: J1 11:30}
+  - {panne: "deconnexion:esp32-02", de: J1 13:00, a: J1 13:40}   # nœud sol de z1
+  - {panne: "cuve_vide:z2", de: J1 20:00}
+forcages:
+  # nuit humide : HR 93 %, ~18 °C
+  - {grandeur: humidite, zone: z1, valeur: 93, de: 0h, a: J1 06:00}
+  - {grandeur: temperature, zone: z1, valeur: 18, de: 0h, a: J1 06:00}
+  # après-midi sec (la ventilation d'humidité s'arrête) et montée de T° : la ventilation
+  # de température prend le relais
+  - {grandeur: humidite, zone: z1, valeur: 60, de: J1 11:45, a: J1 15:00}
+  - {grandeur: temperature, zone: z1, derive: +24, de: J1 12:00, a: J1 14:00}
+  - {grandeur: ph, zone: z2, derive: +0.4, de: J1 13:00, a: J1 14:00}
+  - {grandeur: humidite_sol, zone: z1, emplacement: z1-A1, valeur: 30, de: J1 15:00}
+  - {grandeur: presence, zone: z1, valeur: 1, de: J1 23:00, a: J1 23:05}
+vision: []

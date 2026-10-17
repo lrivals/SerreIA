@@ -33,7 +33,7 @@ Choix structurants :
 | 13 | [Vue jeu pixel art](docs/13-interface-jeu-pixel-art.md) | Serre animée, jardinier, mode construction |
 | 14 | [Résultats phases 1 et 2](docs/14-resultats-phase1.md) | Analyse du classifieur et du détecteur |
 | 15 | [Améliorations de la détection](docs/15-ameliorations-detection.md) | Plan de travail sur le pipeline deux étages |
-| 16 | [Test système simulé](docs/16-test-systeme-simule.md) | Scénarios sans images : journée capteurs, mildiou et agent, vus dans l'UI |
+| 16 | [Test système simulé](docs/16-test-systeme-simule.md) | Scénarios scriptés sans images (journée capteurs, mildiou et agent), attendus vérifiés, historique figé, journal de test et constats |
 | — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
 ## État actuel (16/10/2026)
@@ -51,7 +51,7 @@ Choix structurants :
 - ✅ **Agent de décision** (G4, doc 11) : boucle Claude (`claude-sonnet-5-5` par défaut) et 12 outils (`backend/agent/`), propositions `niveau: agent` validées par `POST /api/decisions/{id}/valider`, garde-fous vérifiés avant création (durées, actionneurs, limites de sécurité, preuves existantes), consignes appliquées à la recette après validation, journal `agent_journal`, budgets, chat SSE `POST /api/agent/chat` et onglet Agent de l'UI ; 12 questions de référence (`make agent-eval`, Claude réel) — cf. [11 §7](docs/11-agent-decision.md#7-implémentation-et-test-sur-pc). Testé avec un LLM scripté ; pas encore joué avec Claude réel.
 - ✅ **API et interface web** (G2, doc 12) : API REST complète sous `/api` (structure, plantes, équipements, publication de la configuration, mesures, tableau de bord, images, consommation, alertes, authentification optionnelle), relais `WS /ws/live`, SPA React + Vite (`frontend/`) : constructeur avec plan glisser-déposer et éditeur de régions, équipements, tableau de bord, consommation, journal et fiche décision, arbre des actions, agent ; serre simulée derrière l'API sans broker (`make api-sim`) — cf. [12 §7](docs/12-interface-utilisateur.md#7-implémentation-et-test-sur-pc). Testé par pytest, Vitest et Playwright ; Alembic à venir.
 - ✅ **Vue jeu pixel art** (J1–J5, doc 13) : `/jeu` en Phaser 3, serre construite case par case depuis un inventaire, jardinier qui rejoue les événements réels, bulles de stats, rejeu 24 h / 7 j, démo hors ligne `/jeu?demo=1` ; sprites générés (planches 01 à 04 : jardinier et ses actions, 16 espèces) → atlas par `make sprites`, prompts des planches suivantes dans [`sprites-src/PROMPTS.md`](sprites-src/PROMPTS.md).
-- 📝 **Test système simulé** (doc 16) : scénarios « journée capteurs » et « mildiou et agent » décrits, à implémenter et jouer après G2–G4 et J3 — cf. [16](docs/16-test-systeme-simule.md).
+- 🔄 **Test système simulé** (T1, doc 16) : scénarios scriptés `sim --scenario journee|mildiou` (forçages, pannes, vision factice) rejoués au plus vite et vérifiés contre leurs attendus (`make scenario`, `tests/test_scenarios.py`), historique figé pour l'UI, la vue jeu (`/jeu?demo=mildiou`) et l'agent (`make scenario-figer`, `make api-historique`) ; premier passage fait, 5 constats sur le contrôleur et la consommation à traiter, parcours UI et agent avec Claude réel restants — cf. [16 §6](docs/16-test-systeme-simule.md#6-journal-de-test).
 
 ## Démarrage rapide
 

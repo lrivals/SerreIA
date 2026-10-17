@@ -1,5 +1,6 @@
 """Reference history of the agent (docs/16 §4, "mildiou et agent"), written straight in the
-database: the base of the tests and of `backend.agent.eval`.
+database: the base of the tests and of `backend.agent.eval`. `history_from_scenario` finds
+the same identifiers in the history simulated by `sim --scenario mildiou --figer`.
 
 Three days in z1 up to `NOW` (13 October 2026, 15:00 local):
 - humid nights (HR 92 % from 20:00 to 08:00, about 17.8 °C), drier days;
@@ -20,7 +21,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from common.mqtt import Decision, Ordre, command_raison
 
-from ..consumption import compute_day
+from ..consumption import compute_day, summary
 from ..db import models as m
 from ..db.seed import seed
 from ..db.session import init_db, make_engine, make_sessions
@@ -43,6 +44,8 @@ class History:
     isolement: str
     images: list[str]
     arrosages: list[str]
+    humectation: str = "11"  # hours of HR > 90 % cited by the mildew decision
+    litres: str = "4,5"  # water of the week (get_consommation)
 
 
 def _local_hour(ts: datetime) -> float:
@@ -211,6 +214,38 @@ def build_history(sessions: sessionmaker[Session], now: datetime = NOW) -> Histo
         for i in range((now.astimezone(TZ).date() - first).days + 1):
             compute_day(s, first + timedelta(days=i), now)
     return History(now, MILDIOU_ID, ISOLEMENT_ID, list(IMAGES), arrosages)
+
+
+def history_from_scenario(sessions: sessionmaker[Session], now: datetime) -> History:
+    """The identifiers of the reference questions in a simulated history (scenario 2 of
+    docs/16, `python -m sim --scenario mildiou --figer`): the first mildew decision with
+    vision evidence, the first isolation proposal, the confirming images, the waterings."""
+    from sqlalchemy import select
+
+    with sessions() as s:
+        decisions = list(s.scalars(select(m.Decision).order_by(m.Decision.ts)))
+        mildiou = next(
+            d for d in decisions
+            if d.regle_id == "maladie.mildiou.ventilation" and (d.preuves or {}).get("vision")
+        )  # fmt: skip
+        isolement = next(
+            (d.id for d in decisions if d.regle_id == "maladie.mildiou.isolement"), mildiou.id
+        )
+        images = sorted({v["image_id"] for v in mildiou.preuves["vision"]})
+        if len(images) < 2:  # the evidence keeps the latest capture: its confirmations too
+            rows = s.scalars(
+                select(m.VisionResultat.image_id)
+                .where(m.VisionResultat.emplacement_id.in_(mildiou.emplacements or ["z1-A1"]),
+                       m.VisionResultat.classe.like("%/mildiou"), m.VisionResultat.ts <= mildiou.ts)
+                .order_by(m.VisionResultat.ts)
+            )  # fmt: skip
+            images = list(dict.fromkeys(rows))[-3:]
+        arrosages = [d.id for d in decisions if d.regle_id == "sol.arrosage"]
+        wet = next(c["valeur"] for c in mildiou.preuves.get("capteurs", [])
+                   if c.get("agregat") == "duree_au_dessus")  # fmt: skip
+        litres = summary(s, "semaine", None, None, now)["totaux"]["litres"]  # as get_consommation
+    fr = lambda x: f"{x:.1f}".rstrip("0").rstrip(".").replace(".", ",")  # noqa: E731
+    return History(now, mildiou.id, isolement, images, arrosages, fr(wet), fr(litres))
 
 
 def history_db(url: str = "sqlite://"):

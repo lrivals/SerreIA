@@ -164,6 +164,8 @@ Choix d'implémentation :
 | `faults.py` | `fige:z1/temperature@30-90`, `aberrant:z1/humidite@60`, `deconnexion:esp32-02@10-40`, `cuve_vide:z2@120`, `valeur:z1/humidite=92@0-240` (valeur forcée), `maladie:z1-A1/tomate/maladie/mildiou@30-180` (classe vue par la caméra) |
 | `simulation.py` | disposition de `serre.yaml` (z1 terre : esp32-01, 02 ; z2 hydro : esp32-03, 05 ; esp32-04 actionneurs) |
 | `dataset.py` | historique simulé (pas de 60 s, sans MQTT) pour entraîner le GRU |
+| `scenario.py`, `scenarios/` | scénarios scriptés ([16](16-test-systeme-simule.md)) : météo, forçages de l'état d'une zone, pannes, `VisionResult` factices ; `run_fast` les rejoue au plus vite avec le contrôleur |
+| `attendus.py`, `figer.py` | vérification d'un scénario contre `<nom>.attendus.yaml` et les invariants de traçabilité ; historique figé (SQLite, JSON de la vue jeu) |
 
 ### Firmware (`firmware/`)
 
@@ -178,6 +180,10 @@ uv sync --extra controle
 uv run python -m sim --mqtt none --avec-controleur --accel 0 --duree-h 2 --debut 2026-07-15T06:00
 uv run python -m sim --mqtt none --avec-controleur --accel 0 --duree-h 3 \
     --panne cuve_vide:z2@30 --panne deconnexion:esp32-02@10-40 --panne fige:z1/temperature@60-100
+
+# Scénario scripté rejoué et vérifié (docs/16), ou figé pour l'UI et l'agent
+uv run python -m sim --scenario journee --mqtt none --accel 0
+uv run python -m sim --scenario mildiou --figer data/scenarios/mildiou
 
 # Avec mosquitto : simulateur et contrôleur séparés (comme sur le Pi)
 uv run python -m sim --accel 60

@@ -1,8 +1,10 @@
 """Reference questions of the agent (docs/11 §6), replayed on the history of `fixtures.py`.
 
     python -m backend.agent.eval [--question led-2h] [--modele claude-opus-5-5] [--effort high]
+    python -m backend.agent.eval --historique data/scenarios/mildiou   # simulated (docs/16)
 
-Each question runs on a new copy of the history, with Claude (real calls: tokens are
+Each question runs on a new copy of the history (`--historique`: the frozen history of
+`sim --scenario mildiou --figer`, its clock stopped at its end), with Claude (real calls: tokens are
 spent, the budget of `AgentConfig` applies). The score is checked on what can be checked
 automatically: tools called, identifiers cited in the answer, proposals created and their
 orders, and never a proposal outside the limits. The report goes to
@@ -35,7 +37,25 @@ def _alternatives(item) -> list[str]:
 
 
 def _fill(text: str, h: History) -> str:
-    return text.format(mildiou=h.mildiou, isolement=h.isolement, image=h.images[-1])
+    return text.format(mildiou=h.mildiou, isolement=h.isolement, image=h.images[-1],
+                       humectation=h.humectation, litres=h.litres,
+                       litres_point=h.litres.replace(",", "."))  # fmt: skip
+
+
+def scenario_history(historique: Path):
+    """A temporary copy of a frozen history: (sessions, History)."""
+    import shutil
+    import tempfile
+
+    from sim.figer import end_of
+
+    from ..db.session import make_engine, make_sessions
+    from .fixtures import history_from_scenario
+
+    tmp = Path(tempfile.mkdtemp(prefix="agent-eval-")) / "serre.db"
+    shutil.copy(historique / "serre.db", tmp)
+    sessions = make_sessions(make_engine(f"sqlite:///{tmp}"))
+    return sessions, history_from_scenario(sessions, end_of(historique))
 
 
 def out_of_limits(sessions) -> list[str]:
@@ -126,6 +146,7 @@ def main() -> None:
     parser.add_argument("--question", action="append", help="id (plusieurs possibles)")
     parser.add_argument("--modele")
     parser.add_argument("--effort")
+    parser.add_argument("--historique", type=Path, help="historique figé (sim --figer)")
     args = parser.parse_args()
 
     from edge.publisher import LoopbackBus, LoopbackPublisher
@@ -142,7 +163,7 @@ def main() -> None:
     questions = [q for q in load_questions() if not args.question or q["id"] in args.question]
     results = []
     for q in questions:
-        sessions, h = history_db()
+        sessions, h = scenario_history(args.historique) if args.historique else history_db()
         pub = LoopbackPublisher("backend-api", LoopbackBus())
         agent = Agent(sessions, llm, pub, cfg, clock=lambda h=h: h.now)
         r = score(q, list(agent.chat(q["question"])), sessions, h)
@@ -159,8 +180,9 @@ def main() -> None:
     print(f"\n{n_ok}/{len(results)} questions réussies ({cfg.modele}, effort {cfg.effort})")
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / f"{datetime.now(UTC):%Y%m%dT%H%M%S}.json"
-    path.write_text(json.dumps(dict(modele=cfg.modele, effort=cfg.effort, resultats=results),
-                               ensure_ascii=False, indent=1))  # fmt: skip
+    base = str(args.historique) if args.historique else "fixtures"
+    path.write_text(json.dumps(dict(modele=cfg.modele, effort=cfg.effort, historique=base,
+                                    resultats=results), ensure_ascii=False, indent=1))  # fmt: skip
     print(f"rapport : {path}")
 
 

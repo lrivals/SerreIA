@@ -1,0 +1,22 @@
+# Scénario 2 « Mildiou et agent » (docs/16 §4) : trois jours en z1, nuits humides (HR 93 %,
+# ~18 °C, de 20 h à 8 h), nuit 2 trois classifications `tomate/maladie/mildiou` factices
+# sur z1-A1 (0,62 → 0,74 → 0,81) que le contrôleur confirme, jour 3 sombre (DLI bas).
+# Sans pannes. L'historique figé (`--figer data/scenarios/mildiou/`) sert à l'agent.
+# J0 = 20 juillet ; fin J3 15:00. Attendus : mildiou.attendus.yaml.
+nom: mildiou
+debut: 2026-07-20T12:00+02:00
+duree_h: 75
+seed: 2
+meteo: {nuages: [{de: J3 05:00, a: J3 15:00, couverture: 1.0}]}
+pannes: []
+forcages:
+  - {grandeur: humidite, zone: z1, valeur: 93, de: J0 20:00, a: J1 08:00}
+  - {grandeur: temperature, zone: z1, valeur: 18, de: J0 20:00, a: J1 08:00}
+  - {grandeur: humidite, zone: z1, valeur: 93, de: J1 20:00, a: J2 08:00}
+  - {grandeur: temperature, zone: z1, valeur: 18, de: J1 20:00, a: J2 08:00}
+  - {grandeur: humidite, zone: z1, valeur: 93, de: J2 20:00, a: J3 08:00}
+  - {grandeur: temperature, zone: z1, valeur: 18, de: J2 20:00, a: J3 08:00}
+vision:
+  - {t: J2 00:00, camera: cam-z1-a, emplacement: z1-A1, classe: tomate/maladie/mildiou, conf: 0.62}
+  - {t: J2 01:00, camera: cam-z1-a, emplacement: z1-A1, classe: tomate/maladie/mildiou, conf: 0.74}
+  - {t: J2 02:00, camera: cam-z1-a, emplacement: z1-A1, classe: tomate/maladie/mildiou, conf: 0.81}

@@ -4,6 +4,8 @@ python -m backend.api [--db URL] [--host pi.local] [--port 1883] [--http-port 80
 python -m backend.api --mqtt none            # read-only: no validation, no manual action
 python -m backend.api --mqtt sim             # simulated greenhouse, no broker (docs/12 §5)
 python -m backend.api --mqtt sim --panne maladie:z1-A1/tomate/maladie/mildiou@15
+python -m backend.api --mqtt sim --scenario journee --accel 60   # scripted scenario (docs/16)
+python -m backend.api --historique data/scenarios/mildiou       # frozen history, read-only
 python -m backend.api --agent none           # without the conversational agent (docs/11)
 python -m backend.api --openapi frontend/src/api/openapi.json   # schema for the front
 
@@ -47,10 +49,15 @@ def main() -> None:
     )
     parser.add_argument("--config", type=Path, help="--mqtt sim : serre.yaml du contrôleur")
     parser.add_argument("--accel", type=float, default=1.0, help="--mqtt sim : facteur")
-    parser.add_argument("--prefill-h", type=float, default=24.0,
-                        help="--mqtt sim : heures simulées d'avance au démarrage")  # fmt: skip
+    parser.add_argument("--prefill-h", type=float,
+                        help="--mqtt sim : heures simulées d'avance au démarrage "
+                             "(défaut 24, 0 avec --scenario)")  # fmt: skip
     parser.add_argument("--panne", action="append", default=[],
                         help="--mqtt sim : panne de sim/faults.py")  # fmt: skip
+    parser.add_argument("--scenario", help="--mqtt sim : scénario de sim/scenarios/ (docs/16)")
+    parser.add_argument("--historique", type=Path,
+                        help="historique figé d'un scénario (sim --figer) : sa base, "
+                             "horloge arrêtée à sa fin, lecture seule")  # fmt: skip
     parser.add_argument("--openapi", type=Path, help="écrire le schéma OpenAPI et sortir")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -67,10 +74,18 @@ def main() -> None:
         args.openapi.write_text(json.dumps(app.openapi(), ensure_ascii=False, indent=1))
         return
 
+    clock = None
+    if args.historique:
+        from sim.figer import end_of
+
+        args.db, args.mqtt = f"sqlite:///{args.historique / 'serre.db'}", "none"
+        end = end_of(args.historique)
+        clock = lambda: end  # noqa: E731
+        logging.info("historique figé %s, horloge arrêtée à %s", args.historique, end)
     engine = make_engine(args.db)
     init_db(engine)
     sessions = make_sessions(engine)
-    pub, clock, runner = None, None, None
+    pub, runner = None, None
     if args.mqtt == "broker":
         from edge.publisher import MqttPublisher
 
@@ -95,9 +110,17 @@ def _simulation(sessions, args):
     from ..db.seed import seed
     from .sim import SimRunner
 
-    with sessions.begin() as s:
-        seed(s, load_greenhouse(args.config or DEFAULT_CONFIG))
-    runner = SimRunner(sessions, args.config, args.accel, args.prefill_h, pannes=args.panne)
+    scenario = None
+    if args.scenario:
+        from sim.scenario import Scenario
+
+        scenario = Scenario.load(args.scenario)
+    with sessions.begin() as s:  # a scenario in the past: plants placed before its start
+        seed(s, load_greenhouse(args.config or DEFAULT_CONFIG),
+             scenario.debut if scenario else None)  # fmt: skip
+    prefill = args.prefill_h if args.prefill_h is not None else (0.0 if scenario else 24.0)
+    runner = SimRunner(sessions, args.config, args.accel, prefill, pannes=args.panne,
+                       scenario=scenario)  # fmt: skip
     runner.start()
     return runner
 

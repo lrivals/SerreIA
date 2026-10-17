@@ -105,11 +105,14 @@ class Simulation:
         controller=None,
         dt: float = 10.0,
         tick_s: float = 10.0,
+        scenario=None,
     ):
         self.pub, self.t, self.dt = publisher, start or datetime.now(UTC), dt
         self.t0 = self.t
         self.faults = faults or Faults()
         self.layout = layout or default_layout(seed)
+        # sim.scenario.Scenario: forced weather and quantities, fake vision (docs/16)
+        self.scenario = scenario.injector(self.layout) if scenario is not None else None
         self.weather = Weather(seed)
         self.models = {
             z: ZoneModel(z, p, seed + i) for i, (z, p) in enumerate(self.layout.zones.items())
@@ -151,10 +154,14 @@ class Simulation:
             self.t += timedelta(seconds=self.dt)
             t = self.t
             w = self.weather.step(t, self.dt)
+            if self.scenario is not None:
+                w = self.scenario.weather(t, w)
             for zone, model in self.models.items():
                 if self.faults.tank_empty(zone, t):
                     model.niveau = 0.0
                 model.step(t, self.dt, w, self.act_node.levels(zone))
+                if self.scenario is not None:
+                    self.scenario.force(zone, model, t, self.dt)
                 self.act_node.tank[zone] = model.niveau if model.p.hydro else 100.0
             self.act_node.step(t)
             out = []
@@ -163,6 +170,8 @@ class Simulation:
                 out += node.poll(t, truth, self.faults)
             for cam in self.layout.cameras:
                 out += cam.poll(t, self.faults)
+            if self.scenario is not None:
+                out += self.scenario.vision(t)
             status = []
             for n in self._nodes():
                 down = self.faults.disconnected(n, t)

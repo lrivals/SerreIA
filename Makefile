@@ -65,8 +65,15 @@ api:
 
 # The UI without broker nor Pi: simulator + controller behind the API (docs/12 §5), the
 # last 24 h caught up at start. PANNE=maladie:z1-A1/tomate/maladie/mildiou@15 for a proposal.
+# SCENARIO=journee: a scripted scenario (docs/16) watched live from its start, ACCEL=60.
 api-sim:
+ifdef SCENARIO
+	rm -f data/serre_sim_$(SCENARIO).db
+	$(PY) -m backend.api --mqtt sim --db sqlite:///data/serre_sim_$(SCENARIO).db \
+		--scenario $(SCENARIO) --accel $(or $(ACCEL),60) $(if $(PANNE),--panne $(PANNE))
+else
 	$(PY) -m backend.api --mqtt sim --db sqlite:///data/serre_sim.db $(if $(PANNE),--panne $(PANNE))
+endif
 
 # Web front (docs/12, frontend/): `front-dev` with `make api` or `make api-sim` alongside
 # (Vite proxies /api and /ws to :8000); `front-build` for `make api` to serve it.
@@ -97,9 +104,10 @@ e2e:
 	cd frontend && npm run build && npx playwright test
 
 # Reference questions of the agent (docs/11 §6) with Claude: real API calls, tokens spent.
-# Q=led-2h for one question; MODELE=claude-opus-5-5, EFFORT=high to compare.
+# Q=led-2h for one question; MODELE=claude-opus-5-5, EFFORT=high to compare;
+# HISTORIQUE=data/scenarios/mildiou on the simulated history (docs/16, `make scenario-figer`).
 agent-eval:
-	$(PY) -m backend.agent.eval $(if $(Q),--question $(Q)) $(if $(MODELE),--modele $(MODELE)) $(if $(EFFORT),--effort $(EFFORT))
+	$(PY) -m backend.agent.eval $(if $(Q),--question $(Q)) $(if $(MODELE),--modele $(MODELE)) $(if $(EFFORT),--effort $(EFFORT)) $(if $(HISTORIQUE),--historique $(HISTORIQUE))
 
 # Action tree of the last 24 h in the terminal (docs/10 §6); ZONE=z1 for one zone.
 arbre:
@@ -115,8 +123,24 @@ config-export:
 sim-demo:
 	$(PY) -m backend.ingestion --sim --duree-h 24 --debut $$(date -u -d '-24 hours' +%Y-%m-%dT%H:%M:%S+00:00)
 
+# Scripted scenarios (docs/16), NOM=journee|mildiou. `scenario`: replayed at full speed
+# and checked against sim/scenarios/<nom>.attendus.yaml; `scenario-figer`: frozen history in
+# data/scenarios/<nom>/ (SQLite, report) and its game view (/jeu?demo=<nom>);
+# `api-historique`: the API, UI and agent on that history (clock stopped at its end).
+NOM ?= journee
+
+scenario:
+	$(PY) -m sim --scenario $(NOM) --mqtt none --accel 0
+
+scenario-figer:
+	$(PY) -m sim --scenario $(NOM) --figer data/scenarios/$(NOM)
+	cp data/scenarios/$(NOM)/serre-demo.json frontend/public/demo/scenario-$(NOM).json
+
+api-historique:
+	$(PY) -m backend.api --historique data/scenarios/$(NOM)
+
 # Real-time simulator + controller on the broker (run `make ingest` alongside).
 sim-live:
 	$(PY) -m sim --avec-controleur
 
-.PHONY: setup check-env cuda-torch test lint mlflow harvest harvest-all notebooks stack-up stack-down db-init ingest api api-sim front-install front-dev front-build front-test openapi e2e agent-eval arbre config-export sim-demo sim-live
+.PHONY: setup check-env cuda-torch test lint mlflow harvest harvest-all notebooks stack-up stack-down db-init ingest api api-sim front-install front-dev front-build front-test openapi e2e agent-eval arbre config-export sim-demo sim-live scenario scenario-figer api-historique
