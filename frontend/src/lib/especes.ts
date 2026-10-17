@@ -10,6 +10,13 @@ const ICONS: Record<string, string> = {
   concombre: "🥒",
   courgette: "🥒",
   aubergine: "🍆",
+  melon: "🍈",
+  roquette: "🥬",
+  epinard: "🥬",
+  "épinard": "🥬",
+  blette: "🥬",
+  kale: "🥬",
+  "mâche": "🥬",
   menthe: "🌿",
 };
 

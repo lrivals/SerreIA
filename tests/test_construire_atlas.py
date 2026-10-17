@@ -187,3 +187,62 @@ def test_generic_plant_reuses_the_tomato_scale(tmp_path):
 
     assert height("plants/generic") == height("plants/tomato/seedling/healthy")
     assert height("plants/tomato/seedling/healthy") < height("plants/tomato/ripe/sick")
+
+
+def two_sheets(tmp_path):
+    """Same gardener drawn on sheet "p" (40 px tall) and sheet "q" (twice as big), plus a
+    larger envelope animation, a portrait and a pepper taking a column from "q"."""
+    for sheet, tailles in {
+        "p": [(40, 20)] * 2,
+        "q": [(80, 40)] * 2 + [(100, 40), (60, 60)],
+    }.items():
+        cut = tmp_path / "decoupe" / sheet
+        cut.mkdir(parents=True)
+        for n, (h, w) in enumerate(tailles, 1):
+            Image.fromarray(rgba(h, w)).save(cut / f"sprite_{n:03d}.png")
+    src = lambda s: {"cut_dir": f"decoupe/{s}/", "file_pattern": "sprite_{n:03d}.png"}  # noqa: E731
+    return {
+        "grid": {"tile_size": [16, 16]},
+        "sources": {"p": src("p"), "q": src("q")},
+        "assets": {
+            "characters": {
+                "g": {
+                    "size": [16, 24],
+                    "animations": {
+                        "walk_down": {"source": {"sheet": "p", "sprites": [1]}},
+                        "walk_left": {"source": {"sheet": "q", "sprites": [1]}},
+                        "envelope": {
+                            "echelle_propre": True,
+                            "source": {"sheet": "q", "sprites": [3]},
+                        },
+                        "portrait": {"size": [32, 32], "source": {"sheet": "q", "sprites": [4]}},
+                    },
+                }
+            },
+            "plants": {
+                "pepper": {
+                    "size": [16, 32],
+                    "growth_stages": ["young", "flowering"],
+                    "health_states": ["healthy"],
+                    "source": {"sheet": "p", "sprites": [[2, {"sheet": "q", "n": 2}]]},
+                }
+            },
+        },
+    }
+
+
+def test_scale_per_sheet_and_own_scale_animations(tmp_path):
+    m = two_sheets(tmp_path)
+    assets = ca.lister_assets(m)
+    assert assets[1].frames["plants/pepper/flowering/healthy"] == ("q", 2)
+    images = ca.rendre(m, tmp_path, assets, 2)
+
+    def height(n):
+        ys = np.nonzero(images[n][..., 3])[0]
+        return ys.max() - ys.min() + 1
+
+    # the bigger sheet does not shrink the frames of the smaller one
+    assert height("characters/g/walk_down/0") == height("characters/g/walk_left/0") == 48
+    assert height("characters/g/envelope/0") == 48  # own scale, not clamped
+    assert images["characters/g/portrait/0"].shape[:2] == (64, 64)
+    assert height("plants/pepper/young/healthy") == height("plants/pepper/flowering/healthy")

@@ -3,8 +3,9 @@
 Pour chaque asset dont `source.sprites` est rempli, les sprites découpés
 (`decoupe/<planche>/sprite_NNN.png`, `tools/decouper_sprites.py --auto`) sont nettoyés
 (voile blanc semi-transparent des images générées), recadrés, réduits à `size × facteur`
-avec une échelle commune à toutes les images de l'asset (les stades d'une plante gardent
-leurs proportions), puis rangés dans un atlas Phaser (JSON Hash).
+avec une échelle commune à toutes les images de l'asset tirées d'une même planche (les
+stades d'une plante gardent leurs proportions ; deux planches dessinées à des tailles
+différentes ont chacune la leur), puis rangés dans un atlas Phaser (JSON Hash).
 
 Sorties :
 - `frontend/public/sprites/atlas.png` + `atlas.json` ;
@@ -114,6 +115,19 @@ class Asset:
     conf: dict
     frames: dict[str, tuple[str, int]]  # nom de frame → (planche, numéro de sprite)
     groupes: dict[str, list[str]] = field(default_factory=dict)  # états / animations
+    # nom de frame → groupe d'échelle, si autre que sa planche (animation `echelle_propre`
+    # ou à `size` propre)
+    echelle: dict[str, str] = field(default_factory=dict)
+    tailles: dict[str, list[int]] = field(default_factory=dict)  # `size` propre d'une frame
+
+    def groupe(self, nom: str) -> str:
+        return self.echelle.get(nom, self.frames[nom][0])
+
+    def taille(self, nom: str) -> list[int]:
+        return self.tailles.get(nom, self.conf["size"])
+
+    def mode_de(self, nom: str) -> str:
+        return "ajuster" if nom in self.tailles else self.mode
 
     @property
     def mode(self) -> str:
@@ -144,6 +158,10 @@ def lister_assets(manifeste: dict) -> list[Asset]:
                         {n: (src["sheet"], s) for n, s in zip(noms, src["sprites"], strict=True)}
                     )
                     a.groupes[anim] = noms
+                    if ac.get("echelle_propre") or "size" in ac:
+                        a.echelle.update({n: f"animation:{anim}" for n in noms})
+                    if "size" in ac:
+                        a.tailles.update({n: ac["size"] for n in noms})
                 if a.frames:
                     assets.append(a)
                 continue
@@ -156,7 +174,12 @@ def lister_assets(manifeste: dict) -> list[Asset]:
                 for r, sante in enumerate(conf["health_states"]):
                     for c, stade in enumerate(conf["growth_stages"]):
                         if c < len(sprites[r]):
-                            a.frames[f"{base}/{stade}/{sante}"] = (sheet, sprites[r][c])
+                            cell = sprites[r][c]  # numéro, ou {"sheet", "n"} d'une autre planche
+                            a.frames[f"{base}/{stade}/{sante}"] = (
+                                (cell["sheet"], cell["n"])
+                                if isinstance(cell, dict)
+                                else (sheet, cell)
+                            )
             elif "states" in conf or "variants" in conf:
                 for etat, nums in (conf.get("states") or conf.get("variants")).items():
                     noms = [f"{base}/{etat}/{i}" for i in range(len(nums))]
@@ -177,35 +200,56 @@ def charger(manifeste: dict, racine: Path, sheet: str, numero: int) -> np.ndarra
 def rendre(
     manifeste: dict, racine: Path, assets: list[Asset], facteur: int
 ) -> dict[str, np.ndarray]:
-    """Nom de frame → image réduite. Échelle commune à toutes les frames d'un asset
-    (ou reprise d'un autre asset avec `echelle_de`)."""
+    """Nom de frame → image réduite. Échelle commune aux frames d'un asset tirées d'une
+    même planche (groupe d'échelle : la planche, ou l'animation si elle a `echelle_propre`
+    ou sa propre `size`), ou reprise d'un autre asset avec `echelle_de`."""
     sources: dict[str, dict[str, np.ndarray]] = {}
-    echelles: dict[str, float] = {}
+    echelles: dict[tuple[str, str], float] = {}  # (asset, groupe) → échelle
     for a in assets:
         voile = a.conf.get("nettoyage", True) is not False
         sources[a.cle] = {
             n: recadrer(nettoyer(charger(manifeste, racine, *src), voile))
             for n, src in a.frames.items()
         }
-        tw, th = (v * facteur for v in a.conf["size"])
-        hmax = max(i.shape[0] for i in sources[a.cle].values())
-        wmax = max(i.shape[1] for i in sources[a.cle].values())
-        echelles[a.cle] = th / hmax if a.mode == "hauteur" else min(tw / wmax, th / hmax)
+        groupes: dict[str, list[str]] = {}
+        for nom in a.frames:
+            groupes.setdefault(a.groupe(nom), []).append(nom)
+        for g, noms in groupes.items():
+            tw, th = (v * facteur for v in a.taille(noms[0]))
+            hmax = max(sources[a.cle][n].shape[0] for n in noms)
+            wmax = max(sources[a.cle][n].shape[1] for n in noms)
+            mode = a.mode_de(noms[0])
+            echelles[a.cle, g] = th / hmax if mode == "hauteur" else min(tw / wmax, th / hmax)
+
+    def echelle(a: Asset, nom: str) -> float:
+        ref, g = a.conf.get("echelle_de"), a.groupe(nom)
+        if ref:
+            if (ref, g) in echelles:
+                return echelles[ref, g]
+            autres = [e for (cle, _), e in echelles.items() if cle == ref]
+            if autres:
+                return autres[0]
+        return echelles[a.cle, g]
 
     images = {}
     for a in assets:
-        tw, th = (v * facteur for v in a.conf["size"])
-        e = echelles.get(a.conf.get("echelle_de", a.cle), echelles[a.cle])
         reduites = {}
         for nom, img in sources[a.cle].items():
-            if a.mode == "etirer":
+            tw, th = (v * facteur for v in a.taille(nom))
+            if a.mode_de(nom) == "etirer":
                 reduites[nom] = reduire(img, tw, th)
             else:
+                e = echelle(a, nom)
                 h, w = img.shape[:2]
                 reduites[nom] = reduire(img, max(1, round(w * e)), max(1, min(th, round(h * e))))
-        largeur = max([tw] + [i.shape[1] for i in reduites.values()])
+        # même canevas pour toutes les frames de même taille cible (animations sans saut)
+        largeurs: dict[tuple[int, ...], int] = {}
         for nom, img in reduites.items():
-            images[nom] = placer(img, largeur, th, a.ancrage)
+            t = tuple(a.taille(nom))
+            largeurs[t] = max(largeurs.get(t, t[0] * facteur), img.shape[1])
+        for nom, img in reduites.items():
+            t = tuple(a.taille(nom))
+            images[nom] = placer(img, largeurs[t], t[1] * facteur, a.ancrage)
     return images
 
 

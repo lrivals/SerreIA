@@ -23,7 +23,7 @@ L'image doit avoir un fond transparent. Le script détecte chaque sprite d'aprè
 .venv/bin/python tools/decouper_sprites.py sprites-src/brut/<image>.png --auto
 ```
 
-Vérifier `apercu.png` : un sprite coupé en deux ou deux sprites fusionnés se corrigent en mode manuel.
+Les morceaux proches sont recollés à leur sprite : petits fragments (tige, gouttes), bande basse (motte de terre), objet dont le cadre chevauche celui d'un sprite bien plus grand (flacon tenu à la main). Vérifier `apercu.png` : un sprite coupé en deux ou deux sprites fusionnés se corrigent en mode manuel.
 
 ### Manuel
 
@@ -45,7 +45,7 @@ Sélectionner un sprite à la souris, puis **Entrée** pour l'enregistrer ; **É
 ## Ensuite : l'atlas du jeu
 
 1. Décrire les nouveaux assets dans `sprites.json` (numéros de `apercu.png`, `especes` et `stades_modele` pour une plante, `type` pour un contenant, `actuator` pour un actionneur, `famille` pour un capteur).
-2. `make sprites` (`tools/construire_atlas.py`) : nettoyage du voile, réduction à `size × export.facteur`, atlas `frontend/public/sprites/atlas.{png,json}`, catalogue `frontend/src/game/catalogue.gen.json`, aperçu `atlas_apercu.png` à vérifier.
+2. `make sprites` (`tools/construire_atlas.py`) : nettoyage du voile, réduction à `size × export.facteur` (une échelle par asset et par planche, les planches n'étant pas dessinées à la même taille ; une case de matrice peut venir d'une autre planche : `{"sheet": "planche_03", "n": 76}`), atlas `frontend/public/sprites/atlas.{png,json}`, catalogue `frontend/src/game/catalogue.gen.json`, aperçu `atlas_apercu.png` à vérifier.
 3. Vérifier en jeu sur `/jeu?demo=1`, et `cd frontend && npm test`.
 4. Noter l'origine et la licence dans `frontend/public/sprites/LICENCES.md`.
 

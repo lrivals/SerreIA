@@ -159,7 +159,7 @@
        "variete": null,
        "date_semis": null,
        "date_plantation": "2026-09-06",
-       "stade": "croissance",
+       "stade": "floraison",
        "recette_id": null,
        "etat_sante": "a_surveiller",
        "prioritaire": false,
@@ -240,12 +240,12 @@
        "drainage": true
       },
       "plante": {
-       "id": "basilic-1",
-       "espece": "basilic",
+       "id": "aubergine-1",
+       "espece": "aubergine",
        "variete": null,
        "date_semis": null,
        "date_plantation": "2026-09-06",
-       "stade": "croissance",
+       "stade": "fructification",
        "recette_id": null,
        "etat_sante": "sain",
        "prioritaire": false,
@@ -560,8 +560,8 @@
        "drainage": true
       },
       "plante": {
-       "id": "basilic-h5",
-       "espece": "basilic",
+       "id": "laitue-h5",
+       "espece": "laitue",
        "variete": null,
        "date_semis": null,
        "date_plantation": "2026-10-01",
@@ -593,8 +593,8 @@
        "drainage": true
       },
       "plante": {
-       "id": "basilic-h6",
-       "espece": "basilic",
+       "id": "roquette-h6",
+       "espece": "roquette",
        "variete": null,
        "date_semis": null,
        "date_plantation": "2026-09-30",

@@ -1,5 +1,5 @@
 import { CATALOGUE, type Catalogue } from "./catalogue";
-import { animActionneur, animJardinier, coeurs, spriteContenant, spriteCuve, spritePlante, STADES } from "./mapping";
+import { animActionneur, animJardinier, coeurs, portraitJardinier, spriteContenant, spriteCuve, spritePlante, STADES } from "./mapping";
 
 const SANTES = ["sain", "a_surveiller", "malade", "isolee"];
 const frames = new Set<string>([
@@ -23,7 +23,8 @@ describe("spritePlante", () => {
       frame: "plants/tomato/flowering/healthy",
       generique: false,
     });
-    expect(spritePlante({ espece: "concombre", stade: "floraison", etat_sante: "sain" })).toMatchObject({
+    expect(spritePlante({ espece: "concombre", stade: "floraison", etat_sante: "sain" }).frame).toBe("plants/cucumber/flowering/healthy");
+    expect(spritePlante({ espece: "radis", stade: "floraison", etat_sante: "sain" })).toMatchObject({
       frame: CATALOGUE.plantes.generique,
       generique: true,
     });
@@ -70,10 +71,15 @@ describe("objects", () => {
     expect(spriteCuve(10)).toBe("sensors/water_tank/low/0");
   });
 
-  it("gardener actions fall back while the sprite sheet lacks them", () => {
+  it("gardener actions, with their fallback while the sprite sheets lack a direction", () => {
     expect(animJardinier("marcher", "left")?.nom).toBe("walk_left");
     expect(animJardinier("arroser", "right")?.nom).toBe("watering");
-    expect(animJardinier("dormir", "down")?.nom).toBe("idle");
+    expect(animJardinier("arroser", "down")?.nom).toBe("watering_down");
+    expect(animJardinier("inspecter", "left")?.nom).toBe("inspect_right"); // played mirrored
+    expect(animJardinier("inspecter", "up")?.nom).toBe("inspect_down");
+    expect(animJardinier("dormir", "down")?.nom).toBe("sleep");
+    expect(animJardinier("ventiler", "down")?.nom).toBe("switch");
+    expect(portraitJardinier()).toBe("characters/gardener/portrait/0");
   });
 
   it("hearts are bounded", () => {

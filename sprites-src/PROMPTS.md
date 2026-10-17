@@ -43,19 +43,33 @@ reference sheet (Stardew Valley / Animal Crossing inspired).
 - Plants stand on a small mound of soil, bottom-centered in their cell.
 ```
 
-## Ordre conseillé
+## État d'avancement
 
-| # | Planche | Pourquoi d'abord |
-|---|---|---|
-| 02 | Jardinier : actions | rend lisibles les tâches déjà jouées (inspecter, ventiler, doser, noter, dormir) |
-| 03 | Solanacées et cucurbitacées | les cultures de serre les plus fréquentes après la tomate |
-| 04 | Salades et feuilles | reine de l'hydroponie (NFT, DWC) |
-| 05 | Aromatiques | basilic déjà fait ; menthe, persil, ciboulette, coriandre, thym, romarin |
-| 07 | Santé et ravageurs | états `isolee` / `retiree`, symptômes vus par la vision |
-| 08 | Structures | murs en briques répétables, mobilier |
-| 06 | Racines, légumineuses, divers | radis, carotte, haricot, pois, oignon, micro-pousses, **plante générique** |
-| 09 | Interface | icônes d'inventaire, cœurs, SerrePhone |
-| 10 | Ambiance | buée, halo LED, soleil, pluie |
+À mettre à jour à chaque planche ajoutée (dernier point : 17/10/2026, planches 01 à 04 intégrées).
+
+Légende de la colonne « En jeu » :
+- **automatique** : le jeu utilise les sprites dès `make sprites`, sans code ;
+- **partiel** : une partie est déjà branchée, le reste demandera du code ;
+- **code à écrire** : les sprites s'ajoutent à l'atlas mais le jeu ne les utilise pas encore.
+
+| # | Planche | État | En jeu | Pourquoi |
+|---|---|---|---|---|
+| 01 | Jardinier (marche), tomate, fraisier, poivron, basilic, contenants, sols, actionneurs, capteurs, bulles | ✅ fait | ✅ branché | base actuelle |
+| 02 | Jardinier : actions | ✅ fait | ✅ branché | rend lisibles les tâches déjà jouées (inspecter, ventiler, doser, noter, dormir) |
+| 03 | Solanacées et cucurbitacées | ✅ fait | ✅ branché | les cultures de serre les plus fréquentes après la tomate |
+| 04 | Salades et feuilles | ✅ fait | ✅ branché (variante en godet NFT dessinée : code à écrire) | reine de l'hydroponie (NFT, DWC) |
+| 05 | Aromatiques | ⬜ à faire (priorité 1) | automatique | basilic déjà fait ; menthe, persil, ciboulette, coriandre, thym, romarin |
+| 07 | Santé et ravageurs | ⬜ à faire (priorité 2) | partiel : `bell_jar` branché, overlays de symptômes et outils à brancher | états `isolee` / `retiree`, symptômes vus par la vision |
+| 08 | Structures | ⬜ à faire (priorité 3) | partiel : briques droites branchées, mobilier et canal NFT continu à brancher | murs en briques répétables, mobilier |
+| 06 | Racines, légumineuses, divers | ⬜ à faire (priorité 4) | automatique (plante générique en matrice : code à écrire) | radis, carotte, haricot, pois, oignon, micro-pousses, **plante générique** |
+| 09 | Interface | ⬜ à faire (priorité 5) | code à écrire | icônes d'inventaire, cœurs, SerrePhone |
+| 10 | Ambiance | ⬜ à faire (priorité 6) | code à écrire | buée, halo LED, soleil, pluie |
+
+Manques connus de la planche 01, couverts par les planches à venir :
+- ~~jardinier : `walk_left` dessiné, arrosage bas et haut, actions → 02~~ (fait) ;
+- ~~floraison du poivron, distincte du fruit vert → 03~~ (fait) ;
+- bordure de briques droite → 08 ;
+- états `isolee` et `retiree` → 07 (`retiree` est déjà rendu par le contenant vide).
 
 ## Espèces retenues
 
@@ -63,18 +77,19 @@ Les cultures les plus citées pour une serre amateur sont la tomate (de loin la 
 
 | Espèce (modèle) | Clé sprite | Planche | Stades dessinés | Remarque visuelle |
 |---|---|---|---|---|
-| tomate, fraisier, poivron, basilic | `tomato`, `strawberry`, `pepper`, `basil` | 01 | faits | floraison du poivron à refaire (planche 03) |
-| piment | `chili` | 03 | 5 | petits fruits fins rouges, port compact |
-| aubergine | `eggplant` | 03 | 5 | fleurs violettes, fruits violet foncé brillants |
-| concombre | `cucumber` | 03 | 5 | grimpant sur un tuteur ou une ficelle, fleurs jaunes |
-| courgette | `zucchini` | 03 | 5 | larges feuilles, grande fleur jaune, fruit vert foncé |
-| melon | `melon` | 03 | 5 | rampant, fruit rond brodé |
-| laitue | `lettuce` | 04 | 5 | rosette ; récolte = pomme dense ; la floraison est une montée en graine |
-| épinard | `spinach` | 04 | 5 | feuilles vert foncé lisses |
-| roquette | `arugula` | 04 | 5 | feuilles découpées, fleurs crème |
-| mâche | `lambs_lettuce` | 04 | 4 | petite rosette ronde |
-| blette | `chard` | 04 | 5 | côtes colorées rouge et jaune |
-| chou kale | `kale` | 04 | 5 | feuilles frisées vert bleuté |
+| tomate, fraisier, poivron, basilic | `tomato`, `strawberry`, `pepper`, `basil` | 01 | ✅ 5 | floraison du poivron prise sur la planche 03 |
+| piment | `chili` | 03 | ✅ 5 | petits fruits fins rouges, port compact |
+| aubergine | `eggplant` | 03 | ✅ 5 | fleurs violettes, fruits violet foncé brillants |
+| concombre | `cucumber` | 03 | ✅ 5 | grimpant sur un tuteur ou une ficelle, fleurs jaunes |
+| courgette | `zucchini` | 03 | ✅ 5 | larges feuilles, grande fleur jaune, fruit vert foncé |
+| melon | `melon` | 03 | ✅ 5 | rampant, fruit rond brodé |
+| laitue | `lettuce` | 04 | ✅ 5 | rosette ; récolte = pomme dense ; la floraison est une montée en graine |
+| laitue rouge (feuille de chêne) | `red_lettuce` | 04 | ✅ 5 | feuilles découpées rouge bordeaux |
+| épinard | `spinach` | 04 | ✅ 5 | feuilles vert foncé lisses |
+| roquette | `arugula` | 04 | ✅ 5 | feuilles découpées, fleurs crème |
+| mâche | `lambs_lettuce` | 04 | ✅ 4 | petite rosette ronde |
+| blette | `chard` | 04 | ✅ 5 | côtes colorées rouge et jaune |
+| chou kale | `kale` | 04 | ✅ 5 | feuilles frisées vert bleuté |
 | menthe | `mint` | 05 | 5 | tiges carrées, feuilles dentées vert clair |
 | persil | `parsley` | 05 | 5 | feuilles plates ou frisées en touffe |
 | ciboulette | `chives` | 05 | 5 | tiges creuses, pompons mauves |
@@ -94,6 +109,13 @@ Les cultures les plus citées pour une serre amateur sont la tomate (de loin la 
 ---
 
 ## Planche 02 — Jardinier : actions
+
+> ✅ **Fait** (`planche_02`, 44 sprites). Les 12 animations demandées sont toutes là, regroupées par 3 sur chaque rangée de la planche (aperçu : `decoupe/planche_02/apercu.png`). Écarts :
+> - le « Zz » du sommeil est perdu à la découpe (fragment 36, inutilisé) : la bulle du jeu le remplace ;
+> - l'inspection inclut la jeune plante du dessin ;
+> - `carry_envelope` est dessiné plus grand que le reste de la planche : `"echelle_propre": true` ;
+> - le portrait a sa propre `size` `[32, 32]` ;
+> - le jardinier de cette planche est 2× plus grand que celle de la planche 01 : l'atlas calcule une échelle par planche.
 
 ```
 [style preamble]
@@ -136,6 +158,8 @@ Bloc manifeste : animations de `assets.characters.gardener.animations`. Le jeu c
 
 ## Planche 03 — Solanacées et cucurbitacées
 
+> ✅ **Fait** (`planche_03`, 78 sprites) : piment, aubergine, concombre, courgette, melon ; floraison du poivron (sprites 76–78), insérée dans `pepper` par des cases `{"sheet": "planche_03", "n": …}`.
+
 ```
 [style preamble]
 
@@ -172,6 +196,11 @@ Clés : `chili` (`["piment"]`, retirer « piment » des `especes` de `pepper`), 
 
 ## Planche 04 — Salades et feuilles
 
+> ✅ **Fait** (`planche_04`, 109 sprites). Taille retenue `[16, 24]` au lieu de 16×16 : sinon, la tige montée écraserait la rosette à environ 11 px. Écarts :
+> - blette et kale ont 6 colonnes : la 4e est écartée ;
+> - la blette « jaunissante » a des côtes jaunes ;
+> - la bande NFT (sprite 109, d'un seul tenant) n'est pas au manifeste : `suggested_additions.drawn_not_wired`.
+
 ```
 [style preamble]
 
@@ -189,6 +218,8 @@ Clés : `lettuce` (`["laitue", "salade"]`), `red_lettuce` (`["laitue rouge", "fe
 
 ## Planche 05 — Aromatiques
 
+> ⬜ **À faire** (priorité 1). En jeu : automatique.
+
 ```
 [style preamble]
 
@@ -204,6 +235,8 @@ F. rosemary (4 columns: needle leaves, pale blue flowers)
 Clés : `mint` (`["menthe"]`), `parsley` (`["persil"]`), `chives` (`["ciboulette"]`), `cilantro` (`["coriandre"]`), `thyme` (`["thym"]`), `rosemary` (`["romarin"]`). Mapping : `{ "semis": 0, "croissance": 1, "floraison": 3, "fructification": 2, "recolte": 4 }`.
 
 ## Planche 06 — Racines, légumineuses, divers, plante générique
+
+> ⬜ **À faire** (priorité 4). En jeu : automatique pour les espèces ; la plante générique en matrice demande du code.
 
 ```
 [style preamble]
@@ -223,6 +256,8 @@ G. GENERIC neutral plant (no fruit, no flower color that suggests a species), 5 
 Clés : `radish` (`["radis"]`), `carrot` (`["carotte"]`), `bean` (`["haricot"]`), `pea` (`["petit pois", "pois"]`), `onion` (`["oignon"]`), `microgreens` (`["micro-pousses"]`, `size: [32, 16]`). Pour **G**, remplacer l'entrée `plants.generic` par une matrice complète (5 stades × 3 santés) et retirer `echelle_de`. Le code utilise pour l'instant une frame unique pour la plante générique : le passage à la matrice reste à brancher dans `mapping.ts`.
 
 ## Planche 07 — Santé, ravageurs, états de la plante
+
+> ⬜ **À faire** (priorité 2). En jeu : `bell_jar` branché ; les overlays de symptômes et les outils demandent du code.
 
 ```
 [style preamble]
@@ -259,6 +294,8 @@ Blocs manifeste :
 
 ## Planche 08 — Structures et mobilier
 
+> ⬜ **À faire** (priorité 3). En jeu : `brick_border_straight` et `brick_border_vertical` branchés ; le mobilier et le canal NFT demandent du code.
+
 ```
 [style preamble]
 
@@ -287,6 +324,8 @@ Les autres clés (`bench`, `potting_table`, `pi_box`, `nft_end_left`, `nft_middl
 
 ## Planche 09 — Interface
 
+> ⬜ **À faire** (priorité 5). En jeu : code à écrire (cœurs, jauges, SerrePhone et 9-slice restent en CSS pour l'instant).
+
 ```
 [style preamble]
 
@@ -303,6 +342,8 @@ a pointing-hand cursor 16x16 and a green build cursor 16x16.
 Une clé par élément sous `assets.ui`. Mettre `"rendering": "nine_slice"` sur les panneaux et boutons (fichier PNG séparé exporté par `make sprites`), puis remplacer `dialogue_box.png` dans `ui/pixel.css`.
 
 ## Planche 10 — Ambiance
+
+> ⬜ **À faire** (priorité 6). En jeu : code à écrire (les effets restent dessinés par le jeu).
 
 ```
 [style preamble]
@@ -323,3 +364,4 @@ Les effets restent dessinés par le jeu (`scenes/Serre.ts`, `dessinerAmbiance`) 
 - [ ] `cd frontend && npm test` : `mapping.test.ts` vérifie que chaque espèce × stade × santé donne une frame existante.
 - [ ] `/jeu?demo=1` : ajouter l'espèce à `public/demo/serre-demo.json` pour la voir en situation.
 - [ ] Origine notée dans `frontend/public/sprites/LICENCES.md`.
+- [ ] Mettre à jour le tableau [État d'avancement](#état-davancement) et la ligne de statut de la planche (⬜ → ✅).

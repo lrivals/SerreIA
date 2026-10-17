@@ -1,11 +1,11 @@
 {
- "version": "1.2",
+ "version": "1.3",
  "tuile": 16,
  "facteur": 2,
  "personnages": {
   "gardener": {
    "taille": [
-    35,
+    42,
     48
    ],
    "animations": {
@@ -33,13 +33,13 @@
     },
     "walk_left": {
      "frames": [
-      "characters/gardener/walk_right/0",
-      "characters/gardener/walk_right/1",
-      "characters/gardener/walk_right/2",
-      "characters/gardener/walk_right/3",
-      "characters/gardener/walk_right/4"
+      "characters/gardener/walk_left/0",
+      "characters/gardener/walk_left/1",
+      "characters/gardener/walk_left/2",
+      "characters/gardener/walk_left/3",
+      "characters/gardener/walk_left/4"
      ],
-     "flip_x": true,
+     "flip_x": false,
      "fps": 8
     },
     "walk_up": {
@@ -75,6 +75,110 @@
      ],
      "flip_x": false,
      "fps": 4
+    },
+    "watering_down": {
+     "frames": [
+      "characters/gardener/watering_down/0",
+      "characters/gardener/watering_down/1",
+      "characters/gardener/watering_down/2",
+      "characters/gardener/watering_down/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "watering_up": {
+     "frames": [
+      "characters/gardener/watering_up/0",
+      "characters/gardener/watering_up/1",
+      "characters/gardener/watering_up/2",
+      "characters/gardener/watering_up/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "inspect_right": {
+     "frames": [
+      "characters/gardener/inspect_right/0",
+      "characters/gardener/inspect_right/1",
+      "characters/gardener/inspect_right/2",
+      "characters/gardener/inspect_right/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "inspect_down": {
+     "frames": [
+      "characters/gardener/inspect_down/0",
+      "characters/gardener/inspect_down/1",
+      "characters/gardener/inspect_down/2",
+      "characters/gardener/inspect_down/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "switch": {
+     "frames": [
+      "characters/gardener/switch/0",
+      "characters/gardener/switch/1",
+      "characters/gardener/switch/2"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "dose": {
+     "frames": [
+      "characters/gardener/dose/0",
+      "characters/gardener/dose/1",
+      "characters/gardener/dose/2",
+      "characters/gardener/dose/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "notebook": {
+     "frames": [
+      "characters/gardener/notebook/0",
+      "characters/gardener/notebook/1",
+      "characters/gardener/notebook/2",
+      "characters/gardener/notebook/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "tap": {
+     "frames": [
+      "characters/gardener/tap/0",
+      "characters/gardener/tap/1",
+      "characters/gardener/tap/2"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "sleep": {
+     "frames": [
+      "characters/gardener/sleep/0",
+      "characters/gardener/sleep/1",
+      "characters/gardener/sleep/2"
+     ],
+     "flip_x": false,
+     "fps": 2
+    },
+    "carry_envelope": {
+     "frames": [
+      "characters/gardener/carry_envelope/0",
+      "characters/gardener/carry_envelope/1",
+      "characters/gardener/carry_envelope/2",
+      "characters/gardener/carry_envelope/3"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "portrait": {
+     "frames": [
+      "characters/gardener/portrait/0"
+     ],
+     "flip_x": false,
+     "fps": 4
     }
    }
   }
@@ -86,8 +190,25 @@
    "fraisier": "strawberry",
    "fraise": "strawberry",
    "poivron": "pepper",
-   "piment": "pepper",
-   "basilic": "basil"
+   "piment": "chili",
+   "aubergine": "eggplant",
+   "concombre": "cucumber",
+   "courgette": "zucchini",
+   "melon": "melon",
+   "basilic": "basil",
+   "laitue": "lettuce",
+   "salade": "lettuce",
+   "laitue rouge": "red_lettuce",
+   "feuille de chêne": "red_lettuce",
+   "epinard": "spinach",
+   "épinard": "spinach",
+   "roquette": "arugula",
+   "mache": "lambs_lettuce",
+   "mâche": "lambs_lettuce",
+   "blette": "chard",
+   "bette": "chard",
+   "chou kale": "kale",
+   "kale": "kale"
   },
   "sprites": {
    "tomato": {
@@ -158,7 +279,7 @@
    },
    "pepper": {
     "taille": [
-     42,
+     55,
      64
     ],
     "stades": {
@@ -173,19 +294,184 @@
       "malade": "plants/pepper/young/sick"
      },
      "floraison": {
-      "sain": "plants/pepper/flowering_green_fruit/healthy",
-      "a_surveiller": "plants/pepper/flowering_green_fruit/yellowing",
-      "malade": "plants/pepper/flowering_green_fruit/sick"
+      "sain": "plants/pepper/flowering/healthy",
+      "a_surveiller": "plants/pepper/flowering/yellowing",
+      "malade": "plants/pepper/flowering/sick"
      },
      "fructification": {
-      "sain": "plants/pepper/flowering_green_fruit/healthy",
-      "a_surveiller": "plants/pepper/flowering_green_fruit/yellowing",
-      "malade": "plants/pepper/flowering_green_fruit/sick"
+      "sain": "plants/pepper/green_fruit/healthy",
+      "a_surveiller": "plants/pepper/green_fruit/yellowing",
+      "malade": "plants/pepper/green_fruit/sick"
      },
      "recolte": {
       "sain": "plants/pepper/ripe_fruit/healthy",
       "a_surveiller": "plants/pepper/ripe_fruit/yellowing",
       "malade": "plants/pepper/ripe_fruit/sick"
+     }
+    }
+   },
+   "chili": {
+    "taille": [
+     53,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/chili/seedling/healthy",
+      "a_surveiller": "plants/chili/seedling/yellowing",
+      "malade": "plants/chili/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/chili/young/healthy",
+      "a_surveiller": "plants/chili/young/yellowing",
+      "malade": "plants/chili/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/chili/flowering/healthy",
+      "a_surveiller": "plants/chili/flowering/yellowing",
+      "malade": "plants/chili/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/chili/green_fruit/healthy",
+      "a_surveiller": "plants/chili/green_fruit/yellowing",
+      "malade": "plants/chili/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/chili/ripe_fruit/healthy",
+      "a_surveiller": "plants/chili/ripe_fruit/yellowing",
+      "malade": "plants/chili/ripe_fruit/sick"
+     }
+    }
+   },
+   "eggplant": {
+    "taille": [
+     48,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/eggplant/seedling/healthy",
+      "a_surveiller": "plants/eggplant/seedling/yellowing",
+      "malade": "plants/eggplant/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/eggplant/young/healthy",
+      "a_surveiller": "plants/eggplant/young/yellowing",
+      "malade": "plants/eggplant/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/eggplant/flowering/healthy",
+      "a_surveiller": "plants/eggplant/flowering/yellowing",
+      "malade": "plants/eggplant/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/eggplant/green_fruit/healthy",
+      "a_surveiller": "plants/eggplant/green_fruit/yellowing",
+      "malade": "plants/eggplant/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/eggplant/ripe_fruit/healthy",
+      "a_surveiller": "plants/eggplant/ripe_fruit/yellowing",
+      "malade": "plants/eggplant/ripe_fruit/sick"
+     }
+    }
+   },
+   "cucumber": {
+    "taille": [
+     41,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/cucumber/seedling/healthy",
+      "a_surveiller": "plants/cucumber/seedling/yellowing",
+      "malade": "plants/cucumber/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/cucumber/young/healthy",
+      "a_surveiller": "plants/cucumber/young/yellowing",
+      "malade": "plants/cucumber/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/cucumber/flowering/healthy",
+      "a_surveiller": "plants/cucumber/flowering/yellowing",
+      "malade": "plants/cucumber/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/cucumber/green_fruit/healthy",
+      "a_surveiller": "plants/cucumber/green_fruit/yellowing",
+      "malade": "plants/cucumber/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/cucumber/ripe_fruit/healthy",
+      "a_surveiller": "plants/cucumber/ripe_fruit/yellowing",
+      "malade": "plants/cucumber/ripe_fruit/sick"
+     }
+    }
+   },
+   "zucchini": {
+    "taille": [
+     60,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/zucchini/seedling/healthy",
+      "a_surveiller": "plants/zucchini/seedling/yellowing",
+      "malade": "plants/zucchini/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/zucchini/young/healthy",
+      "a_surveiller": "plants/zucchini/young/yellowing",
+      "malade": "plants/zucchini/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/zucchini/flowering/healthy",
+      "a_surveiller": "plants/zucchini/flowering/yellowing",
+      "malade": "plants/zucchini/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/zucchini/green_fruit/healthy",
+      "a_surveiller": "plants/zucchini/green_fruit/yellowing",
+      "malade": "plants/zucchini/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/zucchini/ripe_fruit/healthy",
+      "a_surveiller": "plants/zucchini/ripe_fruit/yellowing",
+      "malade": "plants/zucchini/ripe_fruit/sick"
+     }
+    }
+   },
+   "melon": {
+    "taille": [
+     60,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/melon/seedling/healthy",
+      "a_surveiller": "plants/melon/seedling/yellowing",
+      "malade": "plants/melon/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/melon/young/healthy",
+      "a_surveiller": "plants/melon/young/yellowing",
+      "malade": "plants/melon/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/melon/flowering/healthy",
+      "a_surveiller": "plants/melon/flowering/yellowing",
+      "malade": "plants/melon/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/melon/green_fruit/healthy",
+      "a_surveiller": "plants/melon/green_fruit/yellowing",
+      "malade": "plants/melon/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/melon/ripe_fruit/healthy",
+      "a_surveiller": "plants/melon/ripe_fruit/yellowing",
+      "malade": "plants/melon/ripe_fruit/sick"
      }
     }
    },
@@ -219,6 +505,237 @@
       "sain": "plants/basil/mature/healthy",
       "a_surveiller": "plants/basil/mature/yellowing",
       "malade": "plants/basil/mature/sick"
+     }
+    }
+   },
+   "lettuce": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/lettuce/seedling/healthy",
+      "a_surveiller": "plants/lettuce/seedling/yellowing",
+      "malade": "plants/lettuce/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/lettuce/young/healthy",
+      "a_surveiller": "plants/lettuce/young/yellowing",
+      "malade": "plants/lettuce/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/lettuce/bolting/healthy",
+      "a_surveiller": "plants/lettuce/bolting/yellowing",
+      "malade": "plants/lettuce/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/lettuce/mature/healthy",
+      "a_surveiller": "plants/lettuce/mature/yellowing",
+      "malade": "plants/lettuce/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/lettuce/mature/healthy",
+      "a_surveiller": "plants/lettuce/mature/yellowing",
+      "malade": "plants/lettuce/mature/sick"
+     }
+    }
+   },
+   "red_lettuce": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/red_lettuce/seedling/healthy",
+      "a_surveiller": "plants/red_lettuce/seedling/yellowing",
+      "malade": "plants/red_lettuce/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/red_lettuce/young/healthy",
+      "a_surveiller": "plants/red_lettuce/young/yellowing",
+      "malade": "plants/red_lettuce/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/red_lettuce/bolting/healthy",
+      "a_surveiller": "plants/red_lettuce/bolting/yellowing",
+      "malade": "plants/red_lettuce/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/red_lettuce/mature/healthy",
+      "a_surveiller": "plants/red_lettuce/mature/yellowing",
+      "malade": "plants/red_lettuce/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/red_lettuce/mature/healthy",
+      "a_surveiller": "plants/red_lettuce/mature/yellowing",
+      "malade": "plants/red_lettuce/mature/sick"
+     }
+    }
+   },
+   "spinach": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/spinach/seedling/healthy",
+      "a_surveiller": "plants/spinach/seedling/yellowing",
+      "malade": "plants/spinach/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/spinach/young/healthy",
+      "a_surveiller": "plants/spinach/young/yellowing",
+      "malade": "plants/spinach/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/spinach/bolting/healthy",
+      "a_surveiller": "plants/spinach/bolting/yellowing",
+      "malade": "plants/spinach/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/spinach/mature/healthy",
+      "a_surveiller": "plants/spinach/mature/yellowing",
+      "malade": "plants/spinach/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/spinach/mature/healthy",
+      "a_surveiller": "plants/spinach/mature/yellowing",
+      "malade": "plants/spinach/mature/sick"
+     }
+    }
+   },
+   "arugula": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/arugula/seedling/healthy",
+      "a_surveiller": "plants/arugula/seedling/yellowing",
+      "malade": "plants/arugula/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/arugula/young/healthy",
+      "a_surveiller": "plants/arugula/young/yellowing",
+      "malade": "plants/arugula/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/arugula/bolting/healthy",
+      "a_surveiller": "plants/arugula/bolting/yellowing",
+      "malade": "plants/arugula/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/arugula/mature/healthy",
+      "a_surveiller": "plants/arugula/mature/yellowing",
+      "malade": "plants/arugula/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/arugula/mature/healthy",
+      "a_surveiller": "plants/arugula/mature/yellowing",
+      "malade": "plants/arugula/mature/sick"
+     }
+    }
+   },
+   "lambs_lettuce": {
+    "taille": [
+     42,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/lambs_lettuce/seedling/healthy",
+      "a_surveiller": "plants/lambs_lettuce/seedling/yellowing",
+      "malade": "plants/lambs_lettuce/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/lambs_lettuce/young/healthy",
+      "a_surveiller": "plants/lambs_lettuce/young/yellowing",
+      "malade": "plants/lambs_lettuce/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/lambs_lettuce/mature/healthy",
+      "a_surveiller": "plants/lambs_lettuce/mature/yellowing",
+      "malade": "plants/lambs_lettuce/mature/sick"
+     },
+     "fructification": {
+      "sain": "plants/lambs_lettuce/mature/healthy",
+      "a_surveiller": "plants/lambs_lettuce/mature/yellowing",
+      "malade": "plants/lambs_lettuce/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/lambs_lettuce/mature/healthy",
+      "a_surveiller": "plants/lambs_lettuce/mature/yellowing",
+      "malade": "plants/lambs_lettuce/mature/sick"
+     }
+    }
+   },
+   "chard": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/chard/seedling/healthy",
+      "a_surveiller": "plants/chard/seedling/yellowing",
+      "malade": "plants/chard/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/chard/young/healthy",
+      "a_surveiller": "plants/chard/young/yellowing",
+      "malade": "plants/chard/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/chard/bolting/healthy",
+      "a_surveiller": "plants/chard/bolting/yellowing",
+      "malade": "plants/chard/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/chard/mature/healthy",
+      "a_surveiller": "plants/chard/mature/yellowing",
+      "malade": "plants/chard/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/chard/mature/healthy",
+      "a_surveiller": "plants/chard/mature/yellowing",
+      "malade": "plants/chard/mature/sick"
+     }
+    }
+   },
+   "kale": {
+    "taille": [
+     32,
+     48
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/kale/seedling/healthy",
+      "a_surveiller": "plants/kale/seedling/yellowing",
+      "malade": "plants/kale/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/kale/young/healthy",
+      "a_surveiller": "plants/kale/young/yellowing",
+      "malade": "plants/kale/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/kale/bolting/healthy",
+      "a_surveiller": "plants/kale/bolting/yellowing",
+      "malade": "plants/kale/bolting/sick"
+     },
+     "fructification": {
+      "sain": "plants/kale/mature/healthy",
+      "a_surveiller": "plants/kale/mature/yellowing",
+      "malade": "plants/kale/mature/sick"
+     },
+     "recolte": {
+      "sain": "plants/kale/mature/healthy",
+      "a_surveiller": "plants/kale/mature/yellowing",
+      "malade": "plants/kale/mature/sick"
      }
     }
    }

@@ -165,7 +165,8 @@ export function animJardinier(action: string, direction: "down" | "up" | "left" 
     marcher: [`walk_${direction}`],
     attendre: ["idle"],
     arroser: [`watering_${direction}`, "watering"],
-    inspecter: [`inspect_${direction}`, "inspect", "idle"],
+    // no inspect_left / inspect_up drawn: mirror of the right, or seen from the front
+    inspecter: [`inspect_${direction}`, direction === "up" ? "inspect_down" : "inspect_right", "inspect", "idle"],
     ventiler: ["switch", "idle_back", "idle"],
     doser: ["dose", "idle"],
     noter: ["notebook", "idle"],
