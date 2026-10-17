@@ -82,6 +82,11 @@ front-build:
 front-test:
 	cd frontend && npm run typecheck && npm test
 
+# Pixel-art atlas of the game view (docs/13 §2): sprites-src/sprites.json + cut sprites →
+# frontend/public/sprites/atlas.{png,json} and frontend/src/game/catalogue.gen.json.
+sprites:
+	$(PY) tools/construire_atlas.py
+
 # OpenAPI schema of the backend → TypeScript types of the front.
 openapi:
 	$(PY) -m backend.api --openapi frontend/src/api/openapi.json

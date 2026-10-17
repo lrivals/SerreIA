@@ -1,10 +1,10 @@
 // Greenhouse builder (docs/12 §2.1): zones, emplacements on a grid, plants dropped from the
 // palette, record of an emplacement, camera regions, consistency, publication.
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera as CameraIcon, Plus } from "lucide-react";
+import { Camera as CameraIcon, Gamepad2, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import {
   useCameras,
@@ -15,6 +15,7 @@ import {
   usePlan,
   useRecettes,
 } from "@/api/hooks";
+import type { Disposition, Emplacement, Plante } from "@/api/types";
 import { BandeauCoherence, BoutonPublier } from "@/components/ConfigPublication";
 import { ErrorBox, Loading, PageTitle } from "@/components/common";
 import { EditeurRegions } from "@/components/EditeurRegions";
@@ -43,7 +44,7 @@ export function Constructeur() {
   const { data: cameras } = useCameras(zone);
   const { data: recettes } = useRecettes();
   const deplacer = useDeplacerPlante();
-  const [pending, setPending] = useState<Pending>(null);
+  const [pending, setPending] = useState<Pending>(() => (params.get("regions") ? { kind: "regions", camera: params.get("regions")! } : null));
   const [autre, setAutre] = useState("");
 
   const especes = useMemo(() => [...new Set((recettes ?? []).map((r) => r.espece))].sort(), [recettes]);
@@ -57,6 +58,11 @@ export function Constructeur() {
   return (
     <>
       <PageTitle title={`Constructeur${plan ? ` · ${plan.zone.nom || plan.zone.id}` : ""}`}>
+        <Link to="/jeu">
+          <Button variant="outline">
+            <Gamepad2 className="h-4 w-4" /> Construire en jeu
+          </Button>
+        </Link>
         <BoutonPublier />
       </PageTitle>
       <BandeauCoherence />
@@ -182,7 +188,7 @@ type PlanteForm = z.infer<typeof planteSchema>;
 
 const STADES = ["semis", "croissance", "floraison", "fructification"];
 
-function NouvellePlante({
+export function NouvellePlante({
   emplacement,
   espece,
   onClose,
@@ -191,7 +197,7 @@ function NouvellePlante({
   emplacement: string;
   espece: string;
   onClose: () => void;
-  onCreated: () => void;
+  onCreated: (p: Plante) => void;
 }) {
   const { data: recettes } = useRecettes();
   const create = useCreatePlante();
@@ -221,8 +227,8 @@ function NouvellePlante({
         emplacement,
       },
       {
-        onSuccess: () => {
-          onCreated();
+        onSuccess: (p) => {
+          onCreated(p);
           onClose();
         },
       },
@@ -282,23 +288,31 @@ const emplacementSchema = z.object({
 });
 type EmplacementForm = z.input<typeof emplacementSchema>;
 
-function NouvelEmplacement({
+export function NouvelEmplacement({
   zone,
   code,
   rangee,
   colonne,
+  contenant = "pot",
+  modeCulture = "terre",
+  disposition,
   onClose,
+  onCreated,
 }: {
   zone: string;
   code: string;
   rangee?: number;
   colonne?: number;
+  contenant?: string;
+  modeCulture?: (typeof MODES_CULTURE)[number];
+  disposition?: Disposition;
   onClose: () => void;
+  onCreated?: (e: Emplacement) => void;
 }) {
   const create = useCreateEmplacement();
   const { register, handleSubmit, formState } = useForm<EmplacementForm>({
     resolver: zodResolver(emplacementSchema),
-    defaultValues: { code, mode_culture: "terre", contenant_type: "pot", volume_l: "", materiau: "" },
+    defaultValues: { code, mode_culture: modeCulture, contenant_type: contenant, volume_l: "", materiau: "" },
   });
   const submit = (raw: EmplacementForm) => {
     const f = emplacementSchema.parse(raw);
@@ -312,8 +326,14 @@ function NouvelEmplacement({
         contenant: f.contenant_type
           ? { type: f.contenant_type, volume_l: f.volume_l === "" ? null : (f.volume_l ?? null), materiau: f.materiau || null }
           : null,
+        disposition: disposition ?? null,
       },
-      { onSuccess: onClose },
+      {
+        onSuccess: (e) => {
+          onCreated?.(e);
+          onClose();
+        },
+      },
     );
   };
   return (
@@ -356,7 +376,15 @@ const zoneSchema = z.object({
   jour_debut: z.string().regex(/^\d{2}:\d{2}$/, "HH:MM"),
 });
 
-function NouvelleZone({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
+export function NouvelleZone({
+  disposition,
+  onClose,
+  onCreated,
+}: {
+  disposition?: Disposition;
+  onClose: () => void;
+  onCreated: (id: string) => void;
+}) {
   const create = useCreateZone();
   const { register, handleSubmit, formState } = useForm<z.infer<typeof zoneSchema>>({
     resolver: zodResolver(zoneSchema),
@@ -365,7 +393,7 @@ function NouvelleZone({ onClose, onCreated }: { onClose: () => void; onCreated: 
   return (
     <Dialog open onOpenChange={onClose} title="Nouvelle zone">
       <form
-        onSubmit={handleSubmit((f) => create.mutate(f, { onSuccess: (z) => onCreated(z.id) }))}
+        onSubmit={handleSubmit((f) => create.mutate({ ...f, disposition: disposition ?? null }, { onSuccess: (z) => onCreated(z.id) }))}
         className="flex flex-col gap-3"
       >
         <Field label="Nom">

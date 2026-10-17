@@ -1,0 +1,4517 @@
+{
+ "donnees": {
+  "serre": {
+   "id": "maison",
+   "nom": "Maison",
+   "fuseau": "Europe/Paris",
+   "tarif_kwh": 0.25,
+   "lux_vers_ppfd": 0.0185,
+   "config_version": 3
+  },
+  "zones": [
+   {
+    "id": "z1",
+    "serre_id": "maison",
+    "nom": "terre",
+    "cuve_id": null,
+    "jour_debut": "06:00",
+    "presence_autorisee": null,
+    "disposition": null
+   },
+   {
+    "id": "z2",
+    "serre_id": "maison",
+    "nom": "hydro NFT",
+    "cuve_id": "cuve-z2",
+    "jour_debut": "06:00",
+    "presence_autorisee": null,
+    "disposition": null
+   }
+  ],
+  "plans": [
+   {
+    "zone": {
+     "id": "z1",
+     "serre_id": "maison",
+     "nom": "terre",
+     "cuve_id": null,
+     "jour_debut": "06:00",
+     "presence_autorisee": null,
+     "disposition": null
+    },
+    "emplacements": [
+     {
+      "id": "z1-A1",
+      "zone_id": "z1",
+      "code": "A1",
+      "mode_culture": "terre",
+      "rangee": 1,
+      "colonne": 1,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "pot",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "tomate-1",
+       "espece": "tomate",
+       "variete": "Cœur de bœuf",
+       "date_semis": null,
+       "date_plantation": "2026-08-30",
+       "stade": "floraison",
+       "recette_id": "tomate-standard",
+       "etat_sante": "malade",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [
+       {
+        "id": "cam-z1-a",
+        "region": [
+         0.1,
+         0.1,
+         0.2,
+         0.2
+        ]
+       }
+      ],
+      "vision": {
+       "ts": "2026-10-16T02:32:00Z",
+       "image_id": "img-1",
+       "camera": "cam-z1-a",
+       "espece": "tomate",
+       "espece_conf": 0.93,
+       "sante": "anormal",
+       "sante_conf": 0.88,
+       "classe": "mildiou",
+       "classe_conf": 0.81,
+       "bbox": null,
+       "score_anomalie": 0.7
+      },
+      "disposition": null
+     },
+     {
+      "id": "z1-A2",
+      "zone_id": "z1",
+      "code": "A2",
+      "mode_culture": "terre",
+      "rangee": 1,
+      "colonne": 2,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "pot",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "fraisier-1",
+       "espece": "fraisier",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-09-06",
+       "stade": "fructification",
+       "recette_id": null,
+       "etat_sante": "sain",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [
+       {
+        "id": "cam-z1-a",
+        "region": [
+         0.1,
+         0.1,
+         0.2,
+         0.2
+        ]
+       }
+      ],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z1-A3",
+      "zone_id": "z1",
+      "code": "A3",
+      "mode_culture": "terre",
+      "rangee": 1,
+      "colonne": 3,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "jardiniere",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "poivron-1",
+       "espece": "poivron",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-09-06",
+       "stade": "croissance",
+       "recette_id": null,
+       "etat_sante": "a_surveiller",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [
+       {
+        "id": "cam-z1-a",
+        "region": [
+         0.1,
+         0.1,
+         0.2,
+         0.2
+        ]
+       }
+      ],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z1-A4",
+      "zone_id": "z1",
+      "code": "A4",
+      "mode_culture": "terre",
+      "rangee": 1,
+      "colonne": 4,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "pot",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "tomate-2",
+       "espece": "tomate",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-09-06",
+       "stade": "recolte",
+       "recette_id": null,
+       "etat_sante": "sain",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [
+       {
+        "id": "cam-z1-a",
+        "region": [
+         0.1,
+         0.1,
+         0.2,
+         0.2
+        ]
+       }
+      ],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z1-B1",
+      "zone_id": "z1",
+      "code": "B1",
+      "mode_culture": "terre",
+      "rangee": 2,
+      "colonne": 1,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "sac_de_culture",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "basilic-1",
+       "espece": "basilic",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-09-06",
+       "stade": "croissance",
+       "recette_id": null,
+       "etat_sante": "sain",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [
+       {
+        "id": "cam-z1-a",
+        "region": [
+         0.1,
+         0.1,
+         0.2,
+         0.2
+        ]
+       }
+      ],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z1-B2",
+      "zone_id": "z1",
+      "code": "B2",
+      "mode_culture": "terre",
+      "rangee": 2,
+      "colonne": 2,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "pot",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "laitue-1",
+       "espece": "laitue",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-09-06",
+       "stade": "croissance",
+       "recette_id": null,
+       "etat_sante": "sain",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [
+       {
+        "id": "cam-z1-a",
+        "region": [
+         0.1,
+         0.1,
+         0.2,
+         0.2
+        ]
+       }
+      ],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z1-B3",
+      "zone_id": "z1",
+      "code": "B3",
+      "mode_culture": "terre",
+      "rangee": 2,
+      "colonne": 3,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "pot",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "fraisier-2",
+       "espece": "fraisier",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-09-06",
+       "stade": "floraison",
+       "recette_id": null,
+       "etat_sante": "isolee",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [
+       {
+        "id": "cam-z1-a",
+        "region": [
+         0.1,
+         0.1,
+         0.2,
+         0.2
+        ]
+       }
+      ],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z1-B4",
+      "zone_id": "z1",
+      "code": "B4",
+      "mode_culture": "terre",
+      "rangee": 2,
+      "colonne": 4,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "pot",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": null,
+      "capteurs": [],
+      "cameras": [
+       {
+        "id": "cam-z1-a",
+        "region": [
+         0.1,
+         0.1,
+         0.2,
+         0.2
+        ]
+       }
+      ],
+      "vision": null,
+      "disposition": null
+     }
+    ],
+    "cameras": [
+     {
+      "id": "cam-z1-a",
+      "emplacements": [
+       "z1-A1",
+       "z1-A2",
+       "z1-A3",
+       "z1-A4",
+       "z1-B1",
+       "z1-B2",
+       "z1-B3",
+       "z1-B4"
+      ]
+     }
+    ]
+   },
+   {
+    "zone": {
+     "id": "z2",
+     "serre_id": "maison",
+     "nom": "hydro NFT",
+     "cuve_id": "cuve-z2",
+     "jour_debut": "06:00",
+     "presence_autorisee": null,
+     "disposition": null
+    },
+    "emplacements": [
+     {
+      "id": "z2-G1",
+      "zone_id": "z2",
+      "code": "G1",
+      "mode_culture": "hydro_nft",
+      "rangee": null,
+      "colonne": null,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "canal_NFT",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "basilic-h1",
+       "espece": "basilic",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-10-05",
+       "stade": "semis",
+       "recette_id": null,
+       "etat_sante": "sain",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z2-G2",
+      "zone_id": "z2",
+      "code": "G2",
+      "mode_culture": "hydro_nft",
+      "rangee": null,
+      "colonne": null,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "canal_NFT",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "basilic-h2",
+       "espece": "basilic",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-10-04",
+       "stade": "croissance",
+       "recette_id": null,
+       "etat_sante": "sain",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z2-G3",
+      "zone_id": "z2",
+      "code": "G3",
+      "mode_culture": "hydro_nft",
+      "rangee": null,
+      "colonne": null,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "canal_NFT",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "basilic-h3",
+       "espece": "basilic",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-10-03",
+       "stade": "croissance",
+       "recette_id": null,
+       "etat_sante": "sain",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z2-G4",
+      "zone_id": "z2",
+      "code": "G4",
+      "mode_culture": "hydro_nft",
+      "rangee": null,
+      "colonne": null,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "canal_NFT",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "basilic-h4",
+       "espece": "basilic",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-10-02",
+       "stade": "floraison",
+       "recette_id": null,
+       "etat_sante": "sain",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z2-G5",
+      "zone_id": "z2",
+      "code": "G5",
+      "mode_culture": "hydro_nft",
+      "rangee": null,
+      "colonne": null,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "canal_NFT",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "basilic-h5",
+       "espece": "basilic",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-10-01",
+       "stade": "croissance",
+       "recette_id": null,
+       "etat_sante": "sain",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [],
+      "vision": null,
+      "disposition": null
+     },
+     {
+      "id": "z2-G6",
+      "zone_id": "z2",
+      "code": "G6",
+      "mode_culture": "hydro_nft",
+      "rangee": null,
+      "colonne": null,
+      "contenant_id": 1,
+      "contenant": {
+       "id": 1,
+       "type": "canal_NFT",
+       "volume_l": 11,
+       "materiau": null,
+       "drainage": true
+      },
+      "plante": {
+       "id": "basilic-h6",
+       "espece": "basilic",
+       "variete": null,
+       "date_semis": null,
+       "date_plantation": "2026-09-30",
+       "stade": "semis",
+       "recette_id": null,
+       "etat_sante": "sain",
+       "prioritaire": false,
+       "notes": null,
+       "depuis": "2026-10-16T14:32:00Z"
+      },
+      "capteurs": [],
+      "cameras": [],
+      "vision": null,
+      "disposition": null
+     }
+    ],
+    "cameras": []
+   }
+  ],
+  "actionneurs": [
+   {
+    "id": "ventilo-z1",
+    "zone_id": "z1",
+    "type": "ventilo",
+    "noeud": "esp32-z1",
+    "commande": "on_off",
+    "puissance_w": 35,
+    "debit_l_h": null,
+    "debit_ml_min": null,
+    "ppfd_max": null,
+    "duree_max_s": 1800,
+    "etat": {
+     "ts": "2026-10-16T13:52:00Z",
+     "action": "off",
+     "valeur": null
+    },
+    "disposition": null
+   },
+   {
+    "id": "led-z1",
+    "zone_id": "z1",
+    "type": "led",
+    "noeud": "esp32-z1",
+    "commande": "on_off",
+    "puissance_w": 120,
+    "debit_l_h": null,
+    "debit_ml_min": null,
+    "ppfd_max": null,
+    "duree_max_s": 1800,
+    "etat": {
+     "ts": "2026-10-16T13:52:00Z",
+     "action": "on",
+     "valeur": null
+    },
+    "disposition": null
+   },
+   {
+    "id": "chauffage-z1",
+    "zone_id": "z1",
+    "type": "chauffage",
+    "noeud": "esp32-z1",
+    "commande": "on_off",
+    "puissance_w": 500,
+    "debit_l_h": null,
+    "debit_ml_min": null,
+    "ppfd_max": null,
+    "duree_max_s": 1800,
+    "etat": {
+     "ts": "2026-10-16T13:52:00Z",
+     "action": "off",
+     "valeur": null
+    },
+    "disposition": null
+   },
+   {
+    "id": "brumisateur-z1",
+    "zone_id": "z1",
+    "type": "brumisateur",
+    "noeud": "esp32-z1",
+    "commande": "on_off",
+    "puissance_w": 20,
+    "debit_l_h": null,
+    "debit_ml_min": null,
+    "ppfd_max": null,
+    "duree_max_s": 1800,
+    "etat": {
+     "ts": "2026-10-16T13:52:00Z",
+     "action": "off",
+     "valeur": null
+    },
+    "disposition": null
+   },
+   {
+    "id": "pompe-nutri-z2",
+    "zone_id": "z2",
+    "type": "pompe_nutri",
+    "noeud": "esp32-z2",
+    "commande": "on_off",
+    "puissance_w": 25,
+    "debit_l_h": null,
+    "debit_ml_min": null,
+    "ppfd_max": null,
+    "duree_max_s": 1800,
+    "etat": {
+     "ts": "2026-10-16T13:52:00Z",
+     "action": "off",
+     "valeur": null
+    },
+    "disposition": null
+   },
+   {
+    "id": "ph-down-z2",
+    "zone_id": "z2",
+    "type": "pompe_ph_down",
+    "noeud": "esp32-z2",
+    "commande": "on_off",
+    "puissance_w": 5,
+    "debit_l_h": null,
+    "debit_ml_min": null,
+    "ppfd_max": null,
+    "duree_max_s": 1800,
+    "etat": {
+     "ts": "2026-10-16T13:52:00Z",
+     "action": "off",
+     "valeur": null
+    },
+    "disposition": null
+   },
+   {
+    "id": "led-z2",
+    "zone_id": "z2",
+    "type": "led",
+    "noeud": "esp32-z2",
+    "commande": "on_off",
+    "puissance_w": 80,
+    "debit_l_h": null,
+    "debit_ml_min": null,
+    "ppfd_max": null,
+    "duree_max_s": 1800,
+    "etat": {
+     "ts": "2026-10-16T13:52:00Z",
+     "action": "pwm",
+     "valeur": 60
+    },
+    "disposition": null
+   }
+  ],
+  "capteurs": [
+   {
+    "id": "esp32-z1-temperature",
+    "materiel": "sht41-z1",
+    "noeud": "esp32-z1",
+    "zone": "z1",
+    "type": "temperature",
+    "emplacement": null,
+    "modele": null,
+    "cuve_id": null,
+    "etalonnage": null,
+    "plage_min": null,
+    "plage_max": null,
+    "emplacements_couverts": [
+     "z1-A1",
+     "z1-A2",
+     "z1-A3",
+     "z1-A4",
+     "z1-B1",
+     "z1-B2",
+     "z1-B3",
+     "z1-B4"
+    ],
+    "derniere_mesure": {
+     "ts": "2026-10-16T14:32:00Z",
+     "valeur": 23.4
+    },
+    "etalonnage_echeance": null,
+    "etalonnage_en_retard": false,
+    "disposition": null
+   },
+   {
+    "id": "esp32-z1-humidite",
+    "materiel": "sht41-z1",
+    "noeud": "esp32-z1",
+    "zone": "z1",
+    "type": "humidite",
+    "emplacement": null,
+    "modele": null,
+    "cuve_id": null,
+    "etalonnage": null,
+    "plage_min": null,
+    "plage_max": null,
+    "emplacements_couverts": [
+     "z1-A1",
+     "z1-A2",
+     "z1-A3",
+     "z1-A4",
+     "z1-B1",
+     "z1-B2",
+     "z1-B3",
+     "z1-B4"
+    ],
+    "derniere_mesure": {
+     "ts": "2026-10-16T14:32:00Z",
+     "valeur": 91
+    },
+    "etalonnage_echeance": null,
+    "etalonnage_en_retard": false,
+    "disposition": null
+   },
+   {
+    "id": "esp32-z1-humidite_sol-z1-A1",
+    "materiel": "sol-z1-A1",
+    "noeud": "esp32-z1",
+    "zone": "z1",
+    "type": "humidite_sol",
+    "emplacement": "z1-A1",
+    "modele": null,
+    "cuve_id": null,
+    "etalonnage": null,
+    "plage_min": null,
+    "plage_max": null,
+    "emplacements_couverts": [
+     "z1-A1"
+    ],
+    "derniere_mesure": {
+     "ts": "2026-10-16T14:32:00Z",
+     "valeur": 38
+    },
+    "etalonnage_echeance": null,
+    "etalonnage_en_retard": false,
+    "disposition": null
+   },
+   {
+    "id": "esp32-z1-lux",
+    "materiel": "bh1750-z1",
+    "noeud": "esp32-z1",
+    "zone": "z1",
+    "type": "lux",
+    "emplacement": null,
+    "modele": null,
+    "cuve_id": null,
+    "etalonnage": null,
+    "plage_min": null,
+    "plage_max": null,
+    "emplacements_couverts": [
+     "z1-A1",
+     "z1-A2",
+     "z1-A3",
+     "z1-A4",
+     "z1-B1",
+     "z1-B2",
+     "z1-B3",
+     "z1-B4"
+    ],
+    "derniere_mesure": {
+     "ts": "2026-10-16T14:32:00Z",
+     "valeur": 8200
+    },
+    "etalonnage_echeance": null,
+    "etalonnage_en_retard": false,
+    "disposition": null
+   },
+   {
+    "id": "esp32-z2-ph",
+    "materiel": "ph-z2",
+    "noeud": "esp32-z2",
+    "zone": "z2",
+    "type": "ph",
+    "emplacement": null,
+    "modele": null,
+    "cuve_id": null,
+    "etalonnage": {
+     "date": "2026-08-01",
+     "methode": "2 points"
+    },
+    "plage_min": null,
+    "plage_max": null,
+    "emplacements_couverts": [
+     "z2-G1",
+     "z2-G2",
+     "z2-G3",
+     "z2-G4",
+     "z2-G5",
+     "z2-G6"
+    ],
+    "derniere_mesure": {
+     "ts": "2026-10-16T14:32:00Z",
+     "valeur": 5.9
+    },
+    "etalonnage_echeance": null,
+    "etalonnage_en_retard": true,
+    "disposition": null
+   },
+   {
+    "id": "esp32-z2-ec",
+    "materiel": "ec-z2",
+    "noeud": "esp32-z2",
+    "zone": "z2",
+    "type": "ec",
+    "emplacement": null,
+    "modele": null,
+    "cuve_id": null,
+    "etalonnage": {
+     "date": "2026-08-01",
+     "methode": "2 points"
+    },
+    "plage_min": null,
+    "plage_max": null,
+    "emplacements_couverts": [
+     "z2-G1",
+     "z2-G2",
+     "z2-G3",
+     "z2-G4",
+     "z2-G5",
+     "z2-G6"
+    ],
+    "derniere_mesure": {
+     "ts": "2026-10-16T14:32:00Z",
+     "valeur": 1.8
+    },
+    "etalonnage_echeance": null,
+    "etalonnage_en_retard": false,
+    "disposition": null
+   },
+   {
+    "id": "esp32-z2-niveau_cuve",
+    "materiel": "niveau-z2",
+    "noeud": "esp32-z2",
+    "zone": "z2",
+    "type": "niveau_cuve",
+    "emplacement": null,
+    "modele": null,
+    "cuve_id": null,
+    "etalonnage": null,
+    "plage_min": null,
+    "plage_max": null,
+    "emplacements_couverts": [
+     "z2-G1",
+     "z2-G2",
+     "z2-G3",
+     "z2-G4",
+     "z2-G5",
+     "z2-G6"
+    ],
+    "derniere_mesure": {
+     "ts": "2026-10-16T14:32:00Z",
+     "valeur": 48
+    },
+    "etalonnage_echeance": null,
+    "etalonnage_en_retard": false,
+    "disposition": null
+   }
+  ],
+  "cameras": [
+   {
+    "id": "cam-z1-a",
+    "zone_id": "z1",
+    "regions": [
+     {
+      "emplacement_id": "z1-A1",
+      "bbox": [
+       0.1,
+       0.1,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "emplacement_id": "z1-A2",
+      "bbox": [
+       0.1,
+       0.1,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "emplacement_id": "z1-A3",
+      "bbox": [
+       0.1,
+       0.1,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "emplacement_id": "z1-A4",
+      "bbox": [
+       0.1,
+       0.1,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "emplacement_id": "z1-B1",
+      "bbox": [
+       0.1,
+       0.1,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "emplacement_id": "z1-B2",
+      "bbox": [
+       0.1,
+       0.1,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "emplacement_id": "z1-B3",
+      "bbox": [
+       0.1,
+       0.1,
+       0.2,
+       0.2
+      ]
+     },
+     {
+      "emplacement_id": "z1-B4",
+      "bbox": [
+       0.1,
+       0.1,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "derniere_image": {
+     "image_id": "img-1",
+     "ts": "2026-10-16T14:12:00Z"
+    },
+    "disposition": null
+   }
+  ],
+  "cuves": [
+   {
+    "id": "cuve-z2",
+    "serre_id": "maison",
+    "volume_l": 60,
+    "disposition": null
+   }
+  ],
+  "noeuds": [
+   {
+    "id": "esp32-z1",
+    "status": "online",
+    "status_ts": "2026-10-16T14:32:00Z",
+    "derniere_mesure": "2026-10-16T14:32:00Z",
+    "zones": [
+     "z1"
+    ]
+   },
+   {
+    "id": "esp32-z2",
+    "status": "online",
+    "status_ts": "2026-10-16T14:32:00Z",
+    "derniere_mesure": "2026-10-16T14:32:00Z",
+    "zones": [
+     "z2"
+    ]
+   }
+  ],
+  "tableaux": {
+   "z1": {
+    "zone": {
+     "id": "z1",
+     "nom": "terre"
+    },
+    "jour": true,
+    "consignes": null,
+    "actionneurs": [],
+    "image": null,
+    "alertes": [],
+    "propositions": [],
+    "mesures": [
+     {
+      "type": "temperature",
+      "emplacement": null,
+      "valeur": 23.4,
+      "unite": "°C",
+      "qualite": "ok",
+      "ts": "2026-10-16T14:32:00Z",
+      "plage": [
+       20,
+       26
+      ],
+      "statut": "ok",
+      "points": [
+       [
+        "2026-10-15T14:32:00Z",
+        23.4
+       ],
+       [
+        "2026-10-15T14:47:00Z",
+        22.8
+       ],
+       [
+        "2026-10-15T15:02:00Z",
+        23.7
+       ],
+       [
+        "2026-10-15T15:17:00Z",
+        23.1
+       ],
+       [
+        "2026-10-15T15:32:00Z",
+        24.0
+       ],
+       [
+        "2026-10-15T15:47:00Z",
+        23.4
+       ],
+       [
+        "2026-10-15T16:02:00Z",
+        22.8
+       ],
+       [
+        "2026-10-15T16:17:00Z",
+        23.7
+       ],
+       [
+        "2026-10-15T16:32:00Z",
+        23.1
+       ],
+       [
+        "2026-10-15T16:47:00Z",
+        24.0
+       ],
+       [
+        "2026-10-15T17:02:00Z",
+        23.4
+       ],
+       [
+        "2026-10-15T17:17:00Z",
+        22.8
+       ],
+       [
+        "2026-10-15T17:32:00Z",
+        23.7
+       ],
+       [
+        "2026-10-15T17:47:00Z",
+        23.1
+       ],
+       [
+        "2026-10-15T18:02:00Z",
+        24.0
+       ],
+       [
+        "2026-10-15T18:17:00Z",
+        23.4
+       ],
+       [
+        "2026-10-15T18:32:00Z",
+        22.8
+       ],
+       [
+        "2026-10-15T18:47:00Z",
+        23.7
+       ],
+       [
+        "2026-10-15T19:02:00Z",
+        23.1
+       ],
+       [
+        "2026-10-15T19:17:00Z",
+        24.0
+       ],
+       [
+        "2026-10-15T19:32:00Z",
+        23.4
+       ],
+       [
+        "2026-10-15T19:47:00Z",
+        22.8
+       ],
+       [
+        "2026-10-15T20:02:00Z",
+        23.7
+       ],
+       [
+        "2026-10-15T20:17:00Z",
+        23.1
+       ],
+       [
+        "2026-10-15T20:32:00Z",
+        24.0
+       ],
+       [
+        "2026-10-15T20:47:00Z",
+        23.4
+       ],
+       [
+        "2026-10-15T21:02:00Z",
+        22.8
+       ],
+       [
+        "2026-10-15T21:17:00Z",
+        23.7
+       ],
+       [
+        "2026-10-15T21:32:00Z",
+        23.1
+       ],
+       [
+        "2026-10-15T21:47:00Z",
+        24.0
+       ],
+       [
+        "2026-10-15T22:02:00Z",
+        23.4
+       ],
+       [
+        "2026-10-15T22:17:00Z",
+        22.8
+       ],
+       [
+        "2026-10-15T22:32:00Z",
+        23.7
+       ],
+       [
+        "2026-10-15T22:47:00Z",
+        23.1
+       ],
+       [
+        "2026-10-15T23:02:00Z",
+        24.0
+       ],
+       [
+        "2026-10-15T23:17:00Z",
+        23.4
+       ],
+       [
+        "2026-10-15T23:32:00Z",
+        22.8
+       ],
+       [
+        "2026-10-15T23:47:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T00:02:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T00:17:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T00:32:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T00:47:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T01:02:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T01:17:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T01:32:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T01:47:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T02:02:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T02:17:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T02:32:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T02:47:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T03:02:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T03:17:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T03:32:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T03:47:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T04:02:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T04:17:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T04:32:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T04:47:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T05:02:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T05:17:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T05:32:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T05:47:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T06:02:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T06:17:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T06:32:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T06:47:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T07:02:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T07:17:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T07:32:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T07:47:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T08:02:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T08:17:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T08:32:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T08:47:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T09:02:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T09:17:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T09:32:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T09:47:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T10:02:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T10:17:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T10:32:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T10:47:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T11:02:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T11:17:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T11:32:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T11:47:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T12:02:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T12:17:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T12:32:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T12:47:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T13:02:00Z",
+        23.4
+       ],
+       [
+        "2026-10-16T13:17:00Z",
+        22.8
+       ],
+       [
+        "2026-10-16T13:32:00Z",
+        23.7
+       ],
+       [
+        "2026-10-16T13:47:00Z",
+        23.1
+       ],
+       [
+        "2026-10-16T14:02:00Z",
+        24.0
+       ],
+       [
+        "2026-10-16T14:17:00Z",
+        23.4
+       ]
+      ]
+     },
+     {
+      "type": "humidite",
+      "emplacement": null,
+      "valeur": 91,
+      "unite": "%",
+      "qualite": "ok",
+      "ts": "2026-10-16T14:32:00Z",
+      "plage": [
+       55,
+       70
+      ],
+      "statut": "alerte",
+      "points": [
+       [
+        "2026-10-15T14:32:00Z",
+        91.0
+       ],
+       [
+        "2026-10-15T14:47:00Z",
+        90.4
+       ],
+       [
+        "2026-10-15T15:02:00Z",
+        91.3
+       ],
+       [
+        "2026-10-15T15:17:00Z",
+        90.7
+       ],
+       [
+        "2026-10-15T15:32:00Z",
+        91.6
+       ],
+       [
+        "2026-10-15T15:47:00Z",
+        91.0
+       ],
+       [
+        "2026-10-15T16:02:00Z",
+        90.4
+       ],
+       [
+        "2026-10-15T16:17:00Z",
+        91.3
+       ],
+       [
+        "2026-10-15T16:32:00Z",
+        90.7
+       ],
+       [
+        "2026-10-15T16:47:00Z",
+        91.6
+       ],
+       [
+        "2026-10-15T17:02:00Z",
+        91.0
+       ],
+       [
+        "2026-10-15T17:17:00Z",
+        90.4
+       ],
+       [
+        "2026-10-15T17:32:00Z",
+        91.3
+       ],
+       [
+        "2026-10-15T17:47:00Z",
+        90.7
+       ],
+       [
+        "2026-10-15T18:02:00Z",
+        91.6
+       ],
+       [
+        "2026-10-15T18:17:00Z",
+        91.0
+       ],
+       [
+        "2026-10-15T18:32:00Z",
+        90.4
+       ],
+       [
+        "2026-10-15T18:47:00Z",
+        91.3
+       ],
+       [
+        "2026-10-15T19:02:00Z",
+        90.7
+       ],
+       [
+        "2026-10-15T19:17:00Z",
+        91.6
+       ],
+       [
+        "2026-10-15T19:32:00Z",
+        91.0
+       ],
+       [
+        "2026-10-15T19:47:00Z",
+        90.4
+       ],
+       [
+        "2026-10-15T20:02:00Z",
+        91.3
+       ],
+       [
+        "2026-10-15T20:17:00Z",
+        90.7
+       ],
+       [
+        "2026-10-15T20:32:00Z",
+        91.6
+       ],
+       [
+        "2026-10-15T20:47:00Z",
+        91.0
+       ],
+       [
+        "2026-10-15T21:02:00Z",
+        90.4
+       ],
+       [
+        "2026-10-15T21:17:00Z",
+        91.3
+       ],
+       [
+        "2026-10-15T21:32:00Z",
+        90.7
+       ],
+       [
+        "2026-10-15T21:47:00Z",
+        91.6
+       ],
+       [
+        "2026-10-15T22:02:00Z",
+        91.0
+       ],
+       [
+        "2026-10-15T22:17:00Z",
+        90.4
+       ],
+       [
+        "2026-10-15T22:32:00Z",
+        91.3
+       ],
+       [
+        "2026-10-15T22:47:00Z",
+        90.7
+       ],
+       [
+        "2026-10-15T23:02:00Z",
+        91.6
+       ],
+       [
+        "2026-10-15T23:17:00Z",
+        91.0
+       ],
+       [
+        "2026-10-15T23:32:00Z",
+        90.4
+       ],
+       [
+        "2026-10-15T23:47:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T00:02:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T00:17:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T00:32:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T00:47:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T01:02:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T01:17:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T01:32:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T01:47:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T02:02:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T02:17:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T02:32:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T02:47:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T03:02:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T03:17:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T03:32:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T03:47:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T04:02:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T04:17:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T04:32:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T04:47:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T05:02:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T05:17:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T05:32:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T05:47:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T06:02:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T06:17:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T06:32:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T06:47:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T07:02:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T07:17:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T07:32:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T07:47:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T08:02:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T08:17:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T08:32:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T08:47:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T09:02:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T09:17:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T09:32:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T09:47:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T10:02:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T10:17:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T10:32:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T10:47:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T11:02:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T11:17:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T11:32:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T11:47:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T12:02:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T12:17:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T12:32:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T12:47:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T13:02:00Z",
+        91.0
+       ],
+       [
+        "2026-10-16T13:17:00Z",
+        90.4
+       ],
+       [
+        "2026-10-16T13:32:00Z",
+        91.3
+       ],
+       [
+        "2026-10-16T13:47:00Z",
+        90.7
+       ],
+       [
+        "2026-10-16T14:02:00Z",
+        91.6
+       ],
+       [
+        "2026-10-16T14:17:00Z",
+        91.0
+       ]
+      ]
+     },
+     {
+      "type": "humidite_sol",
+      "emplacement": "z1-A1",
+      "valeur": 38,
+      "unite": "%",
+      "qualite": "ok",
+      "ts": "2026-10-16T14:32:00Z",
+      "plage": [
+       30,
+       60
+      ],
+      "statut": "ok",
+      "points": [
+       [
+        "2026-10-15T14:32:00Z",
+        38.0
+       ],
+       [
+        "2026-10-15T14:47:00Z",
+        37.4
+       ],
+       [
+        "2026-10-15T15:02:00Z",
+        38.3
+       ],
+       [
+        "2026-10-15T15:17:00Z",
+        37.7
+       ],
+       [
+        "2026-10-15T15:32:00Z",
+        38.6
+       ],
+       [
+        "2026-10-15T15:47:00Z",
+        38.0
+       ],
+       [
+        "2026-10-15T16:02:00Z",
+        37.4
+       ],
+       [
+        "2026-10-15T16:17:00Z",
+        38.3
+       ],
+       [
+        "2026-10-15T16:32:00Z",
+        37.7
+       ],
+       [
+        "2026-10-15T16:47:00Z",
+        38.6
+       ],
+       [
+        "2026-10-15T17:02:00Z",
+        38.0
+       ],
+       [
+        "2026-10-15T17:17:00Z",
+        37.4
+       ],
+       [
+        "2026-10-15T17:32:00Z",
+        38.3
+       ],
+       [
+        "2026-10-15T17:47:00Z",
+        37.7
+       ],
+       [
+        "2026-10-15T18:02:00Z",
+        38.6
+       ],
+       [
+        "2026-10-15T18:17:00Z",
+        38.0
+       ],
+       [
+        "2026-10-15T18:32:00Z",
+        37.4
+       ],
+       [
+        "2026-10-15T18:47:00Z",
+        38.3
+       ],
+       [
+        "2026-10-15T19:02:00Z",
+        37.7
+       ],
+       [
+        "2026-10-15T19:17:00Z",
+        38.6
+       ],
+       [
+        "2026-10-15T19:32:00Z",
+        38.0
+       ],
+       [
+        "2026-10-15T19:47:00Z",
+        37.4
+       ],
+       [
+        "2026-10-15T20:02:00Z",
+        38.3
+       ],
+       [
+        "2026-10-15T20:17:00Z",
+        37.7
+       ],
+       [
+        "2026-10-15T20:32:00Z",
+        38.6
+       ],
+       [
+        "2026-10-15T20:47:00Z",
+        38.0
+       ],
+       [
+        "2026-10-15T21:02:00Z",
+        37.4
+       ],
+       [
+        "2026-10-15T21:17:00Z",
+        38.3
+       ],
+       [
+        "2026-10-15T21:32:00Z",
+        37.7
+       ],
+       [
+        "2026-10-15T21:47:00Z",
+        38.6
+       ],
+       [
+        "2026-10-15T22:02:00Z",
+        38.0
+       ],
+       [
+        "2026-10-15T22:17:00Z",
+        37.4
+       ],
+       [
+        "2026-10-15T22:32:00Z",
+        38.3
+       ],
+       [
+        "2026-10-15T22:47:00Z",
+        37.7
+       ],
+       [
+        "2026-10-15T23:02:00Z",
+        38.6
+       ],
+       [
+        "2026-10-15T23:17:00Z",
+        38.0
+       ],
+       [
+        "2026-10-15T23:32:00Z",
+        37.4
+       ],
+       [
+        "2026-10-15T23:47:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T00:02:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T00:17:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T00:32:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T00:47:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T01:02:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T01:17:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T01:32:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T01:47:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T02:02:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T02:17:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T02:32:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T02:47:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T03:02:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T03:17:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T03:32:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T03:47:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T04:02:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T04:17:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T04:32:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T04:47:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T05:02:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T05:17:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T05:32:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T05:47:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T06:02:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T06:17:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T06:32:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T06:47:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T07:02:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T07:17:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T07:32:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T07:47:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T08:02:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T08:17:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T08:32:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T08:47:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T09:02:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T09:17:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T09:32:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T09:47:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T10:02:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T10:17:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T10:32:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T10:47:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T11:02:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T11:17:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T11:32:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T11:47:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T12:02:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T12:17:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T12:32:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T12:47:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T13:02:00Z",
+        38.0
+       ],
+       [
+        "2026-10-16T13:17:00Z",
+        37.4
+       ],
+       [
+        "2026-10-16T13:32:00Z",
+        38.3
+       ],
+       [
+        "2026-10-16T13:47:00Z",
+        37.7
+       ],
+       [
+        "2026-10-16T14:02:00Z",
+        38.6
+       ],
+       [
+        "2026-10-16T14:17:00Z",
+        38.0
+       ]
+      ]
+     },
+     {
+      "type": "lux",
+      "emplacement": null,
+      "valeur": 8200,
+      "unite": "lx",
+      "qualite": "ok",
+      "ts": "2026-10-16T14:32:00Z",
+      "plage": null,
+      "statut": "inconnu",
+      "points": [
+       [
+        "2026-10-15T14:32:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-15T14:47:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-15T15:02:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-15T15:17:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-15T15:32:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-15T15:47:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-15T16:02:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-15T16:17:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-15T16:32:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-15T16:47:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-15T17:02:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-15T17:17:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-15T17:32:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-15T17:47:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-15T18:02:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-15T18:17:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-15T18:32:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-15T18:47:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-15T19:02:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-15T19:17:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-15T19:32:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-15T19:47:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-15T20:02:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-15T20:17:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-15T20:32:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-15T20:47:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-15T21:02:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-15T21:17:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-15T21:32:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-15T21:47:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-15T22:02:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-15T22:17:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-15T22:32:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-15T22:47:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-15T23:02:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-15T23:17:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-15T23:32:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-15T23:47:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T00:02:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T00:17:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T00:32:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T00:47:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T01:02:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T01:17:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T01:32:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T01:47:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T02:02:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T02:17:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T02:32:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T02:47:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T03:02:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T03:17:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T03:32:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T03:47:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T04:02:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T04:17:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T04:32:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T04:47:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T05:02:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T05:17:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T05:32:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T05:47:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T06:02:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T06:17:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T06:32:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T06:47:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T07:02:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T07:17:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T07:32:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T07:47:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T08:02:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T08:17:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T08:32:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T08:47:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T09:02:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T09:17:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T09:32:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T09:47:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T10:02:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T10:17:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T10:32:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T10:47:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T11:02:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T11:17:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T11:32:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T11:47:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T12:02:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T12:17:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T12:32:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T12:47:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T13:02:00Z",
+        8200.0
+       ],
+       [
+        "2026-10-16T13:17:00Z",
+        8199.4
+       ],
+       [
+        "2026-10-16T13:32:00Z",
+        8200.3
+       ],
+       [
+        "2026-10-16T13:47:00Z",
+        8199.7
+       ],
+       [
+        "2026-10-16T14:02:00Z",
+        8200.6
+       ],
+       [
+        "2026-10-16T14:17:00Z",
+        8200.0
+       ]
+      ]
+     }
+    ]
+   },
+   "z2": {
+    "zone": {
+     "id": "z2",
+     "nom": "hydro NFT"
+    },
+    "jour": true,
+    "consignes": null,
+    "actionneurs": [],
+    "image": null,
+    "alertes": [],
+    "propositions": [],
+    "mesures": [
+     {
+      "type": "ph",
+      "emplacement": null,
+      "valeur": 5.9,
+      "unite": "",
+      "qualite": "ok",
+      "ts": "2026-10-16T14:32:00Z",
+      "plage": [
+       5.5,
+       6.5
+      ],
+      "statut": "ok",
+      "points": [
+       [
+        "2026-10-15T14:32:00Z",
+        5.9
+       ],
+       [
+        "2026-10-15T14:47:00Z",
+        5.3
+       ],
+       [
+        "2026-10-15T15:02:00Z",
+        6.2
+       ],
+       [
+        "2026-10-15T15:17:00Z",
+        5.6
+       ],
+       [
+        "2026-10-15T15:32:00Z",
+        6.5
+       ],
+       [
+        "2026-10-15T15:47:00Z",
+        5.9
+       ],
+       [
+        "2026-10-15T16:02:00Z",
+        5.3
+       ],
+       [
+        "2026-10-15T16:17:00Z",
+        6.2
+       ],
+       [
+        "2026-10-15T16:32:00Z",
+        5.6
+       ],
+       [
+        "2026-10-15T16:47:00Z",
+        6.5
+       ],
+       [
+        "2026-10-15T17:02:00Z",
+        5.9
+       ],
+       [
+        "2026-10-15T17:17:00Z",
+        5.3
+       ],
+       [
+        "2026-10-15T17:32:00Z",
+        6.2
+       ],
+       [
+        "2026-10-15T17:47:00Z",
+        5.6
+       ],
+       [
+        "2026-10-15T18:02:00Z",
+        6.5
+       ],
+       [
+        "2026-10-15T18:17:00Z",
+        5.9
+       ],
+       [
+        "2026-10-15T18:32:00Z",
+        5.3
+       ],
+       [
+        "2026-10-15T18:47:00Z",
+        6.2
+       ],
+       [
+        "2026-10-15T19:02:00Z",
+        5.6
+       ],
+       [
+        "2026-10-15T19:17:00Z",
+        6.5
+       ],
+       [
+        "2026-10-15T19:32:00Z",
+        5.9
+       ],
+       [
+        "2026-10-15T19:47:00Z",
+        5.3
+       ],
+       [
+        "2026-10-15T20:02:00Z",
+        6.2
+       ],
+       [
+        "2026-10-15T20:17:00Z",
+        5.6
+       ],
+       [
+        "2026-10-15T20:32:00Z",
+        6.5
+       ],
+       [
+        "2026-10-15T20:47:00Z",
+        5.9
+       ],
+       [
+        "2026-10-15T21:02:00Z",
+        5.3
+       ],
+       [
+        "2026-10-15T21:17:00Z",
+        6.2
+       ],
+       [
+        "2026-10-15T21:32:00Z",
+        5.6
+       ],
+       [
+        "2026-10-15T21:47:00Z",
+        6.5
+       ],
+       [
+        "2026-10-15T22:02:00Z",
+        5.9
+       ],
+       [
+        "2026-10-15T22:17:00Z",
+        5.3
+       ],
+       [
+        "2026-10-15T22:32:00Z",
+        6.2
+       ],
+       [
+        "2026-10-15T22:47:00Z",
+        5.6
+       ],
+       [
+        "2026-10-15T23:02:00Z",
+        6.5
+       ],
+       [
+        "2026-10-15T23:17:00Z",
+        5.9
+       ],
+       [
+        "2026-10-15T23:32:00Z",
+        5.3
+       ],
+       [
+        "2026-10-15T23:47:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T00:02:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T00:17:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T00:32:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T00:47:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T01:02:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T01:17:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T01:32:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T01:47:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T02:02:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T02:17:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T02:32:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T02:47:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T03:02:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T03:17:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T03:32:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T03:47:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T04:02:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T04:17:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T04:32:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T04:47:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T05:02:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T05:17:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T05:32:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T05:47:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T06:02:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T06:17:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T06:32:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T06:47:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T07:02:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T07:17:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T07:32:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T07:47:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T08:02:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T08:17:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T08:32:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T08:47:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T09:02:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T09:17:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T09:32:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T09:47:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T10:02:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T10:17:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T10:32:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T10:47:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T11:02:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T11:17:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T11:32:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T11:47:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T12:02:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T12:17:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T12:32:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T12:47:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T13:02:00Z",
+        5.9
+       ],
+       [
+        "2026-10-16T13:17:00Z",
+        5.3
+       ],
+       [
+        "2026-10-16T13:32:00Z",
+        6.2
+       ],
+       [
+        "2026-10-16T13:47:00Z",
+        5.6
+       ],
+       [
+        "2026-10-16T14:02:00Z",
+        6.5
+       ],
+       [
+        "2026-10-16T14:17:00Z",
+        5.9
+       ]
+      ]
+     },
+     {
+      "type": "ec",
+      "emplacement": null,
+      "valeur": 1.8,
+      "unite": "mS/cm",
+      "qualite": "ok",
+      "ts": "2026-10-16T14:32:00Z",
+      "plage": [
+       1.2,
+       2.0
+      ],
+      "statut": "ok",
+      "points": [
+       [
+        "2026-10-15T14:32:00Z",
+        1.8
+       ],
+       [
+        "2026-10-15T14:47:00Z",
+        1.2
+       ],
+       [
+        "2026-10-15T15:02:00Z",
+        2.1
+       ],
+       [
+        "2026-10-15T15:17:00Z",
+        1.5
+       ],
+       [
+        "2026-10-15T15:32:00Z",
+        2.4
+       ],
+       [
+        "2026-10-15T15:47:00Z",
+        1.8
+       ],
+       [
+        "2026-10-15T16:02:00Z",
+        1.2
+       ],
+       [
+        "2026-10-15T16:17:00Z",
+        2.1
+       ],
+       [
+        "2026-10-15T16:32:00Z",
+        1.5
+       ],
+       [
+        "2026-10-15T16:47:00Z",
+        2.4
+       ],
+       [
+        "2026-10-15T17:02:00Z",
+        1.8
+       ],
+       [
+        "2026-10-15T17:17:00Z",
+        1.2
+       ],
+       [
+        "2026-10-15T17:32:00Z",
+        2.1
+       ],
+       [
+        "2026-10-15T17:47:00Z",
+        1.5
+       ],
+       [
+        "2026-10-15T18:02:00Z",
+        2.4
+       ],
+       [
+        "2026-10-15T18:17:00Z",
+        1.8
+       ],
+       [
+        "2026-10-15T18:32:00Z",
+        1.2
+       ],
+       [
+        "2026-10-15T18:47:00Z",
+        2.1
+       ],
+       [
+        "2026-10-15T19:02:00Z",
+        1.5
+       ],
+       [
+        "2026-10-15T19:17:00Z",
+        2.4
+       ],
+       [
+        "2026-10-15T19:32:00Z",
+        1.8
+       ],
+       [
+        "2026-10-15T19:47:00Z",
+        1.2
+       ],
+       [
+        "2026-10-15T20:02:00Z",
+        2.1
+       ],
+       [
+        "2026-10-15T20:17:00Z",
+        1.5
+       ],
+       [
+        "2026-10-15T20:32:00Z",
+        2.4
+       ],
+       [
+        "2026-10-15T20:47:00Z",
+        1.8
+       ],
+       [
+        "2026-10-15T21:02:00Z",
+        1.2
+       ],
+       [
+        "2026-10-15T21:17:00Z",
+        2.1
+       ],
+       [
+        "2026-10-15T21:32:00Z",
+        1.5
+       ],
+       [
+        "2026-10-15T21:47:00Z",
+        2.4
+       ],
+       [
+        "2026-10-15T22:02:00Z",
+        1.8
+       ],
+       [
+        "2026-10-15T22:17:00Z",
+        1.2
+       ],
+       [
+        "2026-10-15T22:32:00Z",
+        2.1
+       ],
+       [
+        "2026-10-15T22:47:00Z",
+        1.5
+       ],
+       [
+        "2026-10-15T23:02:00Z",
+        2.4
+       ],
+       [
+        "2026-10-15T23:17:00Z",
+        1.8
+       ],
+       [
+        "2026-10-15T23:32:00Z",
+        1.2
+       ],
+       [
+        "2026-10-15T23:47:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T00:02:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T00:17:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T00:32:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T00:47:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T01:02:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T01:17:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T01:32:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T01:47:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T02:02:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T02:17:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T02:32:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T02:47:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T03:02:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T03:17:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T03:32:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T03:47:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T04:02:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T04:17:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T04:32:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T04:47:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T05:02:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T05:17:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T05:32:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T05:47:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T06:02:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T06:17:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T06:32:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T06:47:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T07:02:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T07:17:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T07:32:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T07:47:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T08:02:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T08:17:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T08:32:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T08:47:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T09:02:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T09:17:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T09:32:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T09:47:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T10:02:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T10:17:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T10:32:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T10:47:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T11:02:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T11:17:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T11:32:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T11:47:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T12:02:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T12:17:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T12:32:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T12:47:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T13:02:00Z",
+        1.8
+       ],
+       [
+        "2026-10-16T13:17:00Z",
+        1.2
+       ],
+       [
+        "2026-10-16T13:32:00Z",
+        2.1
+       ],
+       [
+        "2026-10-16T13:47:00Z",
+        1.5
+       ],
+       [
+        "2026-10-16T14:02:00Z",
+        2.4
+       ],
+       [
+        "2026-10-16T14:17:00Z",
+        1.8
+       ]
+      ]
+     },
+     {
+      "type": "niveau_cuve",
+      "emplacement": null,
+      "valeur": 48,
+      "unite": "%",
+      "qualite": "ok",
+      "ts": "2026-10-16T14:32:00Z",
+      "plage": [
+       20,
+       100
+      ],
+      "statut": "ok",
+      "points": [
+       [
+        "2026-10-15T14:32:00Z",
+        48.0
+       ],
+       [
+        "2026-10-15T14:47:00Z",
+        47.4
+       ],
+       [
+        "2026-10-15T15:02:00Z",
+        48.3
+       ],
+       [
+        "2026-10-15T15:17:00Z",
+        47.7
+       ],
+       [
+        "2026-10-15T15:32:00Z",
+        48.6
+       ],
+       [
+        "2026-10-15T15:47:00Z",
+        48.0
+       ],
+       [
+        "2026-10-15T16:02:00Z",
+        47.4
+       ],
+       [
+        "2026-10-15T16:17:00Z",
+        48.3
+       ],
+       [
+        "2026-10-15T16:32:00Z",
+        47.7
+       ],
+       [
+        "2026-10-15T16:47:00Z",
+        48.6
+       ],
+       [
+        "2026-10-15T17:02:00Z",
+        48.0
+       ],
+       [
+        "2026-10-15T17:17:00Z",
+        47.4
+       ],
+       [
+        "2026-10-15T17:32:00Z",
+        48.3
+       ],
+       [
+        "2026-10-15T17:47:00Z",
+        47.7
+       ],
+       [
+        "2026-10-15T18:02:00Z",
+        48.6
+       ],
+       [
+        "2026-10-15T18:17:00Z",
+        48.0
+       ],
+       [
+        "2026-10-15T18:32:00Z",
+        47.4
+       ],
+       [
+        "2026-10-15T18:47:00Z",
+        48.3
+       ],
+       [
+        "2026-10-15T19:02:00Z",
+        47.7
+       ],
+       [
+        "2026-10-15T19:17:00Z",
+        48.6
+       ],
+       [
+        "2026-10-15T19:32:00Z",
+        48.0
+       ],
+       [
+        "2026-10-15T19:47:00Z",
+        47.4
+       ],
+       [
+        "2026-10-15T20:02:00Z",
+        48.3
+       ],
+       [
+        "2026-10-15T20:17:00Z",
+        47.7
+       ],
+       [
+        "2026-10-15T20:32:00Z",
+        48.6
+       ],
+       [
+        "2026-10-15T20:47:00Z",
+        48.0
+       ],
+       [
+        "2026-10-15T21:02:00Z",
+        47.4
+       ],
+       [
+        "2026-10-15T21:17:00Z",
+        48.3
+       ],
+       [
+        "2026-10-15T21:32:00Z",
+        47.7
+       ],
+       [
+        "2026-10-15T21:47:00Z",
+        48.6
+       ],
+       [
+        "2026-10-15T22:02:00Z",
+        48.0
+       ],
+       [
+        "2026-10-15T22:17:00Z",
+        47.4
+       ],
+       [
+        "2026-10-15T22:32:00Z",
+        48.3
+       ],
+       [
+        "2026-10-15T22:47:00Z",
+        47.7
+       ],
+       [
+        "2026-10-15T23:02:00Z",
+        48.6
+       ],
+       [
+        "2026-10-15T23:17:00Z",
+        48.0
+       ],
+       [
+        "2026-10-15T23:32:00Z",
+        47.4
+       ],
+       [
+        "2026-10-15T23:47:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T00:02:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T00:17:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T00:32:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T00:47:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T01:02:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T01:17:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T01:32:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T01:47:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T02:02:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T02:17:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T02:32:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T02:47:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T03:02:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T03:17:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T03:32:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T03:47:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T04:02:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T04:17:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T04:32:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T04:47:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T05:02:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T05:17:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T05:32:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T05:47:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T06:02:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T06:17:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T06:32:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T06:47:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T07:02:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T07:17:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T07:32:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T07:47:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T08:02:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T08:17:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T08:32:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T08:47:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T09:02:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T09:17:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T09:32:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T09:47:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T10:02:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T10:17:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T10:32:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T10:47:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T11:02:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T11:17:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T11:32:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T11:47:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T12:02:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T12:17:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T12:32:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T12:47:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T13:02:00Z",
+        48.0
+       ],
+       [
+        "2026-10-16T13:17:00Z",
+        47.4
+       ],
+       [
+        "2026-10-16T13:32:00Z",
+        48.3
+       ],
+       [
+        "2026-10-16T13:47:00Z",
+        47.7
+       ],
+       [
+        "2026-10-16T14:02:00Z",
+        48.6
+       ],
+       [
+        "2026-10-16T14:17:00Z",
+        48.0
+       ]
+      ]
+     },
+     {
+      "type": "temp_eau",
+      "emplacement": null,
+      "valeur": 20.5,
+      "unite": "°C",
+      "qualite": "ok",
+      "ts": "2026-10-16T14:32:00Z",
+      "plage": [
+       18,
+       22
+      ],
+      "statut": "ok",
+      "points": [
+       [
+        "2026-10-15T14:32:00Z",
+        20.5
+       ],
+       [
+        "2026-10-15T14:47:00Z",
+        19.9
+       ],
+       [
+        "2026-10-15T15:02:00Z",
+        20.8
+       ],
+       [
+        "2026-10-15T15:17:00Z",
+        20.2
+       ],
+       [
+        "2026-10-15T15:32:00Z",
+        21.1
+       ],
+       [
+        "2026-10-15T15:47:00Z",
+        20.5
+       ],
+       [
+        "2026-10-15T16:02:00Z",
+        19.9
+       ],
+       [
+        "2026-10-15T16:17:00Z",
+        20.8
+       ],
+       [
+        "2026-10-15T16:32:00Z",
+        20.2
+       ],
+       [
+        "2026-10-15T16:47:00Z",
+        21.1
+       ],
+       [
+        "2026-10-15T17:02:00Z",
+        20.5
+       ],
+       [
+        "2026-10-15T17:17:00Z",
+        19.9
+       ],
+       [
+        "2026-10-15T17:32:00Z",
+        20.8
+       ],
+       [
+        "2026-10-15T17:47:00Z",
+        20.2
+       ],
+       [
+        "2026-10-15T18:02:00Z",
+        21.1
+       ],
+       [
+        "2026-10-15T18:17:00Z",
+        20.5
+       ],
+       [
+        "2026-10-15T18:32:00Z",
+        19.9
+       ],
+       [
+        "2026-10-15T18:47:00Z",
+        20.8
+       ],
+       [
+        "2026-10-15T19:02:00Z",
+        20.2
+       ],
+       [
+        "2026-10-15T19:17:00Z",
+        21.1
+       ],
+       [
+        "2026-10-15T19:32:00Z",
+        20.5
+       ],
+       [
+        "2026-10-15T19:47:00Z",
+        19.9
+       ],
+       [
+        "2026-10-15T20:02:00Z",
+        20.8
+       ],
+       [
+        "2026-10-15T20:17:00Z",
+        20.2
+       ],
+       [
+        "2026-10-15T20:32:00Z",
+        21.1
+       ],
+       [
+        "2026-10-15T20:47:00Z",
+        20.5
+       ],
+       [
+        "2026-10-15T21:02:00Z",
+        19.9
+       ],
+       [
+        "2026-10-15T21:17:00Z",
+        20.8
+       ],
+       [
+        "2026-10-15T21:32:00Z",
+        20.2
+       ],
+       [
+        "2026-10-15T21:47:00Z",
+        21.1
+       ],
+       [
+        "2026-10-15T22:02:00Z",
+        20.5
+       ],
+       [
+        "2026-10-15T22:17:00Z",
+        19.9
+       ],
+       [
+        "2026-10-15T22:32:00Z",
+        20.8
+       ],
+       [
+        "2026-10-15T22:47:00Z",
+        20.2
+       ],
+       [
+        "2026-10-15T23:02:00Z",
+        21.1
+       ],
+       [
+        "2026-10-15T23:17:00Z",
+        20.5
+       ],
+       [
+        "2026-10-15T23:32:00Z",
+        19.9
+       ],
+       [
+        "2026-10-15T23:47:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T00:02:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T00:17:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T00:32:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T00:47:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T01:02:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T01:17:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T01:32:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T01:47:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T02:02:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T02:17:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T02:32:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T02:47:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T03:02:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T03:17:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T03:32:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T03:47:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T04:02:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T04:17:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T04:32:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T04:47:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T05:02:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T05:17:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T05:32:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T05:47:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T06:02:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T06:17:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T06:32:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T06:47:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T07:02:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T07:17:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T07:32:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T07:47:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T08:02:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T08:17:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T08:32:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T08:47:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T09:02:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T09:17:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T09:32:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T09:47:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T10:02:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T10:17:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T10:32:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T10:47:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T11:02:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T11:17:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T11:32:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T11:47:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T12:02:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T12:17:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T12:32:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T12:47:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T13:02:00Z",
+        20.5
+       ],
+       [
+        "2026-10-16T13:17:00Z",
+        19.9
+       ],
+       [
+        "2026-10-16T13:32:00Z",
+        20.8
+       ],
+       [
+        "2026-10-16T13:47:00Z",
+        20.2
+       ],
+       [
+        "2026-10-16T14:02:00Z",
+        21.1
+       ],
+       [
+        "2026-10-16T14:17:00Z",
+        20.5
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  "alertes": [],
+  "propositions": [
+   {
+    "id": "dec-20261016-1400-z1-agent1",
+    "ts": "2026-10-16T14:32:00Z",
+    "zone": "z1",
+    "emplacements": [
+     "z1-A1"
+    ],
+    "niveau": "agent",
+    "origine": "agent",
+    "regle": {
+     "id": "agent.proposition",
+     "version": 1
+    },
+    "type": "exceptionnelle",
+    "statut": "proposee",
+    "explication": "Isoler la tomate z1-A1 (mildiou confirmé ×3)",
+    "actions": [
+     "proposee:plante:z1-A1 isolee"
+    ],
+    "expire": null
+   }
+  ],
+  "avertissements": []
+ },
+ "conso": {
+  "periode": "jour",
+  "du": "2026-10-16T14:32:00Z",
+  "au": "2026-10-16T14:32:00Z",
+  "jour_en_cours": true,
+  "totaux": {
+   "kwh": 1.2,
+   "litres": 4.1,
+   "ml": 12,
+   "cout": 0.3
+  },
+  "tarif_kwh": 0.25,
+  "actionneurs": {
+   "z1/led": {
+    "zone": "z1",
+    "type": "led",
+    "heures_on": 6.5,
+    "kwh": 0.78
+   },
+   "z2/pompe_nutri": {
+    "zone": "z2",
+    "type": "pompe_nutri",
+    "heures_on": 2.1,
+    "litres": 4.1
+   }
+  },
+  "par_jour": [],
+  "lumiere": [],
+  "dli_cible": {},
+  "estime": true,
+  "note": "estimé à partir des puissances déclarées (pas de wattmètre)"
+ },
+ "evenements": [
+  {
+   "t": 4,
+   "evenement": {
+    "kind": "vision",
+    "zone": "z1",
+    "subject": "cam-z1-a",
+    "payload": {
+     "camera": "cam-z1-a",
+     "detections": [
+      {
+       "sante": "anormal",
+       "classe": "mildiou",
+       "classe_conf": 0.81
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": 10,
+   "evenement": {
+    "kind": "decision",
+    "zone": "z1",
+    "subject": "dec-demo-1",
+    "payload": {
+     "id": "dec-demo-1",
+     "type": "exceptionnelle",
+     "statut": "executee",
+     "regle": {
+      "id": "maladie.mildiou.ventilation"
+     },
+     "explication": "mildiou sur z1-A1 et HR 91 %",
+     "emplacements": [
+      "z1-A1"
+     ],
+     "ordres": [
+      {
+       "cible": "actionneur:ventilo",
+       "action": "on"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": 10.5,
+   "evenement": {
+    "kind": "etat",
+    "zone": "z1",
+    "subject": "ventilo",
+    "payload": {
+     "action": "on",
+     "valeur": null
+    }
+   }
+  },
+  {
+   "t": 18,
+   "evenement": {
+    "kind": "decision",
+    "zone": "z1",
+    "subject": "dec-20261016-1400-z1-agent1",
+    "payload": {
+     "id": "dec-20261016-1400-z1-agent1",
+     "type": "exceptionnelle",
+     "statut": "proposee",
+     "regle": {
+      "id": "agent.proposition"
+     },
+     "explication": "Isoler la tomate z1-A1 (mildiou confirmé ×3)",
+     "emplacements": [
+      "z1-A1"
+     ],
+     "ordres": [
+      {
+       "cible": "plante:z1-A1",
+       "action": "isolee"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": 26,
+   "evenement": {
+    "kind": "etat",
+    "zone": "z2",
+    "subject": "pompe_nutri",
+    "payload": {
+     "action": "on",
+     "valeur": null
+    }
+   }
+  },
+  {
+   "t": 30,
+   "evenement": {
+    "kind": "decision",
+    "zone": "z2",
+    "subject": "dec-demo-2",
+    "payload": {
+     "id": "dec-demo-2",
+     "type": "exceptionnelle",
+     "statut": "executee",
+     "regle": {
+      "id": "hydro.ph.dosage"
+     },
+     "explication": "pH 6,6 > 6,5",
+     "emplacements": [],
+     "ordres": [
+      {
+       "cible": "actionneur:pompe_ph_down",
+       "action": "on"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "t": 30.5,
+   "evenement": {
+    "kind": "etat",
+    "zone": "z2",
+    "subject": "pompe_ph_down",
+    "payload": {
+     "action": "on",
+     "valeur": null
+    }
+   }
+  },
+  {
+   "t": 36,
+   "evenement": {
+    "kind": "etat",
+    "zone": "z2",
+    "subject": "pompe_ph_down",
+    "payload": {
+     "action": "off",
+     "valeur": null
+    }
+   }
+  },
+  {
+   "t": 40,
+   "evenement": {
+    "kind": "status",
+    "zone": null,
+    "subject": "esp32-z2",
+    "payload": "offline"
+   }
+  },
+  {
+   "t": 50,
+   "evenement": {
+    "kind": "etat",
+    "zone": "z1",
+    "subject": "ventilo",
+    "payload": {
+     "action": "off",
+     "valeur": null
+    }
+   }
+  },
+  {
+   "t": 52,
+   "evenement": {
+    "kind": "etat",
+    "zone": "z2",
+    "subject": "pompe_nutri",
+    "payload": {
+     "action": "off",
+     "valeur": null
+    }
+   }
+  }
+ ]
+}

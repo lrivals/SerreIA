@@ -1007,6 +1007,7 @@ export interface components {
             parametres?: {
                 [key: string]: unknown;
             } | null;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /** ActionneurPatch */
         ActionneurPatch: {
@@ -1028,6 +1029,7 @@ export interface components {
             parametres?: {
                 [key: string]: unknown;
             } | null;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /**
          * Actuator
@@ -1040,11 +1042,13 @@ export interface components {
             id: string;
             /** Zone Id */
             zone_id: string;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /** CameraPatch */
         CameraPatch: {
             /** Zone Id */
-            zone_id: string;
+            zone_id?: string | null;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /** CapteurIn */
         CapteurIn: {
@@ -1071,6 +1075,7 @@ export interface components {
             plage_max?: number | null;
             /** Emplacements Couverts */
             emplacements_couverts?: string[] | null;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /** CapteurPatch */
         CapteurPatch: {
@@ -1090,6 +1095,7 @@ export interface components {
             plage_max?: number | null;
             /** Emplacements Couverts */
             emplacements_couverts?: string[] | null;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /** ContenantIn */
         ContenantIn: {
@@ -1121,16 +1127,37 @@ export interface components {
             serre_id?: string | null;
             /** Volume L */
             volume_l?: number | null;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /** CuvePatch */
         CuvePatch: {
             /** Volume L */
             volume_l?: number | null;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /** Deplacer */
         Deplacer: {
             /** Emplacement */
             emplacement: string | null;
+        };
+        /**
+         * Disposition
+         * @description Placement in the game view (docs/13 §3), in tiles of the greenhouse frame. Purely
+         *     visual: the controller ignores it and it is not exported to serre.yaml.
+         */
+        Disposition: {
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+            /** Largeur */
+            largeur?: number | null;
+            /** Hauteur */
+            hauteur?: number | null;
+            /** Orientation */
+            orientation?: ("nord" | "sud" | "est" | "ouest") | null;
+            /** Sprite */
+            sprite?: string | null;
         };
         /** EmplacementIn */
         EmplacementIn: {
@@ -1150,6 +1177,7 @@ export interface components {
             /** Contenant Id */
             contenant_id?: number | null;
             contenant?: components["schemas"]["ContenantIn"] | null;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /** EmplacementPatch */
         EmplacementPatch: {
@@ -1162,6 +1190,7 @@ export interface components {
             /** Contenant Id */
             contenant_id?: number | null;
             contenant?: components["schemas"]["ContenantIn"] | null;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1405,6 +1434,7 @@ export interface components {
              * @default []
              */
             presence_autorisee?: components["schemas"]["Periode"][];
+            disposition?: components["schemas"]["Disposition"] | null;
         };
         /** ZonePatch */
         ZonePatch: {
@@ -1416,6 +1446,7 @@ export interface components {
             jour_debut?: string | null;
             /** Presence Autorisee */
             presence_autorisee?: components["schemas"]["Periode"][] | null;
+            disposition?: components["schemas"]["Disposition"] | null;
         };
     };
     responses: never;

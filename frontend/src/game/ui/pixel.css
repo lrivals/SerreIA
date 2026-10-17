@@ -1,0 +1,99 @@
+/* Pixel style of the game view overlays (docs/13 §2): pixel font, cream panels with the
+   wooden 9-slice border of the sprite sheet, crisp images. Palette of sprites-src/sprites.json. */
+@import "@fontsource/press-start-2p/400.css";
+
+.jeu {
+  --px-outline: #49352b;
+  --px-cream: #f3e5c8;
+  --px-wood: #a66e43;
+  --px-soil: #805333;
+  --px-green: #5d8c45;
+  --px-dark-green: #315b35;
+  --px-red: #d94f45;
+  --px-yellow: #e8c957;
+  --px-blue: #559bc4;
+}
+
+.jeu canvas,
+.px-sprite {
+  image-rendering: pixelated;
+}
+
+.px-font {
+  font-family: "Press Start 2P", ui-monospace, monospace;
+  letter-spacing: 0;
+  line-height: 1.6;
+}
+
+.px-panel {
+  background: var(--px-cream);
+  color: var(--px-outline);
+  border-style: solid;
+  border-width: 12px;
+  border-image: url("/sprites/ui/dialogue_box.png") 12 fill / 12px / 0 stretch;
+  image-rendering: pixelated;
+  box-shadow: 0 4px 0 rgb(0 0 0 / 0.25);
+}
+
+.px-bar {
+  background: color-mix(in srgb, var(--px-outline) 92%, transparent);
+  color: var(--px-cream);
+  border: 2px solid #2a1e17;
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.25);
+}
+
+.px-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  background: var(--px-wood);
+  color: var(--px-cream);
+  border: 2px solid var(--px-outline);
+  box-shadow: inset 0 -3px 0 var(--px-soil), 0 2px 0 rgb(0 0 0 / 0.3);
+  padding: 0.35rem 0.6rem 0.45rem;
+  font-family: "Press Start 2P", ui-monospace, monospace;
+  font-size: 9px;
+  line-height: 1.4;
+}
+.px-btn:hover {
+  filter: brightness(1.1);
+}
+.px-btn:active {
+  box-shadow: inset 0 2px 0 var(--px-soil);
+  transform: translateY(1px);
+}
+.px-btn[aria-pressed="true"] {
+  background: var(--px-green);
+  box-shadow: inset 0 -3px 0 var(--px-dark-green), 0 2px 0 rgb(0 0 0 / 0.3);
+}
+.px-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.px-btn:focus-visible {
+  outline: 2px solid var(--px-yellow);
+  outline-offset: 2px;
+}
+
+.px-gauge {
+  height: 10px;
+  border: 2px solid var(--px-outline);
+  background: #e2d2b0;
+}
+.px-gauge > span {
+  display: block;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .px-pop {
+    animation: px-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+@keyframes px-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}

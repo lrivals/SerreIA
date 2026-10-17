@@ -24,7 +24,7 @@ dans la vue jeu ([13](13-interface-jeu-pixel-art.md)).
 | API FastAPI, tableau de bord, journal des décisions | [12](12-interface-utilisateur.md) (G2) | ✅ (`make api-sim` : API + serre simulée sans broker, [12 §5](12-interface-utilisateur.md#5-développement-sans-matériel)) |
 | `Decision` / `Action` complètes, arbre des actions | [10](10-decisions-tracabilite.md) (G3) | ✅ hors UI ; caméras simulées et pannes `maladie:` / `valeur:` utilisables par les scénarios |
 | Agent (boucle Claude, outils, propositions) | [11](11-agent-decision.md) (G4) | ✅ serveur (`backend/agent/`) et onglet UI |
-| Vue jeu « serre vivante » | [13](13-interface-jeu-pixel-art.md) (J3) | ⏳ |
+| Vue jeu « serre vivante » | [13](13-interface-jeu-pixel-art.md) (J3) | ✅ `/jeu` (J1–J5, [13 §11](13-interface-jeu-pixel-art.md#11-implémentation)) ; mode hors ligne `/jeu?demo=1` |
 
 ## 1. Principe
 

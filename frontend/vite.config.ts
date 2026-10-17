@@ -15,7 +15,8 @@ export default defineConfig({
       "/ws": { target: API.replace(/^http/, "ws"), ws: true },
     },
   },
-  build: { chunkSizeWarningLimit: 1500 },
+  // the game view (Phaser, docs/13) is a lazy chunk of ~1.6 MB, loaded only on /jeu
+  build: { chunkSizeWarningLimit: 1700 },
   test: {
     environment: "jsdom",
     globals: true,

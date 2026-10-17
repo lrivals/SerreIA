@@ -2,7 +2,7 @@
 
 Interface web pour **constituer sa serre** (zones, emplacements, plantes, pots, mode de culture, capteurs, actionneurs), **suivre** mesures, images et consommations, **comprendre** les décisions (preuves vision + capteurs, arbre des actions) et **dialoguer** avec l'agent.
 
-> Statut : **implémenté** (G2, §7) : API REST complète sous `/api`, relais `WS /ws/live`, SPA React des sept écrans, authentification optionnelle ; vue jeu (doc 13) et Alembic à venir. Modèle de données : [09](09-modele-gestion-serre.md) ; décisions et arbre : [10](10-decisions-tracabilite.md) ; agent : [11](11-agent-decision.md) ; vue « jeu » en pixel art (construction de la serre, jardinier animé, stats en bulles) : [13](13-interface-jeu-pixel-art.md).
+> Statut : **implémenté** (G2, §7) : API REST complète sous `/api`, relais `WS /ws/live`, SPA React des sept écrans, authentification optionnelle ; vue jeu `/jeu` ([13](13-interface-jeu-pixel-art.md)) ; Alembic à venir. Modèle de données : [09](09-modele-gestion-serre.md) ; décisions et arbre : [10](10-decisions-tracabilite.md) ; agent : [11](11-agent-decision.md) ; vue « jeu » en pixel art (construction de la serre, jardinier animé, stats en bulles) : [13](13-interface-jeu-pixel-art.md).
 
 ## 1. Architecture
 
@@ -161,7 +161,7 @@ frontend/
     └── live/            # LiveProvider (WebSocket, invalidation des requêtes)
 ```
 
-La vue jeu (`src/game/`, doc 13) n'existe pas encore. Pas d'Alembic : `init_db` crée les tables manquantes ([09 §7](09-modele-gestion-serre.md#7-persistance)).
+La vue jeu est dans `src/game/` ([13 §11](13-interface-jeu-pixel-art.md#11-implémentation)). Pas d'Alembic : `init_db` crée les tables manquantes ([09 §7](09-modele-gestion-serre.md#7-persistance)).
 
 ## 5. Développement sans matériel
 
@@ -194,4 +194,4 @@ make openapi                      # après un changement de route : types TypeSc
 
 Écarts assumés par rapport à la conception : plan de serre en grille CSS + glisser-déposer natif (React Flow seulement pour l'arbre) ; schémas Zod écrits à la main ; pas de `sse-starlette` (la réponse en flux de FastAPI suffit) ; le dépôt d'images `POST /api/images` s'ajoute aux routes prévues pour recevoir l'`Uploader` du service caméra.
 
-Reste à faire : vue jeu (doc 13) ; Alembic ; édition de `regles.yaml` depuis l'UI ; liste des capteurs couverts éditable dans la fiche capteur ; Grad-CAM produit côté service caméra ; dépôt d'images authentifié par un jeton propre au Pi.
+Reste à faire : Alembic ; édition de `regles.yaml` depuis l'UI ; liste des capteurs couverts éditable dans la fiche capteur ; Grad-CAM produit côté service caméra ; dépôt d'images authentifié par un jeton propre au Pi.

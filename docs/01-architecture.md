@@ -138,6 +138,8 @@ SerreIA/
 │                              #   traceability.py, api/ (FastAPI, routes /api, doc 12), live/ (MQTT → WebSocket),
 │                              #   agent/ (Claude, doc 11), config/ (export serre.yaml), docker-compose.yml + grafana/
 ├── frontend/                  # interface React + Vite (doc 12) : src/api, pages, components, live ; e2e/ (Playwright)
+│                              #   src/game/ : vue jeu pixel art (Phaser, doc 13) ; public/sprites/ : atlas généré
+├── sprites-src/               # planches pixel art brutes et découpées, manifeste sprites.json, PROMPTS.md (doc 13 §2)
 ├── firmware/                  # ESP32-C6 (PlatformIO) : un env par nœud, lib/serre_logic testée sur PC
 ├── sim/                       # simulateur : météo, modèle de zone, nœuds émulés, pannes (doc 06 §5)
 ├── tests/                     # test_mqtt_contract.py, …

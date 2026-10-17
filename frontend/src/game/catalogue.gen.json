@@ -1,0 +1,661 @@
+{
+ "version": "1.2",
+ "tuile": 16,
+ "facteur": 2,
+ "personnages": {
+  "gardener": {
+   "taille": [
+    35,
+    48
+   ],
+   "animations": {
+    "walk_down": {
+     "frames": [
+      "characters/gardener/walk_down/0",
+      "characters/gardener/walk_down/1",
+      "characters/gardener/walk_down/2",
+      "characters/gardener/walk_down/3",
+      "characters/gardener/walk_down/4"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "walk_right": {
+     "frames": [
+      "characters/gardener/walk_right/0",
+      "characters/gardener/walk_right/1",
+      "characters/gardener/walk_right/2",
+      "characters/gardener/walk_right/3",
+      "characters/gardener/walk_right/4"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "walk_left": {
+     "frames": [
+      "characters/gardener/walk_right/0",
+      "characters/gardener/walk_right/1",
+      "characters/gardener/walk_right/2",
+      "characters/gardener/walk_right/3",
+      "characters/gardener/walk_right/4"
+     ],
+     "flip_x": true,
+     "fps": 8
+    },
+    "walk_up": {
+     "frames": [
+      "characters/gardener/walk_up/0",
+      "characters/gardener/walk_up/1",
+      "characters/gardener/walk_up/2",
+      "characters/gardener/walk_up/3",
+      "characters/gardener/walk_up/4"
+     ],
+     "flip_x": false,
+     "fps": 8
+    },
+    "idle": {
+     "frames": [
+      "characters/gardener/idle/0",
+      "characters/gardener/idle/1"
+     ],
+     "flip_x": false,
+     "fps": 4
+    },
+    "idle_back": {
+     "frames": [
+      "characters/gardener/idle_back/0"
+     ],
+     "flip_x": false,
+     "fps": 4
+    },
+    "watering": {
+     "frames": [
+      "characters/gardener/watering/0",
+      "characters/gardener/watering/1"
+     ],
+     "flip_x": false,
+     "fps": 4
+    }
+   }
+  }
+ },
+ "plantes": {
+  "generique": "plants/generic",
+  "especes": {
+   "tomate": "tomato",
+   "fraisier": "strawberry",
+   "fraise": "strawberry",
+   "poivron": "pepper",
+   "piment": "pepper",
+   "basilic": "basil"
+  },
+  "sprites": {
+   "tomato": {
+    "taille": [
+     41,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/tomato/seedling/healthy",
+      "a_surveiller": "plants/tomato/seedling/yellowing",
+      "malade": "plants/tomato/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/tomato/young/healthy",
+      "a_surveiller": "plants/tomato/young/yellowing",
+      "malade": "plants/tomato/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/tomato/flowering/healthy",
+      "a_surveiller": "plants/tomato/flowering/yellowing",
+      "malade": "plants/tomato/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/tomato/green_fruit/healthy",
+      "a_surveiller": "plants/tomato/green_fruit/yellowing",
+      "malade": "plants/tomato/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/tomato/ripe_fruit/healthy",
+      "a_surveiller": "plants/tomato/ripe_fruit/yellowing",
+      "malade": "plants/tomato/ripe_fruit/sick"
+     }
+    }
+   },
+   "strawberry": {
+    "taille": [
+     32,
+     32
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/strawberry/seedling/healthy",
+      "a_surveiller": "plants/strawberry/seedling/yellowing",
+      "malade": "plants/strawberry/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/strawberry/young/healthy",
+      "a_surveiller": "plants/strawberry/young/yellowing",
+      "malade": "plants/strawberry/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/strawberry/flowering/healthy",
+      "a_surveiller": "plants/strawberry/flowering/yellowing",
+      "malade": "plants/strawberry/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/strawberry/green_fruit/healthy",
+      "a_surveiller": "plants/strawberry/green_fruit/yellowing",
+      "malade": "plants/strawberry/green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/strawberry/ripe_fruit/healthy",
+      "a_surveiller": "plants/strawberry/ripe_fruit/yellowing",
+      "malade": "plants/strawberry/ripe_fruit/sick"
+     }
+    }
+   },
+   "pepper": {
+    "taille": [
+     42,
+     64
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/pepper/seedling/healthy",
+      "a_surveiller": "plants/pepper/seedling/yellowing",
+      "malade": "plants/pepper/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/pepper/young/healthy",
+      "a_surveiller": "plants/pepper/young/yellowing",
+      "malade": "plants/pepper/young/sick"
+     },
+     "floraison": {
+      "sain": "plants/pepper/flowering_green_fruit/healthy",
+      "a_surveiller": "plants/pepper/flowering_green_fruit/yellowing",
+      "malade": "plants/pepper/flowering_green_fruit/sick"
+     },
+     "fructification": {
+      "sain": "plants/pepper/flowering_green_fruit/healthy",
+      "a_surveiller": "plants/pepper/flowering_green_fruit/yellowing",
+      "malade": "plants/pepper/flowering_green_fruit/sick"
+     },
+     "recolte": {
+      "sain": "plants/pepper/ripe_fruit/healthy",
+      "a_surveiller": "plants/pepper/ripe_fruit/yellowing",
+      "malade": "plants/pepper/ripe_fruit/sick"
+     }
+    }
+   },
+   "basil": {
+    "taille": [
+     32,
+     32
+    ],
+    "stades": {
+     "semis": {
+      "sain": "plants/basil/seedling/healthy",
+      "a_surveiller": "plants/basil/seedling/yellowing",
+      "malade": "plants/basil/seedling/sick"
+     },
+     "croissance": {
+      "sain": "plants/basil/growing/healthy",
+      "a_surveiller": "plants/basil/growing/yellowing",
+      "malade": "plants/basil/growing/sick"
+     },
+     "floraison": {
+      "sain": "plants/basil/flowering/healthy",
+      "a_surveiller": "plants/basil/flowering/yellowing",
+      "malade": "plants/basil/flowering/sick"
+     },
+     "fructification": {
+      "sain": "plants/basil/flowering/healthy",
+      "a_surveiller": "plants/basil/flowering/yellowing",
+      "malade": "plants/basil/flowering/sick"
+     },
+     "recolte": {
+      "sain": "plants/basil/mature/healthy",
+      "a_surveiller": "plants/basil/mature/yellowing",
+      "malade": "plants/basil/mature/sick"
+     }
+    }
+   }
+  }
+ },
+ "contenants": [
+  {
+   "cle": "plastic_pot",
+   "type": "pot",
+   "materiau": null,
+   "frame": "containers/plastic_pot",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "terracotta_pot",
+   "type": "pot",
+   "materiau": "terre_cuite",
+   "frame": "containers/terracotta_pot",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "wooden_planter",
+   "type": "jardiniere",
+   "materiau": null,
+   "frame": "containers/wooden_planter",
+   "taille": [
+    64,
+    32
+   ]
+  },
+  {
+   "cle": "fabric_grow_bag",
+   "type": "sac_de_culture",
+   "materiau": null,
+   "frame": "containers/fabric_grow_bag",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "seedling_tray",
+   "type": "godet",
+   "materiau": null,
+   "frame": "containers/seedling_tray",
+   "taille": [
+    64,
+    32
+   ]
+  },
+  {
+   "cle": "hydroponic_nft_channel",
+   "type": "canal_NFT",
+   "materiau": null,
+   "frame": "containers/hydroponic_nft_channel",
+   "taille": [
+    128,
+    32
+   ]
+  },
+  {
+   "cle": "dwc_tub",
+   "type": "bac_DWC",
+   "materiau": null,
+   "frame": "containers/dwc_tub",
+   "taille": [
+    64,
+    64
+   ]
+  },
+  {
+   "cle": "soil_patch",
+   "type": "pleine_terre",
+   "materiau": null,
+   "frame": "containers/soil_patch",
+   "taille": [
+    64,
+    64
+   ]
+  }
+ ],
+ "tuiles": {
+  "soil": {
+   "frame": "tiles/soil",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  "stone_floor": {
+   "frame": "tiles/stone_floor",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  "gravel": {
+   "frame": "tiles/gravel",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  "wooden_path": {
+   "frame": "tiles/wooden_path",
+   "taille": [
+    32,
+    32
+   ]
+  },
+  "greenhouse_glass_front": {
+   "frame": "tiles/greenhouse_glass_front",
+   "taille": [
+    64,
+    64
+   ]
+  },
+  "greenhouse_glass_side": {
+   "frame": "tiles/greenhouse_glass_side",
+   "taille": [
+    32,
+    64
+   ]
+  },
+  "greenhouse_glass_side_narrow": {
+   "frame": "tiles/greenhouse_glass_side_narrow",
+   "taille": [
+    32,
+    64
+   ]
+  },
+  "greenhouse_corner": {
+   "frame": "tiles/greenhouse_corner",
+   "taille": [
+    64,
+    64
+   ]
+  },
+  "brick_border_corner": {
+   "frame": "tiles/brick_border_corner",
+   "taille": [
+    64,
+    32
+   ]
+  },
+  "greenhouse_door": {
+   "frame": "tiles/greenhouse_door",
+   "taille": [
+    32,
+    64
+   ]
+  },
+  "metal_shelf": {
+   "frame": "tiles/metal_shelf",
+   "taille": [
+    32,
+    64
+   ]
+  }
+ },
+ "actionneurs": {
+  "ventilo": {
+   "cle": "fan",
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/fan/off/0"
+    ],
+    "on": [
+     "devices/fan/on/0",
+     "devices/fan/on/1",
+     "devices/fan/on/2",
+     "devices/fan/on/3",
+     "devices/fan/on/4"
+    ]
+   },
+   "effets": {}
+  },
+  "led": {
+   "cle": "grow_light",
+   "taille": [
+    64,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/grow_light/off/0",
+     "devices/grow_light/off/1"
+    ],
+    "on": [
+     "devices/grow_light/on/0",
+     "devices/grow_light/on/1",
+     "devices/grow_light/on/2",
+     "devices/grow_light/on/3"
+    ]
+   },
+   "effets": {
+    "on": "pink_purple_glow"
+   }
+  },
+  "brumisateur": {
+   "cle": "mist_sprayer",
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/mist_sprayer/off/0",
+     "devices/mist_sprayer/off/1"
+    ],
+    "on": [
+     "devices/mist_sprayer/on/0",
+     "devices/mist_sprayer/on/1",
+     "devices/mist_sprayer/on/2",
+     "devices/mist_sprayer/on/3"
+    ]
+   },
+   "effets": {}
+  },
+  "chauffage": {
+   "cle": "heater",
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/heater/off/0",
+     "devices/heater/off/1"
+    ],
+    "on": [
+     "devices/heater/on/0",
+     "devices/heater/on/1",
+     "devices/heater/on/2",
+     "devices/heater/on/3"
+    ]
+   },
+   "effets": {
+    "on": "orange_glow"
+   }
+  },
+  "pompe_nutri": {
+   "cle": "water_pump",
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/water_pump/off/0",
+     "devices/water_pump/off/1",
+     "devices/water_pump/off/2",
+     "devices/water_pump/off/3"
+    ],
+    "on": [
+     "devices/water_pump/on/0",
+     "devices/water_pump/on/1"
+    ]
+   },
+   "effets": {}
+  },
+  "pompe_ph_down": {
+   "cle": "ph_dosing_pump",
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "off": [
+     "devices/ph_dosing_pump/off/0",
+     "devices/ph_dosing_pump/off/1",
+     "devices/ph_dosing_pump/off/2"
+    ],
+    "on": [
+     "devices/ph_dosing_pump/on/0",
+     "devices/ph_dosing_pump/on/1",
+     "devices/ph_dosing_pump/on/2"
+    ]
+   },
+   "effets": {}
+  }
+ },
+ "capteurs": [
+  {
+   "cle": "environment_sensor_online",
+   "famille": "air",
+   "statut": "online",
+   "frame": "sensors/environment_sensor_online",
+   "etats": null,
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "environment_sensor_offline",
+   "famille": "air",
+   "statut": "offline",
+   "frame": "sensors/environment_sensor_offline",
+   "etats": null,
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "soil_moisture_probe",
+   "famille": "sol",
+   "statut": null,
+   "frame": "sensors/soil_moisture_probe",
+   "etats": null,
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "light_sensor",
+   "famille": "lumiere",
+   "statut": null,
+   "frame": "sensors/light_sensor",
+   "etats": null,
+   "taille": [
+    32,
+    32
+   ]
+  },
+  {
+   "cle": "security_camera",
+   "famille": "camera",
+   "statut": null,
+   "frame": null,
+   "etats": {
+    "normal": [
+     "sensors/security_camera/normal/0"
+    ],
+    "flash": [
+     "sensors/security_camera/flash/0"
+    ]
+   },
+   "taille": [
+    32,
+    64
+   ]
+  },
+  {
+   "cle": "water_tank",
+   "famille": "cuve",
+   "statut": null,
+   "frame": null,
+   "etats": {
+    "full": [
+     "sensors/water_tank/full/0"
+    ],
+    "half": [
+     "sensors/water_tank/half/0"
+    ],
+    "low": [
+     "sensors/water_tank/low/0"
+    ]
+   },
+   "taille": [
+    32,
+    64
+   ]
+  }
+ ],
+ "ui": {
+  "alert": {
+   "taille": [
+    32,
+    32
+   ],
+   "frame": "ui/alert"
+  },
+  "question": {
+   "taille": [
+    32,
+    32
+   ],
+   "frame": "ui/question"
+  },
+  "thinking": {
+   "taille": [
+    32,
+    32
+   ],
+   "frame": "ui/thinking"
+  },
+  "heart": {
+   "taille": [
+    32,
+    32
+   ],
+   "frame": "ui/heart"
+  },
+  "sparkles": {
+   "taille": [
+    32,
+    32
+   ],
+   "frame": "ui/sparkles"
+  },
+  "spore_particles": {
+   "taille": [
+    32,
+    32
+   ],
+   "etats": {
+    "green": [
+     "ui/spore_particles/green/0"
+    ],
+    "purple": [
+     "ui/spore_particles/purple/0"
+    ],
+    "brown": [
+     "ui/spore_particles/brown/0"
+    ]
+   }
+  },
+  "dialogue_box": {
+   "taille": [
+    192,
+    96
+   ],
+   "frame": "ui/dialogue_box",
+   "fichier": "sprites/ui/dialogue_box.png"
+  }
+ }
+}

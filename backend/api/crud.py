@@ -1,13 +1,30 @@
 """Helpers of the configuration routes (docs/12 §3): rows as dicts, 404, partial updates."""
 
 from datetime import datetime
+from typing import Literal
 
 from fastapi import HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
 from ..db.session import utc
+
+
+class Disposition(BaseModel):
+    """Placement in the game view (docs/13 §3), in tiles of the greenhouse frame. Purely
+    visual: the controller ignores it and it is not exported to serre.yaml."""
+
+    x: int = Field(ge=0, le=1000)
+    y: int = Field(ge=0, le=1000)
+    largeur: int | None = Field(default=None, ge=1, le=200)  # zones only
+    hauteur: int | None = Field(default=None, ge=1, le=200)
+    orientation: Literal["nord", "sud", "est", "ouest"] | None = None
+    sprite: str | None = Field(default=None, max_length=64)  # overrides the default sprite
+
+
+def disposition(d: Disposition | None) -> dict | None:
+    return d.model_dump(exclude_none=True) if d is not None else None
 
 
 def row(obj) -> dict:

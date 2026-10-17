@@ -8,6 +8,7 @@ const PYTHON = process.env.PYTHON ?? ".venv/bin/python" // relative to the repos
 
 export default defineConfig({
   testDir: "e2e",
+  workers: 1, // the journeys share one simulated greenhouse
   timeout: 120_000,
   expect: { timeout: 15_000 },
   use: { baseURL: `http://127.0.0.1:${PORT}`, trace: "retain-on-failure" },

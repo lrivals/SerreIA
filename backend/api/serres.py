@@ -17,7 +17,7 @@ from edge.controller.recipes import Recipe
 from ..db import models as m
 from ..db.seed import _grid, serre_id
 from ..db.session import utc
-from .crud import absent, get, in_use, patch, row
+from .crud import Disposition, absent, disposition, get, in_use, patch, row
 from .deps import Db
 
 router = APIRouter(tags=["serre"])
@@ -97,10 +97,12 @@ class CuveIn(BaseModel):
     id: str = Field(pattern=ID)
     serre_id: str | None = None
     volume_l: float | None = Field(default=None, gt=0)
+    disposition: Disposition | None = None
 
 
 class CuvePatch(BaseModel):
     volume_l: float | None = Field(default=None, gt=0)
+    disposition: Disposition | None = None
 
 
 @router.get("/cuves")
@@ -111,7 +113,12 @@ def list_cuves(s: Db) -> list[dict]:
 @router.post("/cuves", status_code=201)
 def create_cuve(body: CuveIn, s: Db) -> dict:
     absent(s, m.Cuve, body.id, "cuve")
-    x = m.Cuve(id=body.id, serre_id=_serre(s, body.serre_id), volume_l=body.volume_l)
+    x = m.Cuve(
+        id=body.id,
+        serre_id=_serre(s, body.serre_id),
+        volume_l=body.volume_l,
+        disposition=disposition(body.disposition),
+    )
     s.add(x)
     s.flush()
     return row(x)
@@ -125,7 +132,9 @@ def get_cuve(cid: str, s: Db) -> dict:
 @router.patch("/cuves/{cid}")
 def update_cuve(cid: str, body: CuvePatch, s: Db) -> dict:
     x = get(s, m.Cuve, cid, "cuve")
-    patch(x, body)
+    patch(x, body, skip=("disposition",))
+    if "disposition" in body.model_fields_set:
+        x.disposition = disposition(body.disposition)
     s.flush()
     return row(x)
 
@@ -153,6 +162,7 @@ class ZoneIn(BaseModel):
     cuve_id: str | None = None
     jour_debut: str = Field(default="06:00", pattern=r"^\d{2}:\d{2}$")
     presence_autorisee: list[Periode] = []
+    disposition: Disposition | None = None
 
 
 class ZonePatch(BaseModel):
@@ -160,6 +170,7 @@ class ZonePatch(BaseModel):
     cuve_id: str | None = None
     jour_debut: str | None = Field(default=None, pattern=r"^\d{2}:\d{2}$")
     presence_autorisee: list[Periode] | None = None
+    disposition: Disposition | None = None
 
 
 @router.get("/zones")
@@ -191,6 +202,7 @@ def create_zone(body: ZoneIn, s: Db) -> dict:
         cuve_id=body.cuve_id,
         jour_debut=body.jour_debut,
         presence_autorisee=[p.model_dump() for p in body.presence_autorisee],
+        disposition=disposition(body.disposition),
     )
     s.add(z)
     s.flush()
@@ -207,7 +219,9 @@ def update_zone(zid: str, body: ZonePatch, s: Db) -> dict:
     z = get(s, m.Zone, zid, "zone")
     if body.cuve_id is not None:
         get(s, m.Cuve, body.cuve_id, "cuve")
-    patch(z, body, skip=("presence_autorisee",))
+    patch(z, body, skip=("presence_autorisee", "disposition"))
+    if "disposition" in body.model_fields_set:
+        z.disposition = disposition(body.disposition)
     if body.presence_autorisee is not None:
         z.presence_autorisee = [p.model_dump() for p in body.presence_autorisee]
     s.flush()
@@ -375,6 +389,7 @@ class EmplacementIn(BaseModel):
     colonne: int | None = Field(default=None, ge=1)
     contenant_id: int | None = None
     contenant: ContenantIn | None = None  # created with the emplacement
+    disposition: Disposition | None = None
 
     @field_validator("code")
     @classmethod
@@ -388,6 +403,7 @@ class EmplacementPatch(BaseModel):
     colonne: int | None = Field(default=None, ge=1)
     contenant_id: int | None = None
     contenant: ContenantIn | None = None
+    disposition: Disposition | None = None
 
 
 def _contenant(s, body) -> int | None:
@@ -423,6 +439,7 @@ def create_emplacement(body: EmplacementIn, s: Db) -> dict:
         rangee=body.rangee or rangee,
         colonne=body.colonne or colonne,
         contenant_id=_contenant(s, body),
+        disposition=disposition(body.disposition),
     )
     s.add(e)
     s.flush()
@@ -437,7 +454,9 @@ def get_emplacement(eid: str, s: Db) -> dict:
 @router.patch("/emplacements/{eid}")
 def update_emplacement(eid: str, body: EmplacementPatch, s: Db) -> dict:
     e = get(s, m.Emplacement, eid, "emplacement")
-    patch(e, body, skip=("contenant", "contenant_id"))
+    patch(e, body, skip=("contenant", "contenant_id", "disposition"))
+    if "disposition" in body.model_fields_set:
+        e.disposition = disposition(body.disposition)
     if "contenant" in body.model_fields_set or "contenant_id" in body.model_fields_set:
         e.contenant_id = _contenant(s, body)
     s.flush()

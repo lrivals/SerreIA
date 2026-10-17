@@ -1,8 +1,8 @@
 // Dashboard (docs/12 §2.3): per zone, current values against the setpoint range, 24 h
 // mini-curves, actuator states, last image with its classifications, active alerts and
 // proposals waiting for a validation.
-import { BellOff, Moon, Sun } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { BellOff, Gamepad2, Moon, Sun } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAcquitter, useTableau } from "@/api/hooks";
 import type { Tuile } from "@/api/types";
 import { MiniCourbe } from "@/components/Charts";
@@ -62,6 +62,11 @@ export function Dashboard() {
     <>
       <PageTitle title="Tableau de bord">
         <ZoneTabs value={zone} onChange={(z) => setParams(z ? { zone: z } : {})} />
+        <Link to="/jeu">
+          <Button variant="outline" size="sm">
+            <Gamepad2 className="h-3.5 w-3.5" /> Voir en jeu
+          </Button>
+        </Link>
       </PageTitle>
       {isLoading && <Loading />}
       {error && <ErrorBox error={error} />}

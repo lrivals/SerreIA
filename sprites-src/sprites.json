@@ -1,5 +1,5 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "game": "Greenhouse Management",
   "description": "Cozy greenhouse management game inspired by Stardew Valley and Animal Crossing",
   "style": {
@@ -22,6 +22,11 @@
       "alert_red": "#D94F45",
       "led_purple": "#D45BE8"
     }
+  },
+  "modele": {
+    "note": "links to the data model (docs/09): read by tools/construire_atlas.py to build frontend/src/game/catalogue.gen.json",
+    "sante": { "sain": "healthy", "a_surveiller": "yellowing", "malade": "sick" },
+    "stades": ["semis", "croissance", "floraison", "fructification", "recolte"]
   },
   "grid": {
     "tile_size": [16, 16],
@@ -64,6 +69,7 @@
             "frames": 5,
             "file": "walk_right.png",
             "flip_x": true,
+            "miroir_de": "walk_right",
             "note": "not drawn: horizontal mirror of walk_right"
           },
           "walk_up": {
@@ -92,8 +98,16 @@
       }
     },
     "plants": {
+      "generic": {
+        "description": "Generic seedling for species without sprites (tomato seedling until a dedicated sprite exists)",
+        "size": [16, 32],
+        "echelle_de": "tomato",
+        "source": { "sheet": "planche_01", "sprites": [6] }
+      },
       "tomato": {
         "path": "sprites/plants/tomato/",
+        "especes": ["tomate"],
+        "stades_modele": { "semis": 0, "croissance": 1, "floraison": 2, "fructification": 3, "recolte": 4 },
         "description": "Tomato plant with five growth stages and three health states",
         "size": [16, 32],
         "growth_stages": ["seedling", "young", "flowering", "green_fruit", "ripe_fruit"],
@@ -117,6 +131,8 @@
       },
       "strawberry": {
         "path": "sprites/plants/strawberry/",
+        "especes": ["fraisier", "fraise"],
+        "stades_modele": { "semis": 0, "croissance": 1, "floraison": 2, "fructification": 3, "recolte": 4 },
         "description": "Strawberry plant with white flowers and red berries",
         "size": [16, 16],
         "growth_stages": ["seedling", "young", "flowering", "green_fruit", "ripe_fruit"],
@@ -134,6 +150,8 @@
       },
       "pepper": {
         "path": "sprites/plants/pepper/",
+        "especes": ["poivron", "piment"],
+        "stades_modele": { "semis": 0, "croissance": 1, "floraison": 2, "fructification": 2, "recolte": 3 },
         "description": "Pepper plant with green leaves and elongated peppers",
         "size": [16, 32],
         "growth_stages": ["seedling", "young", "flowering_green_fruit", "ripe_fruit"],
@@ -152,6 +170,8 @@
       },
       "basil": {
         "path": "sprites/plants/basil/",
+        "especes": ["basilic"],
+        "stades_modele": { "semis": 0, "croissance": 2, "floraison": 4, "fructification": 4, "recolte": 3 },
         "description": "Compact basil plant with dense green foliage",
         "size": [16, 16],
         "growth_stages": ["seedling", "young", "growing", "mature", "flowering"],
@@ -170,36 +190,42 @@
     },
     "containers": {
       "plastic_pot": {
+        "type": "pot",
         "file": "sprites/containers/plastic_pot.png",
         "size": [16, 16],
         "description": "Small dark plastic plant pot",
         "source": { "sheet": "planche_01", "sprites": [68] }
       },
       "terracotta_pot": {
+        "type": "pot", "materiau": "terre_cuite",
         "file": "sprites/containers/terracotta_pot.png",
         "size": [16, 16],
         "description": "Traditional orange-brown terracotta pot",
         "source": { "sheet": "planche_01", "sprites": [69] }
       },
       "wooden_planter": {
+        "type": "jardiniere",
         "file": "sprites/containers/wooden_planter.png",
         "size": [32, 16],
         "description": "Rectangular wooden planter box",
         "source": { "sheet": "planche_01", "sprites": [70] }
       },
       "fabric_grow_bag": {
+        "type": "sac_de_culture",
         "file": "sprites/containers/fabric_grow_bag.png",
         "size": [16, 16],
         "description": "Reusable fabric growing container",
         "source": { "sheet": "planche_01", "sprites": [71] }
       },
       "seedling_tray": {
+        "type": "godet",
         "file": "sprites/containers/seedling_tray.png",
         "size": [32, 16],
         "description": "Tray containing multiple seedlings",
         "source": { "sheet": "planche_01", "sprites": [72] }
       },
       "hydroponic_nft_channel": {
+        "type": "canal_NFT",
         "file": "sprites/containers/nft_channel.png",
         "size": [64, 16],
         "description": "Horizontal white hydroponic channel with four plant sites",
@@ -208,12 +234,14 @@
         "source": { "sheet": "planche_01", "sprites": [73] }
       },
       "dwc_tub": {
+        "type": "bac_DWC",
         "file": "sprites/containers/dwc_tub.png",
         "size": [32, 32],
         "description": "Deep water culture reservoir with drain tap",
         "source": { "sheet": "planche_01", "sprites": [74] }
       },
       "soil_patch": {
+        "type": "pleine_terre",
         "file": "sprites/containers/soil_patch.png",
         "size": [32, 32],
         "description": "Patch of cultivated soil",
@@ -352,6 +380,7 @@
     },
     "sensors": {
       "environment_sensor_online": {
+        "famille": "air",
         "file": "sprites/sensors/sensor_online.png",
         "size": [16, 16],
         "description": "White sensor box with green LED",
@@ -359,6 +388,7 @@
         "source": { "sheet": "planche_01", "sprites": [103] }
       },
       "environment_sensor_offline": {
+        "famille": "air",
         "file": "sprites/sensors/sensor_offline.png",
         "size": [16, 16],
         "description": "White sensor box with grey LED",
@@ -366,18 +396,21 @@
         "source": { "sheet": "planche_01", "sprites": [104] }
       },
       "soil_moisture_probe": {
+        "famille": "sol",
         "file": "sprites/sensors/soil_moisture_probe.png",
         "size": [16, 16],
         "description": "Probe inserted into the soil",
         "source": { "sheet": "planche_01", "sprites": [112] }
       },
       "light_sensor": {
+        "famille": "lumiere",
         "file": "sprites/sensors/light_sensor.png",
         "size": [16, 16],
         "description": "Sensor measuring light intensity",
         "source": { "sheet": "planche_01", "sprites": [105] }
       },
       "security_camera": {
+        "famille": "camera",
         "path": "sprites/sensors/security_camera/",
         "size": [16, 32],
         "description": "Security camera mounted on a pole",
@@ -386,6 +419,7 @@
         "source": { "sheet": "planche_01", "sprites": [113, 114] }
       },
       "water_tank": {
+        "famille": "cuve",
         "path": "sprites/sensors/water_tank/",
         "size": [16, 32],
         "description": "Water storage tank with three fill levels (niveau_cuve)",
@@ -488,6 +522,8 @@
     "transparency": true,
     "recommended_filter": "nearest_neighbor",
     "recommended_scale_factors": [2, 3, 4],
+    "facteur": 2,
+    "note_facteur": "game pixels × facteur = atlas pixels; 2 → 32 px tiles (tools/construire_atlas.py)",
     "naming_convention": "snake_case",
     "directory_structure": "frontend/public/sprites/{category}/{asset_name}/"
   },

@@ -128,3 +128,17 @@ def test_seed_is_idempotent_for_containers_sensors_and_cameras():
         seed(s, load_greenhouse(), T0 + timedelta(days=1))
     with sessions() as s:
         assert {t: count(s, t) for t in tables} == before
+
+
+def test_init_db_adds_columns_missing_from_an_older_table(tmp_path):
+    """A database created before `disposition` (docs/13 §3) gets the column at start."""
+    from sqlalchemy import inspect
+
+    from backend.db.session import add_missing_columns, init_db, make_engine
+
+    engine = make_engine(f"sqlite:///{tmp_path / 'old.db'}")
+    with engine.begin() as conn:
+        conn.exec_driver_sql("CREATE TABLE zone (id VARCHAR(16) PRIMARY KEY, serre_id VARCHAR(64))")
+    init_db(engine)
+    assert "disposition" in {c["name"] for c in inspect(engine).get_columns("zone")}
+    assert add_missing_columns(engine) == []  # idempotent

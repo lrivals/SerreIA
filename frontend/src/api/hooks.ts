@@ -12,6 +12,7 @@ import type {
   Consommation,
   Contenant,
   Conversation,
+  Cuve,
   ConversationDetail,
   DecisionRecord,
   DecisionSummary,
@@ -37,6 +38,7 @@ export const useSerres = () => useQuery({ queryKey: ["serres"], queryFn: () => a
 export const useZones = () => useQuery({ queryKey: ["zones"], queryFn: () => api<Zone[]>("/zones") });
 export const useRecettes = () =>
   useQuery({ queryKey: ["recettes"], queryFn: () => api<Recette[]>("/recettes") });
+export const useCuves = () => useQuery({ queryKey: ["cuves"], queryFn: () => api<Cuve[]>("/cuves") });
 export const useContenants = () =>
   useQuery({ queryKey: ["contenants"], queryFn: () => api<Contenant[]>("/contenants") });
 
@@ -107,8 +109,8 @@ export const useDecision = (id?: string) =>
     enabled: !!id,
   });
 
-export const useArbre = (params: Params) =>
-  useQuery({ queryKey: ["arbre", params], queryFn: () => api<TreeNode>("/actions/arbre", { params }) });
+export const useArbre = (params: Params, enabled = true) =>
+  useQuery({ queryKey: ["arbre", params], queryFn: () => api<TreeNode>("/actions/arbre", { params }), enabled });
 
 export const useConversations = () =>
   useQuery({
@@ -204,6 +206,34 @@ export const useUpdateActionneur = () =>
       api<Actionneur>(`/actionneurs/${id}`, { method: "PATCH", body }),
     [["actionneurs"], ["config"]],
   );
+export const useCreateCapteur = () =>
+  useApiMutation((body: Schemas["CapteurIn"]) => api<Capteur>("/capteurs", { body }), [["capteurs"], ["config"], ["plan"]]);
+export const useDeleteCapteur = () =>
+  useApiMutation((id: string) => api(`/capteurs/${encodeURIComponent(id)}`, { method: "DELETE" }), [
+    ["capteurs"],
+    ["config"],
+    ["plan"],
+  ]);
+export const useCreateActionneur = () =>
+  useApiMutation((body: Schemas["ActionneurIn"]) => api<Actionneur>("/actionneurs", { body }), [["actionneurs"], ["config"]]);
+export const useDeleteActionneur = () =>
+  useApiMutation((id: string) => api(`/actionneurs/${id}`, { method: "DELETE" }), [["actionneurs"], ["config"]]);
+export const useCreateCamera = () =>
+  useApiMutation((body: Schemas["CameraIn"]) => api<Camera>("/cameras", { body }), [["cameras"], ["config"], ["plan"]]);
+export const useUpdateCamera = () =>
+  useApiMutation(
+    ({ id, ...body }: Schemas["CameraPatch"] & { id: string }) =>
+      api<Camera>(`/cameras/${id}`, { method: "PATCH", body }),
+    [["cameras"], ["plan"]],
+  );
+export const useDeleteCamera = () =>
+  useApiMutation((id: string) => api(`/cameras/${id}`, { method: "DELETE" }), [["cameras"], ["config"], ["plan"]]);
+export const useUpdateCuve = () =>
+  useApiMutation(
+    ({ id, ...body }: Schemas["CuvePatch"] & { id: string }) => api<Cuve>(`/cuves/${id}`, { method: "PATCH", body }),
+    [["cuves"]],
+  );
+
 export const useSetRegions = () =>
   useApiMutation(
     ({ camera, regions }: { camera: string; regions: Schemas["Region"][] }) =>

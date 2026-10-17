@@ -176,3 +176,52 @@ def test_coherence_diff_and_publication(api, tmp_path):
     )
     assert not c.get("/api/config/coherence").json()["valide"]
     assert c.post("/api/config/publier").status_code == 422
+
+
+def test_disposition_of_the_game_view(api, tmp_path):
+    """Placement in the game view (docs/13 §3): stored and returned, never exported."""
+    c = api.client
+    d = {"x": 3, "y": 4, "orientation": "sud", "sprite": "terracotta_pot"}
+    z = c.post(
+        "/api/zones",
+        json={"nom": "Jeu", "disposition": {"x": 20, "y": 0, "largeur": 8, "hauteur": 5}},
+    )
+    assert z.json()["disposition"] == {"x": 20, "y": 0, "largeur": 8, "hauteur": 5}
+    e = c.post(
+        "/api/emplacements",
+        json={"zone_id": z.json()["id"], "code": "A1", "mode_culture": "terre", "disposition": d},
+    ).json()
+    assert e["disposition"] == d
+    r = c.patch(f"/api/emplacements/{e['id']}", json={"disposition": {"x": 5, "y": 4}}).json()
+    assert r["disposition"] == {"x": 5, "y": 4}
+    assert c.patch(f"/api/emplacements/{e['id']}", json={"mode_culture": "substrat"}).json()[
+        "disposition"
+    ]
+    plan = c.get(f"/api/zones/{z.json()['id']}/plan").json()
+    assert plan["zone"]["disposition"]["largeur"] == 8
+    assert plan["emplacements"][0]["disposition"] == {"x": 5, "y": 4}
+
+    a = c.get("/api/actionneurs").json()[0]
+    r = c.patch(f"/api/actionneurs/{a['id']}", json={"disposition": {"x": 1, "y": 0}}).json()
+    assert r["disposition"] == {"x": 1, "y": 0} and r["type"] == a["type"]
+    cap = c.get("/api/capteurs").json()[0]
+    from urllib.parse import quote
+
+    r = c.patch(f"/api/capteurs/{quote(cap['id'])}", json={"disposition": {"x": 2, "y": 6}}).json()
+    assert r["disposition"] == {"x": 2, "y": 6}
+    cam = c.get("/api/cameras").json()[0]
+    r = c.patch(
+        f"/api/cameras/{cam['id']}", json={"disposition": {"x": 0, "y": 0, "orientation": "est"}}
+    )
+    assert r.json()["disposition"]["orientation"] == "est" and r.json()["zone_id"] == cam["zone_id"]
+    assert r.json()["regions"] == cam["regions"]  # same zone: regions kept
+    cuve = c.post("/api/cuves", json={"id": "cuve-jeu", "disposition": {"x": 9, "y": 9}}).json()
+    assert cuve["disposition"] == {"x": 9, "y": 9}
+    assert c.patch("/api/cuves/cuve-jeu", json={"disposition": None}).json()["disposition"] is None
+
+    bad = {"x": -1, "y": 0}, {"x": 0, "y": 0, "orientation": "haut"}, {"x": 0}
+    for b in bad:
+        assert c.patch(f"/api/emplacements/{e['id']}", json={"disposition": b}).status_code == 422
+
+    c.post("/api/config/publier")
+    assert "disposition" not in (tmp_path / "serre.yaml").read_text()

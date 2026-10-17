@@ -55,6 +55,8 @@ class Cuve(Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     serre_id: Mapped[str] = mapped_column(ForeignKey("serre.id"))
     volume_l: Mapped[float | None] = mapped_column(Float)
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class Zone(Base):
@@ -66,6 +68,8 @@ class Zone(Base):
     cuve_id: Mapped[str | None] = mapped_column(ForeignKey("cuve.id"))
     jour_debut: Mapped[str] = mapped_column(String(5), default="06:00")  # local time
     presence_autorisee: Mapped[list | None] = mapped_column(Json)  # [{debut, fin}]
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class Contenant(Base):
@@ -88,6 +92,8 @@ class Emplacement(Base):
     rangee: Mapped[int | None] = mapped_column(Integer)
     colonne: Mapped[int | None] = mapped_column(Integer)
     contenant_id: Mapped[int | None] = mapped_column(ForeignKey("contenant.id"))
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class Recette(Base):
@@ -152,6 +158,8 @@ class Capteur(Base):
     etalonnage: Mapped[dict | None] = mapped_column(Json)
     plage_min: Mapped[float | None] = mapped_column(Float)
     plage_max: Mapped[float | None] = mapped_column(Float)
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class CapteurEmplacement(Base):
@@ -177,6 +185,8 @@ class Actionneur(Base):
     duree_max_s: Mapped[float | None] = mapped_column(Float)
     # Controller timings of serre.yaml (duree_s, impulsion_s, melange_s, delai_min_s…).
     parametres: Mapped[dict | None] = mapped_column(Json)
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class Camera(Base):
@@ -184,6 +194,8 @@ class Camera(Base):
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     zone_id: Mapped[str] = mapped_column(ForeignKey("zone.id"))
+    # Placement in the game view (docs/13 §3): purely visual, not exported to serre.yaml.
+    disposition: Mapped[dict | None] = mapped_column(Json)
 
 
 class ConfigExport(Base):

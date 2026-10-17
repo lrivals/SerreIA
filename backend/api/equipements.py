@@ -14,7 +14,7 @@ from edge.controller.config import capteur_id
 
 from ..db import models as m
 from ..db.session import utc
-from .crud import absent, get, patch, row
+from .crud import Disposition, absent, disposition, get, patch, row
 from .deps import Db, Now
 from .serres import ZONE_ID
 
@@ -55,6 +55,7 @@ class CapteurIn(BaseModel):
     plage_min: float | None = None
     plage_max: float | None = None
     emplacements_couverts: list[str] | None = None  # None: every emplacement of the zone
+    disposition: Disposition | None = None
 
 
 class CapteurPatch(BaseModel):
@@ -65,6 +66,7 @@ class CapteurPatch(BaseModel):
     plage_min: float | None = None
     plage_max: float | None = None
     emplacements_couverts: list[str] | None = None
+    disposition: Disposition | None = None
 
 
 def _links(s, cid: str, zone: str, couverts: list[str] | None) -> None:
@@ -125,7 +127,11 @@ def create_capteur(body: CapteurIn, s: Db, now: Now) -> dict:
         get(s, m.Emplacement, body.emplacement, "emplacement")
     cid = capteur_id(body.noeud, body.type.value, body.emplacement)
     absent(s, m.Capteur, cid, "capteur")
-    c = m.Capteur(id=cid, **body.model_dump(mode="json", exclude={"emplacements_couverts"}))
+    c = m.Capteur(
+        id=cid,
+        **body.model_dump(mode="json", exclude={"emplacements_couverts", "disposition"}),
+        disposition=disposition(body.disposition),
+    )
     s.add(c)
     s.flush()
     couverts = [body.emplacement] if body.emplacement else body.emplacements_couverts
@@ -146,7 +152,9 @@ def _covered(s, cid: str) -> list[str]:
 @router.patch("/capteurs/{cid}")
 def update_capteur(cid: str, body: CapteurPatch, s: Db, now: Now) -> dict:
     c = get(s, m.Capteur, cid, "capteur")
-    patch(c, body, skip=("emplacements_couverts",))
+    patch(c, body, skip=("emplacements_couverts", "disposition"))
+    if "disposition" in body.model_fields_set:
+        c.disposition = disposition(body.disposition)
     if "emplacements_couverts" in body.model_fields_set and c.emplacement is None:
         _links(s, cid, c.zone, body.emplacements_couverts)
     s.flush()
@@ -177,6 +185,7 @@ class ActionneurIn(BaseModel):
     ppfd_max: float | None = Field(default=None, ge=0)
     duree_max_s: float | None = Field(default=None, gt=0)
     parametres: dict | None = None
+    disposition: Disposition | None = None
 
 
 class ActionneurPatch(BaseModel):
@@ -188,6 +197,7 @@ class ActionneurPatch(BaseModel):
     ppfd_max: float | None = Field(default=None, ge=0)
     duree_max_s: float | None = Field(default=None, gt=0)
     parametres: dict | None = None
+    disposition: Disposition | None = None
 
 
 def _state(s, zone: str, type_: str) -> dict | None:
@@ -225,7 +235,10 @@ def create_actionneur(body: ActionneurIn, s: Db) -> dict:
         raise HTTPException(
             409, f"la zone {body.zone_id} a déjà un actionneur {body.type} ({same.id})"
         )
-    a = m.Actionneur(**body.model_dump(mode="json"))
+    a = m.Actionneur(
+        **body.model_dump(mode="json", exclude={"disposition"}),
+        disposition=disposition(body.disposition),
+    )
     s.add(a)
     s.flush()
     return actuator_row(s, a)
@@ -239,7 +252,9 @@ def get_actionneur(aid: str, s: Db) -> dict:
 @router.patch("/actionneurs/{aid}")
 def update_actionneur(aid: str, body: ActionneurPatch, s: Db) -> dict:
     a = get(s, m.Actionneur, aid, "actionneur")
-    patch(a, body)
+    patch(a, body, skip=("disposition",))
+    if "disposition" in body.model_fields_set:
+        a.disposition = disposition(body.disposition)
     s.flush()
     return actuator_row(s, a)
 
@@ -255,10 +270,12 @@ def delete_actionneur(aid: str, s: Db) -> None:
 class CameraIn(BaseModel):
     id: str = Field(pattern=NODE_ID)
     zone_id: str = Field(pattern=ZONE_ID)
+    disposition: Disposition | None = None
 
 
 class CameraPatch(BaseModel):
-    zone_id: str = Field(pattern=ZONE_ID)
+    zone_id: str | None = Field(default=None, pattern=ZONE_ID)
+    disposition: Disposition | None = None
 
 
 class Region(BaseModel):
@@ -306,7 +323,7 @@ def list_cameras(s: Db, zone: str | None = None) -> list[dict]:
 def create_camera(body: CameraIn, s: Db) -> dict:
     get(s, m.Zone, body.zone_id, "zone")
     absent(s, m.Camera, body.id, "caméra")
-    c = m.Camera(**body.model_dump())
+    c = m.Camera(id=body.id, zone_id=body.zone_id, disposition=disposition(body.disposition))
     s.add(c)
     s.flush()
     return _camera(s, c)
@@ -320,10 +337,13 @@ def get_camera(cam: str, s: Db) -> dict:
 @router.patch("/cameras/{cam}")
 def update_camera(cam: str, body: CameraPatch, s: Db) -> dict:
     c = get(s, m.Camera, cam, "caméra")
-    get(s, m.Zone, body.zone_id, "zone")
-    if body.zone_id != c.zone_id:
-        s.execute(delete(m.CameraRegion).where(m.CameraRegion.camera_id == cam))
-    c.zone_id = body.zone_id
+    if body.zone_id is not None:
+        get(s, m.Zone, body.zone_id, "zone")
+        if body.zone_id != c.zone_id:
+            s.execute(delete(m.CameraRegion).where(m.CameraRegion.camera_id == cam))
+        c.zone_id = body.zone_id
+    if "disposition" in body.model_fields_set:
+        c.disposition = disposition(body.disposition)
     s.flush()
     return _camera(s, c)
 

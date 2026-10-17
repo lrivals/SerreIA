@@ -3803,6 +3803,16 @@
        }
       ],
       "title": "Parametres"
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -3911,6 +3921,16 @@
        }
       ],
       "title": "Parametres"
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -3941,6 +3961,16 @@
       "type": "string",
       "pattern": "^z\\d+$",
       "title": "Zone Id"
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -3953,15 +3983,29 @@
    "CameraPatch": {
     "properties": {
      "zone_id": {
-      "type": "string",
-      "pattern": "^z\\d+$",
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^z\\d+$"
+       },
+       {
+        "type": "null"
+       }
+      ],
       "title": "Zone Id"
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
-    "required": [
-     "zone_id"
-    ],
     "title": "CameraPatch"
    },
    "CapteurIn": {
@@ -4071,6 +4115,16 @@
        }
       ],
       "title": "Emplacements Couverts"
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -4164,6 +4218,16 @@
        }
       ],
       "title": "Emplacements Couverts"
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -4300,6 +4364,16 @@
        }
       ],
       "title": "Volume L"
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -4321,6 +4395,16 @@
        }
       ],
       "title": "Volume L"
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -4345,6 +4429,84 @@
      "emplacement"
     ],
     "title": "Deplacer"
+   },
+   "Disposition": {
+    "properties": {
+     "x": {
+      "type": "integer",
+      "maximum": 1000.0,
+      "minimum": 0.0,
+      "title": "X"
+     },
+     "y": {
+      "type": "integer",
+      "maximum": 1000.0,
+      "minimum": 0.0,
+      "title": "Y"
+     },
+     "largeur": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 200.0,
+        "minimum": 1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Largeur"
+     },
+     "hauteur": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 200.0,
+        "minimum": 1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Hauteur"
+     },
+     "orientation": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "nord",
+         "sud",
+         "est",
+         "ouest"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Orientation"
+     },
+     "sprite": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sprite"
+     }
+    },
+    "type": "object",
+    "required": [
+     "x",
+     "y"
+    ],
+    "title": "Disposition",
+    "description": "Placement in the game view (docs/13 §3), in tiles of the greenhouse frame. Purely\nvisual: the controller ignores it and it is not exported to serre.yaml."
    },
    "EmplacementIn": {
     "properties": {
@@ -4409,6 +4571,16 @@
       "anyOf": [
        {
         "$ref": "#/components/schemas/ContenantIn"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
        },
        {
         "type": "null"
@@ -4484,6 +4656,16 @@
       "anyOf": [
        {
         "$ref": "#/components/schemas/ContenantIn"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
        },
        {
         "type": "null"
@@ -5249,6 +5431,16 @@
       "type": "array",
       "title": "Presence Autorisee",
       "default": []
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -5303,6 +5495,16 @@
        }
       ],
       "title": "Presence Autorisee"
+     },
+     "disposition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Disposition"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",

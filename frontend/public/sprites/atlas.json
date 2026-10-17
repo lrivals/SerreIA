@@ -1,0 +1,3033 @@
+{
+ "frames": {
+  "ui/dialogue_box": {
+   "frame": {
+    "x": 2,
+    "y": 2,
+    "w": 192,
+    "h": 96
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 192,
+    "h": 96
+   },
+   "sourceSize": {
+    "w": 192,
+    "h": 96
+   }
+  },
+  "containers/dwc_tub": {
+   "frame": {
+    "x": 196,
+    "y": 2,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   }
+  },
+  "containers/soil_patch": {
+   "frame": {
+    "x": 262,
+    "y": 2,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   }
+  },
+  "plants/generic": {
+   "frame": {
+    "x": 328,
+    "y": 2,
+    "w": 36,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 36,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 36,
+    "h": 64
+   }
+  },
+  "plants/pepper/flowering_green_fruit/healthy": {
+   "frame": {
+    "x": 366,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/flowering_green_fruit/sick": {
+   "frame": {
+    "x": 410,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/flowering_green_fruit/yellowing": {
+   "frame": {
+    "x": 454,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/ripe_fruit/healthy": {
+   "frame": {
+    "x": 498,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/ripe_fruit/sick": {
+   "frame": {
+    "x": 542,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/ripe_fruit/yellowing": {
+   "frame": {
+    "x": 586,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/seedling/healthy": {
+   "frame": {
+    "x": 630,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/seedling/sick": {
+   "frame": {
+    "x": 674,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/seedling/yellowing": {
+   "frame": {
+    "x": 718,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/young/healthy": {
+   "frame": {
+    "x": 762,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/young/sick": {
+   "frame": {
+    "x": 806,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/pepper/young/yellowing": {
+   "frame": {
+    "x": 850,
+    "y": 2,
+    "w": 42,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 42,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 42,
+    "h": 64
+   }
+  },
+  "plants/tomato/flowering/healthy": {
+   "frame": {
+    "x": 894,
+    "y": 2,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/flowering/sick": {
+   "frame": {
+    "x": 937,
+    "y": 2,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/flowering/yellowing": {
+   "frame": {
+    "x": 980,
+    "y": 2,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/green_fruit/healthy": {
+   "frame": {
+    "x": 2,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/green_fruit/sick": {
+   "frame": {
+    "x": 45,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/green_fruit/yellowing": {
+   "frame": {
+    "x": 88,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/ripe_fruit/healthy": {
+   "frame": {
+    "x": 131,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/ripe_fruit/sick": {
+   "frame": {
+    "x": 174,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/ripe_fruit/yellowing": {
+   "frame": {
+    "x": 217,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/seedling/healthy": {
+   "frame": {
+    "x": 260,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/seedling/sick": {
+   "frame": {
+    "x": 303,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/seedling/yellowing": {
+   "frame": {
+    "x": 346,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/young/healthy": {
+   "frame": {
+    "x": 389,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/young/sick": {
+   "frame": {
+    "x": 432,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "plants/tomato/young/yellowing": {
+   "frame": {
+    "x": 475,
+    "y": 100,
+    "w": 41,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 64
+   }
+  },
+  "sensors/security_camera/flash/0": {
+   "frame": {
+    "x": 518,
+    "y": 100,
+    "w": 32,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 64
+   }
+  },
+  "sensors/security_camera/normal/0": {
+   "frame": {
+    "x": 552,
+    "y": 100,
+    "w": 32,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 64
+   }
+  },
+  "sensors/water_tank/full/0": {
+   "frame": {
+    "x": 586,
+    "y": 100,
+    "w": 32,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 64
+   }
+  },
+  "sensors/water_tank/half/0": {
+   "frame": {
+    "x": 620,
+    "y": 100,
+    "w": 32,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 64
+   }
+  },
+  "sensors/water_tank/low/0": {
+   "frame": {
+    "x": 654,
+    "y": 100,
+    "w": 32,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 64
+   }
+  },
+  "tiles/greenhouse_corner": {
+   "frame": {
+    "x": 688,
+    "y": 100,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   }
+  },
+  "tiles/greenhouse_door": {
+   "frame": {
+    "x": 754,
+    "y": 100,
+    "w": 32,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 64
+   }
+  },
+  "tiles/greenhouse_glass_front": {
+   "frame": {
+    "x": 788,
+    "y": 100,
+    "w": 64,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 64
+   }
+  },
+  "tiles/greenhouse_glass_side": {
+   "frame": {
+    "x": 854,
+    "y": 100,
+    "w": 32,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 64
+   }
+  },
+  "tiles/greenhouse_glass_side_narrow": {
+   "frame": {
+    "x": 888,
+    "y": 100,
+    "w": 32,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 64
+   }
+  },
+  "tiles/metal_shelf": {
+   "frame": {
+    "x": 922,
+    "y": 100,
+    "w": 32,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 64
+   }
+  },
+  "characters/gardener/idle/0": {
+   "frame": {
+    "x": 956,
+    "y": 100,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/idle/1": {
+   "frame": {
+    "x": 2,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/idle_back/0": {
+   "frame": {
+    "x": 39,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_down/0": {
+   "frame": {
+    "x": 76,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_down/1": {
+   "frame": {
+    "x": 113,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_down/2": {
+   "frame": {
+    "x": 150,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_down/3": {
+   "frame": {
+    "x": 187,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_down/4": {
+   "frame": {
+    "x": 224,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_right/0": {
+   "frame": {
+    "x": 261,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_right/1": {
+   "frame": {
+    "x": 298,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_right/2": {
+   "frame": {
+    "x": 335,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_right/3": {
+   "frame": {
+    "x": 372,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_right/4": {
+   "frame": {
+    "x": 409,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_up/0": {
+   "frame": {
+    "x": 446,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_up/1": {
+   "frame": {
+    "x": 483,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_up/2": {
+   "frame": {
+    "x": 520,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_up/3": {
+   "frame": {
+    "x": 557,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/walk_up/4": {
+   "frame": {
+    "x": 594,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/watering/0": {
+   "frame": {
+    "x": 631,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "characters/gardener/watering/1": {
+   "frame": {
+    "x": 668,
+    "y": 166,
+    "w": 35,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 35,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 35,
+    "h": 48
+   }
+  },
+  "containers/fabric_grow_bag": {
+   "frame": {
+    "x": 705,
+    "y": 166,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "containers/hydroponic_nft_channel": {
+   "frame": {
+    "x": 739,
+    "y": 166,
+    "w": 128,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 128,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 128,
+    "h": 32
+   }
+  },
+  "containers/plastic_pot": {
+   "frame": {
+    "x": 869,
+    "y": 166,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "containers/seedling_tray": {
+   "frame": {
+    "x": 903,
+    "y": 166,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   }
+  },
+  "containers/terracotta_pot": {
+   "frame": {
+    "x": 969,
+    "y": 166,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "containers/wooden_planter": {
+   "frame": {
+    "x": 2,
+    "y": 216,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   }
+  },
+  "devices/fan/off/0": {
+   "frame": {
+    "x": 68,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/fan/on/0": {
+   "frame": {
+    "x": 102,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/fan/on/1": {
+   "frame": {
+    "x": 136,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/fan/on/2": {
+   "frame": {
+    "x": 170,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/fan/on/3": {
+   "frame": {
+    "x": 204,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/fan/on/4": {
+   "frame": {
+    "x": 238,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/grow_light/off/0": {
+   "frame": {
+    "x": 272,
+    "y": 216,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   }
+  },
+  "devices/grow_light/off/1": {
+   "frame": {
+    "x": 338,
+    "y": 216,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   }
+  },
+  "devices/grow_light/on/0": {
+   "frame": {
+    "x": 404,
+    "y": 216,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   }
+  },
+  "devices/grow_light/on/1": {
+   "frame": {
+    "x": 470,
+    "y": 216,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   }
+  },
+  "devices/grow_light/on/2": {
+   "frame": {
+    "x": 536,
+    "y": 216,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   }
+  },
+  "devices/grow_light/on/3": {
+   "frame": {
+    "x": 602,
+    "y": 216,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   }
+  },
+  "devices/heater/off/0": {
+   "frame": {
+    "x": 668,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/heater/off/1": {
+   "frame": {
+    "x": 702,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/heater/on/0": {
+   "frame": {
+    "x": 736,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/heater/on/1": {
+   "frame": {
+    "x": 770,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/heater/on/2": {
+   "frame": {
+    "x": 804,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/heater/on/3": {
+   "frame": {
+    "x": 838,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/mist_sprayer/off/0": {
+   "frame": {
+    "x": 872,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/mist_sprayer/off/1": {
+   "frame": {
+    "x": 906,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/mist_sprayer/on/0": {
+   "frame": {
+    "x": 940,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/mist_sprayer/on/1": {
+   "frame": {
+    "x": 974,
+    "y": 216,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/mist_sprayer/on/2": {
+   "frame": {
+    "x": 2,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/mist_sprayer/on/3": {
+   "frame": {
+    "x": 36,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/ph_dosing_pump/off/0": {
+   "frame": {
+    "x": 70,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/ph_dosing_pump/off/1": {
+   "frame": {
+    "x": 104,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/ph_dosing_pump/off/2": {
+   "frame": {
+    "x": 138,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/ph_dosing_pump/on/0": {
+   "frame": {
+    "x": 172,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/ph_dosing_pump/on/1": {
+   "frame": {
+    "x": 206,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/ph_dosing_pump/on/2": {
+   "frame": {
+    "x": 240,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/water_pump/off/0": {
+   "frame": {
+    "x": 274,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/water_pump/off/1": {
+   "frame": {
+    "x": 308,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/water_pump/off/2": {
+   "frame": {
+    "x": 342,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/water_pump/off/3": {
+   "frame": {
+    "x": 376,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/water_pump/on/0": {
+   "frame": {
+    "x": 410,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "devices/water_pump/on/1": {
+   "frame": {
+    "x": 444,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/flowering/healthy": {
+   "frame": {
+    "x": 478,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/flowering/sick": {
+   "frame": {
+    "x": 512,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/flowering/yellowing": {
+   "frame": {
+    "x": 546,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/growing/healthy": {
+   "frame": {
+    "x": 580,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/growing/sick": {
+   "frame": {
+    "x": 614,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/growing/yellowing": {
+   "frame": {
+    "x": 648,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/mature/healthy": {
+   "frame": {
+    "x": 682,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/mature/sick": {
+   "frame": {
+    "x": 716,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/mature/yellowing": {
+   "frame": {
+    "x": 750,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/seedling/healthy": {
+   "frame": {
+    "x": 784,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/seedling/sick": {
+   "frame": {
+    "x": 818,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/seedling/yellowing": {
+   "frame": {
+    "x": 852,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/young/healthy": {
+   "frame": {
+    "x": 886,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/young/sick": {
+   "frame": {
+    "x": 920,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/basil/young/yellowing": {
+   "frame": {
+    "x": 954,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/flowering/healthy": {
+   "frame": {
+    "x": 988,
+    "y": 250,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/flowering/sick": {
+   "frame": {
+    "x": 2,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/flowering/yellowing": {
+   "frame": {
+    "x": 36,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/green_fruit/healthy": {
+   "frame": {
+    "x": 70,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/green_fruit/sick": {
+   "frame": {
+    "x": 104,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/green_fruit/yellowing": {
+   "frame": {
+    "x": 138,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/ripe_fruit/healthy": {
+   "frame": {
+    "x": 172,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/ripe_fruit/sick": {
+   "frame": {
+    "x": 206,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/ripe_fruit/yellowing": {
+   "frame": {
+    "x": 240,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/seedling/healthy": {
+   "frame": {
+    "x": 274,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/seedling/sick": {
+   "frame": {
+    "x": 308,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/seedling/yellowing": {
+   "frame": {
+    "x": 342,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/young/healthy": {
+   "frame": {
+    "x": 376,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/young/sick": {
+   "frame": {
+    "x": 410,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "plants/strawberry/young/yellowing": {
+   "frame": {
+    "x": 444,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "sensors/environment_sensor_offline": {
+   "frame": {
+    "x": 478,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "sensors/environment_sensor_online": {
+   "frame": {
+    "x": 512,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "sensors/light_sensor": {
+   "frame": {
+    "x": 546,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "sensors/soil_moisture_probe": {
+   "frame": {
+    "x": 580,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "tiles/brick_border_corner": {
+   "frame": {
+    "x": 614,
+    "y": 284,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   }
+  },
+  "tiles/gravel": {
+   "frame": {
+    "x": 680,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "tiles/soil": {
+   "frame": {
+    "x": 714,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "tiles/stone_floor": {
+   "frame": {
+    "x": 748,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "tiles/wooden_path": {
+   "frame": {
+    "x": 782,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "ui/alert": {
+   "frame": {
+    "x": 816,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "ui/heart": {
+   "frame": {
+    "x": 850,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "ui/question": {
+   "frame": {
+    "x": 884,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "ui/sparkles": {
+   "frame": {
+    "x": 918,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "ui/spore_particles/brown/0": {
+   "frame": {
+    "x": 952,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "ui/spore_particles/green/0": {
+   "frame": {
+    "x": 986,
+    "y": 284,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "ui/spore_particles/purple/0": {
+   "frame": {
+    "x": 2,
+    "y": 318,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "ui/thinking": {
+   "frame": {
+    "x": 36,
+    "y": 318,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  }
+ },
+ "meta": {
+  "app": "tools/construire_atlas.py",
+  "image": "atlas.png",
+  "size": {
+   "w": 1024,
+   "h": 352
+  },
+  "scale": "1"
+ }
+}

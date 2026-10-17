@@ -25,14 +25,22 @@ interface Live {
   connected: boolean;
   last: LiveEvent | null;
   received: number;
+  /** Every event, not only the last one (game view, docs/13 §5); returns the unsubscribe. */
+  subscribe: (fn: (e: LiveEvent) => void) => () => void;
 }
 
-const LiveContext = createContext<Live>({ connected: false, last: null, received: 0 });
+const listeners = new Set<(e: LiveEvent) => void>();
+const subscribe = (fn: (e: LiveEvent) => void) => {
+  listeners.add(fn);
+  return () => void listeners.delete(fn);
+};
+
+const LiveContext = createContext<Live>({ connected: false, last: null, received: 0, subscribe });
 export const useLive = () => useContext(LiveContext);
 
 export function LiveProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
-  const [state, setState] = useState<Live>({ connected: false, last: null, received: 0 });
+  const [state, setState] = useState<Live>({ connected: false, last: null, received: 0, subscribe });
   const pending = useRef(new Set<string>());
   const timer = useRef<number | null>(null);
 
@@ -58,6 +66,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
       ws.onmessage = (msg) => {
         const e = JSON.parse(msg.data) as LiveEvent;
         setState((s) => ({ ...s, last: e, received: s.received + 1 }));
+        listeners.forEach((fn) => fn(e));
         for (const key of STALE[e.kind] ?? []) pending.current.add(JSON.stringify(key));
         if (timer.current === null) timer.current = window.setTimeout(flush, THROTTLE_MS);
       };

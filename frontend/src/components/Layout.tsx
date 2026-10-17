@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   Bot,
   Cpu,
+  Gamepad2,
   GitBranch,
   LayoutDashboard,
   ListChecks,
@@ -30,6 +31,7 @@ const NAV = [
   { to: "/decisions", label: "Décisions", icon: ListChecks },
   { to: "/arbre", label: "Arbre des actions", icon: GitBranch },
   { to: "/agent", label: "Agent", icon: Bot },
+  { to: "/jeu", label: "Vue jeu", icon: Gamepad2 },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {

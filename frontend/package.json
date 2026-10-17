@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@dagrejs/dagre": "^1.1.4",
+    "@fontsource/press-start-2p": "^5.2.5",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-collapsible": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.4",
@@ -22,7 +23,10 @@
     "@xyflow/react": "^12.3.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "easystarjs": "^0.4.4",
     "lucide-react": "^0.468.0",
+    "mitt": "^3.0.1",
+    "phaser": "^3.90.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.54.0",

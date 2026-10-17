@@ -12,6 +12,7 @@ import { Equipements } from "./pages/Equipements";
 import { FicheDecisionPage } from "./pages/FicheDecisionPage";
 
 const Arbre = lazy(() => import("./pages/Arbre")); // React Flow: loaded on demand
+const SerreJeu = lazy(() => import("./game/SerreJeu")); // Phaser and the sprites: loaded on demand
 
 export function App() {
   return (
@@ -28,6 +29,7 @@ export function App() {
             <Route path="/decisions/:id" element={<FicheDecisionPage />} />
             <Route path="/arbre" element={<Arbre />} />
             <Route path="/agent" element={<Agent />} />
+            <Route path="/jeu" element={<SerreJeu />} />
             <Route path="*" element={<Navigate to="/tableau" replace />} />
           </Routes>
         </Suspense>

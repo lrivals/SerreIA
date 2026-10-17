@@ -5,6 +5,23 @@ import type { components } from "./schema";
 export type Schemas = components["schemas"];
 export type Range = [number, number];
 
+/** Placement in the game view (docs/13 §3), in tiles; purely visual. */
+export interface Disposition {
+  x: number;
+  y: number;
+  largeur?: number;
+  hauteur?: number;
+  orientation?: "nord" | "sud" | "est" | "ouest";
+  sprite?: string;
+}
+
+export interface Cuve {
+  id: string;
+  serre_id: string;
+  volume_l: number | null;
+  disposition?: Disposition | null;
+}
+
 export interface Serre {
   id: string;
   nom: string;
@@ -22,6 +39,7 @@ export interface Zone {
   jour_debut: string;
   presence_autorisee: { debut: string; fin: string }[] | null;
   n_emplacements?: number;
+  disposition?: Disposition | null;
 }
 
 export interface Contenant {
@@ -71,6 +89,7 @@ export interface Emplacement {
   rangee: number | null;
   colonne: number | null;
   contenant_id: number | null;
+  disposition?: Disposition | null;
 }
 
 export interface EmplacementPlan extends Emplacement {
@@ -109,6 +128,7 @@ export interface Capteur {
   derniere_mesure: { ts: string; valeur: number } | null;
   etalonnage_echeance: string | null;
   etalonnage_en_retard: boolean;
+  disposition?: Disposition | null;
 }
 
 export interface EtatActionneur {
@@ -129,6 +149,7 @@ export interface Actionneur {
   ppfd_max: number | null;
   duree_max_s: number | null;
   etat: EtatActionneur | null;
+  disposition?: Disposition | null;
 }
 
 export interface Camera {
@@ -136,6 +157,7 @@ export interface Camera {
   zone_id: string;
   regions: { emplacement_id: string; bbox: [number, number, number, number] | null }[];
   derniere_image: { image_id: string; ts: string } | null;
+  disposition?: Disposition | null;
 }
 
 export interface Noeud {

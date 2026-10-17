@@ -2,7 +2,7 @@
 
 Une vue de l'interface inspirée d'Animal Crossing / Stardew Valley : on **construit** sa serre case par case, puis, une fois en fonctionnement, un **petit jardinier** la parcourt et **rejoue les actions réelles** du contrôleur (ventiler, arroser, inspecter une plante malade). Approcher ou cliquer une plante ou une station de culture affiche ses **stats** dans une bulle de dialogue.
 
-> Statut : **conception**. Interface classique et API : [12](12-interface-utilisateur.md) ; modèle de données : [09](09-modele-gestion-serre.md) ; décisions : [10](10-decisions-tracabilite.md) ; agent : [11](11-agent-decision.md).
+> Statut : **implémenté (J1–J5)**, avec les sprites de `planche_01` : vue `/jeu` (Phaser 3), pipeline sprites → atlas piloté par le manifeste (§2), champ `disposition` en base (§3), construction, serre vivante, inspection, rejeu, démo hors ligne `/jeu?demo=1` ; détail en §11. Interface classique et API : [12](12-interface-utilisateur.md) ; modèle de données : [09](09-modele-gestion-serre.md) ; décisions : [10](10-decisions-tracabilite.md) ; agent : [11](11-agent-decision.md).
 
 ## 1. Principe
 
@@ -63,7 +63,18 @@ sprites-src/
 - **Découpe** : `tools/decouper_sprites.py --auto` détecte les sprites d'après le canal alpha (pixels quasi opaques, fragments proches recollés : tige et motte d'une jeune pousse, gouttes) et numérote les cadres ligne par ligne. Un mode interactif (sélection à la souris, OpenCV avec interface graphique) sert aux corrections.
 - **Manifeste** `sprites.json` : pour chaque asset, la taille **cible** en pixels de jeu, les états ou images d'animation, le chemin final sous `frontend/public/sprites/`, et `source.sprites`, les numéros des fichiers découpés. Les plantes sont décrites par une matrice santé × stade. Chaque actionneur porte le nom `Actuator` correspondant (`ventilo`, `led`…).
 - **État de `planche_01`** (150 sprites) : jardinier sur 3 directions × 5 images (la gauche est le miroir de la droite), arrosage vers la droite uniquement ; tomate, fraisier et basilic en 5 stades, poivron en 4 ; 6 images par actionneur. Les animations prévues dans le tableau ci-dessus (inspecter, ventiler, doser, noter, dormir), la bordure de briques droite et les états `isolee` / `retiree` manquent. Ils sont listés dans `suggested_additions.missing_from_planche_01`.
-- **Limites des images générées** : sprites environ 3 à 5 fois trop grands et hors grille, donc à réduire en *nearest neighbor* puis à retoucher ; actionneurs, capteurs et cuves posés sur un voile blanc semi-transparent à effacer.
+- **Limites des images générées** : sprites environ 3 à 5 fois trop grands et hors grille ; actionneurs, capteurs et cuves posés sur un voile blanc semi-transparent.
+
+### Atlas du jeu : `make sprites`
+
+`tools/construire_atlas.py` lit `sprites.json` et produit tout ce que le jeu affiche :
+
+1. **nettoyage** de chaque sprite découpé : halo flou et voile blanc effacés, alpha binaire ;
+2. **réduction** à `size × export.facteur` (facteur **2** : une tuile = 32 px d'atlas = 16 px de jeu), chaque pixel prenant la couleur dominante de son bloc, sans mélange ; une **échelle commune** à toutes les images d'un asset (un semis reste plus petit que la plante adulte), reprise d'un autre asset avec `echelle_de` ;
+3. **atlas** `frontend/public/sprites/atlas.png` + `atlas.json` (Phaser, JSON Hash), PNG séparés pour les éléments 9-slice, aperçu ×3 `sprites-src/atlas_apercu.png` ;
+4. **catalogue** `frontend/src/game/catalogue.gen.json` dans les termes du modèle : espèce × stade × santé → frame (`especes`, `stades_modele` du manifeste, `modele.sante`), contenants par `type`, actionneurs par `actuator`, capteurs par `famille`, animations du jardinier.
+
+Le jeu ne lit que ce catalogue : une nouvelle planche se découpe, se décrit dans le manifeste, puis `make sprites` suffit. Tout ce qui manque a un repli (plante générique, stade le plus proche, `idle` du jardinier, cloche et spores dessinées par le jeu). Les prompts des planches suivantes sont dans [`sprites-src/PROMPTS.md`](../sprites-src/PROMPTS.md).
 
 ## 3. Correspondance données → monde
 
@@ -257,3 +268,25 @@ Un mode **« hors ligne »** charge une serre et une journée d'événements dep
 | **J5 — Finitions** | rejouer 24 h / 7 j, ambiance (buée, LED), parler au jardinier, sprites maison | — |
 
 Ces étapes se placent **après G2** ([07](07-roadmap.md)) : elles réutilisent l'API et les composants de l'interface classique.
+
+## 11. Implémentation
+
+| Élément | Fichiers |
+|---|---|
+| Atlas et catalogue | `tools/construire_atlas.py` (`make sprites`), `sprites-src/sprites.json` v1.2, `tests/test_construire_atlas.py` |
+| `disposition` | colonne JSON sur `zone`, `emplacement`, `capteur`, `actionneur`, `camera`, `cuve` ; `init_db` ajoute les colonnes manquantes d'une base existante (`add_missing_columns`, en attendant Alembic) ; modèle `Disposition` (`backend/api/crud.py`) dans les `*In` / `*Patch` ; jamais exporté dans `serre.yaml` |
+| Page | `frontend/src/game/SerreJeu.tsx` (route `/jeu`, chargée à la demande), `PhaserVue.tsx`, `donnees.ts` (API ou démo) |
+| Pur et testé | `monde.ts` (données → tuiles, entités, cases bloquées, disposition par défaut), `mapping.ts`, `tasks/fileTaches.ts`, `rejeu.ts` |
+| Phaser | `scenes/Chargement.ts`, `scenes/Serre.ts` (sol, murs, objets réconciliés, ambiance, caméra, clics), `scenes/Construction.ts` (grille, fantôme, glisser, rectangle de zone), `entities/Jardinier.ts` (A* easystarjs), `entities/Objet.ts` |
+| React | `ui/BarreEtat`, `ui/BulleDialogue`, `ui/SerrePhone`, `ui/Inventaire`, `ui/FormulaireEquipement`, `useConstruction.ts` (gestes → CRUD, annuler / rétablir), `useRejeu.ts`, `components/ChatAgent.tsx` (partagé avec la page Agent) |
+
+Écarts et choix par rapport aux sections précédentes :
+- **Zoom** : par pas entiers de *pixels de jeu* (caméra 0,5 ; 1 ; 1,5… puisque l'atlas est en ×2), jamais de pixel fractionnaire, et la serre entière tient à l'écran au départ.
+- **Murs** : murs bas dessinés par le jeu, vitres de façade et porte de `planche_01` ; dès que `brick_border_straight` existe dans le catalogue, les murs passent en briques.
+- **HUD** en React par-dessus le canvas (pas de scène `Hud`) ; l'inventaire est une colonne à côté du canvas.
+- **Live** : `LiveProvider` expose `subscribe` (chaque événement). L'état d'un actionneur et le statut d'un nœud changent dès le message ; la tâche est ajoutée ensuite à la file.
+- **Rejeu** : décisions exceptionnelles, de sécurité et manuelles une par une, avec leurs actions (actionneur en marche de `ts_debut` à `ts_fin`) ; les routines restent agrégées dans l'arbre, donc absentes du rejeu. L'HR et la T° viennent de `/mesures` (buée, teinte).
+- **Construction** : un contenant posé reçoit le code de grille de sa case (`codeCase`), cohérent avec le plan classique. La gomme retire la plante (`deplacer` vers aucun emplacement) ou supprime l'objet, et l'annulation le recrée ; une caméra recréée perd ses régions. La cuve et les zones ne se suppriment pas depuis le jeu.
+- **Tests** : Vitest (`mapping`, `monde`, `fileTaches`, `rejeu`, `BulleDialogue`, sur la serre de démo `public/demo/serre-demo.json`) et Playwright `e2e/jeu.spec.ts` (pot puis tomate posés depuis l'inventaire, annuler, décision manuelle jouée par le jardinier, « Demander à l'agent »). Pour viser une case du canvas, les tests passent par `window.__serreJeu`, exposé seulement sous automatisation (`navigator.webdriver`). Pas encore de captures de référence (§9, visuels).
+
+Reste à faire : sprites des planches suivantes (actions du jardinier, autres espèces, ravageurs, briques, mobilier) et leur branchement quand un nouveau type d'élément apparaît (overlays de symptômes par classe vision, canal NFT continu, banc, boîtier Pi) ; captures visuelles de référence.

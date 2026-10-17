@@ -68,6 +68,7 @@ python3 -m venv .venv && .venv/bin/pip install -e . pytest ruff
 | Mosquitto | broker MQTT | `sudo apt install mosquitto` |
 | TimescaleDB + Grafana | séries temporelles et dashboard | `make stack-up` (`backend/docker-compose.yml`, + mosquitto de développement) ; base : `$SERREIA_DB` |
 | PlatformIO | firmware ESP32 (XIAO ESP32-C6) | extension VS Code + plateforme pioarduino (core Arduino 3.x) |
+| Atlas pixel art | sprites découpés → atlas et catalogue de la vue jeu (doc 13 §2) | `make sprites` (`tools/construire_atlas.py`, Pillow du `.venv`) ; découpe : `tools/decouper_sprites.py`, prompts : `sprites-src/PROMPTS.md` |
 
 ### GPU : Colab en attendant le driver
 Tant que la RTX locale n'est pas utilisable, les entraînements tournent sur Colab : le notebook clone le dépôt (public), installe `.[vision]`, monte le Drive et extrait les archives de `MyDrive/SerreIA/data/` sur le disque local de la session. Les sorties reviennent sur le PC par `make harvest`.
