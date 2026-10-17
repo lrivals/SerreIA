@@ -185,13 +185,21 @@ Puis `make front-dev` (Vite, proxy `/api` et `/ws` vers `:8000`) ou `make front-
 ## 7. Implémentation et test sur PC
 
 ```bash
+source .venv/bin/activate         # le Makefile appelle `python`
 make setup front-install          # Python (extra backend) et dépendances npm
-make api-sim                      # API + serre simulée sur :8000
+make api-sim                      # API + serre simulée sur :8000 (SQLite, sans Docker)
+make api-sim SCENARIO=journee     # … ou un scénario scripté (doc 16), ×60 (ACCEL=…)
+make api-historique NOM=mildiou   # … ou l'historique figé d'un scénario (make scenario-figer)
 make front-dev                    # http://localhost:5173 (ou make front-build puis :8000)
 make test front-test e2e          # pytest, Vitest, Playwright
-SERREIA_UI_PASSWORD=… make api    # avec authentification des écritures
+SERREIA_UI_PASSWORD=… make api    # vraie serre (stack + psycopg), écritures authentifiées
 make openapi                      # après un changement de route : types TypeScript régénérés
 ```
+
+Dépannage : `make api` vise PostgreSQL (`$SERREIA_DB`) et demande `psycopg` (extra `backend`)
+et la stack Docker ; sans elle, `make api-sim`. `address already in use` sur `:8000` : une
+API tourne déjà (`ss -ltnp | grep :8000`, puis `kill <pid>`) ; Vite proxifie toujours vers
+`:8000`, une seconde API sur `--http-port 8001` n'est donc pas vue par `make front-dev`.
 
 Écarts assumés par rapport à la conception : plan de serre en grille CSS + glisser-déposer natif (React Flow seulement pour l'arbre) ; schémas Zod écrits à la main ; pas de `sse-starlette` (la réponse en flux de FastAPI suffit) ; le dépôt d'images `POST /api/images` s'ajoute aux routes prévues pour recevoir l'`Uploader` du service caméra.
 

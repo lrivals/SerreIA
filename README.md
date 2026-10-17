@@ -36,7 +36,7 @@ Choix structurants :
 | 16 | [Test système simulé](docs/16-test-systeme-simule.md) | Scénarios scriptés sans images (journée capteurs, mildiou et agent), attendus vérifiés, historique figé, journal de test et constats |
 | — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
-## État actuel (16/10/2026)
+## État actuel (17/10/2026)
 
 - ✅ Données rangées (`data/plantvillage`, `data/ccmt`, `data/plantdoc`), taxonomie unifiée et **`data/index.parquet`** généré : 88 135 images, 16 espèces, 56 classes, splits groupés sans fuite (détail dans [02-donnees](docs/02-donnees.md)).
 - ⚠️ GPU NVIDIA RTX 1000 Ada (6 Go) présent, mais aucun driver installé (`nvidia-smi`) : installer `nvidia-driver-595-open` puis `make cuda-torch` → voir [08-environnement](docs/08-environnement.md). État du poste : `make check-env`.
@@ -99,12 +99,60 @@ make stack-up && make db-init && make sim-demo         # TimescaleDB + Grafana (
 make ingest                                            # ingestion du broker en continu
 ```
 
-API et interface web (doc 12 §7 ; Node.js ≥ 20 pour le front) :
+### Lancer l'interface (doc 12 §5 et §7)
+
+Une fois : le Makefile appelle `python`, le venv doit donc être actif (sinon `make … PY="uv run python"`) ;
+Node.js ≥ 20 pour le front.
 ```bash
-make front-install front-build                         # dépendances npm, build servi par l'API
-make api-sim PANNE=maladie:z1-A1/tomate/maladie/mildiou@15   # API + serre simulée → http://127.0.0.1:8000
-make front-dev                                         # développement : Vite sur :5173 (proxy vers :8000)
-make front-test e2e                                    # Vitest, parcours Playwright
+source .venv/bin/activate
+make front-install                                     # dépendances npm
+```
+
+**Interface + serre simulée** (sans Docker, broker ni Pi ; base SQLite) — le plus simple :
+```bash
+make api-sim                                           # terminal 1 : API + simulateur + contrôleur sur :8000
+make front-dev                                         # terminal 2 : http://localhost:5173 (proxy vers :8000)
+
+make api-sim SCENARIO=journee                          # un scénario scripté (doc 16) depuis son début, ×60
+make api-sim SCENARIO=mildiou ACCEL=120                # … plus vite
+make api-sim PANNE=maladie:z1-A1/tomate/maladie/mildiou@15   # serre libre + une panne (proposition à valider)
+```
+En un seul terminal : `make front-build` une fois, puis `make api-sim …` sert l'interface sur
+http://localhost:8000. Vue jeu : `/jeu`.
+
+**Interface sur un historique figé** (reproductible, lecture seule) :
+```bash
+make scenario-figer NOM=mildiou                        # data/scenarios/mildiou/ + JSON de la vue jeu
+make api-historique NOM=mildiou                        # terminal 1, horloge arrêtée à la fin du scénario
+make front-dev                                         # terminal 2 ; hors ligne sans API : /jeu?demo=mildiou
+```
+
+**Interface sur la vraie serre** (broker + TimescaleDB, extra `backend` : `psycopg`) :
+```bash
+uv sync --extra backend --extra controle               # ou pip install "psycopg[binary]"
+make stack-up && make db-init                          # Docker : TimescaleDB, Grafana, mosquitto
+make api                                               # terminal 1
+make front-dev                                         # terminal 2
+```
+
+Tests du front : `make front-test e2e` (Vitest, parcours Playwright). Onglet Agent : `ANTHROPIC_API_KEY`
+(sans clé, seul cet onglet est dégradé).
+
+Dépannage :
+
+| Symptôme | Cause, remède |
+|---|---|
+| `ModuleNotFoundError: No module named 'psycopg'` sur `make api` | `make api` vise PostgreSQL par défaut (`$SERREIA_DB`) : `uv sync --extra backend`, puis `make stack-up`. Ou utiliser `make api-sim` (SQLite) |
+| `address already in use` sur `127.0.0.1:8000` | une API tourne déjà (autre terminal) : `ss -ltnp \| grep :8000` → `kill <pid>` ou Ctrl+C dans son terminal. Deux `make api-sim SCENARIO=…` du même nom se partagent aussi la base : n'en garder qu'un |
+| `make: python: commande introuvable` ou module manquant | venv non actif : `source .venv/bin/activate` |
+| l'interface (5173) ne montre rien | l'API n'est pas lancée : `make front-dev` envoie `/api` et `/ws` vers `:8000` |
+
+### Scénarios simulés (doc 16)
+```bash
+make scenario NOM=journee                              # rejoué au plus vite, vérifié contre ses attendus
+make scenario-figer NOM=mildiou                        # historique figé (SQLite, JSON de la vue jeu)
+uv run pytest tests/test_scenarios.py                  # les deux scénarios + l'agent factice (~1 min 30)
+make agent-eval HISTORIQUE=data/scenarios/mildiou      # agent avec Claude réel (tokens dépensés)
 ```
 
 Notebooks (`notebooks/`, ouvrables dans Colab via leur badge) :
