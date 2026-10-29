@@ -70,6 +70,22 @@ réglant les cotes de `mesures.toml` dans leur Customizer.
 
 Liste complète et notes : [docs/20 §4](../docs/20-impression-3d-structures.md#4-catalogue-par-besoin).
 
+### Téléchargés (`hardware/tiers/`, non versionné)
+
+Fichiers rangés le 29/10/2026 depuis les téléchargements, dans `hardware/tiers/<fiche>/`
+(ignoré par git : licences). Dimensions lues dans les fichiers ; « plateau » = tient dans les
+256 × 256 × 256 mm de la CC2, au besoin tourné sur le plateau.
+
+| Dossier | Modèle | Licence | Plateau | À savoir |
+|---|---|---|---|---|
+| `A1_tour_creality/` | Tour Hydroponique, Creality Cloud (identifiée d'après les miniatures : modules hexagonaux avec goutteur ; projet Creality Print, 5 plateaux, 12 objets) | CC BY-NC-SA 4.0 (fiche du site) | oui (plus grand objet tourné de 24°) | ouvrir dans Creality Print ou OrcaSlicer ; refaire les profils pour PETG/ASA opaque |
+| `A1_tour_printables/` | Modular Hydroponic Tower, Printables 720081 (remix par blove de la tour de Beadsworth) | CC BY-NC 4.0 (PDF joint) | **non pour `bucket_adapter` (318 × 318 mm)** ; le reste oui (modules 3 et 4 voies ≈ 200 × 180 × 136 mm) | adaptateur de seau à remplacer : couvercle de seau imprimé (doc 20 A1, liens Printables 582197 / 1325249) ou adaptateur redessiné en 2 pièces ; pots Jiffy-7 41 mm et standards fournis |
+| `A2_netpot/` | Parametric Net Pot (80 × 80 × 90 mm) et Parametric Pipe Adapter (exemple 28 × 28 × 34 mm) | à vérifier sur Printables | oui | **STL figés, pas les sources OpenSCAD** : télécharger les `.scad` pour régler le Ø (net-pots 50 ou 75 mm, doc 20 A2) |
+| `A3_kratky/` | Couvercles de seau 5 gallons (Kratky, 41 / 80 mm, 7 trous de 41 mm, 6 trous de 60 mm), MakerWorld 1443063 | non indiquée dans les 3MF : à vérifier sur MakerWorld | oui, segments de 272 × 157 mm tournés de 45° | seau américain 5 gal (Ø ≈ 30 cm) : vérifier sur le seau réel ; projets Bambu Studio (plateaux préparés) |
+| `D3_radar/` | Boîtier LD2450 + D1 mini avec rotule, Printables 1514952 (corps 60 × 60 × 20 mm, front, rotule, écrou, support) | CC BY 4.0 (PDF joint), remix permis | oui | prévu pour un D1 mini : vérifier la place du XIAO ESP32-C6 ; face avant fine devant l'antenne (doc 20 D3) |
+| `D6_pi5/` | Boîtier de bureau Pi 5 (+ variante Display 2), V1.2 : base, capot, capot M.2, pieds, caches | à vérifier (source non précisée) | oui | **ne correspond pas à la fiche D6** : capot de 27 mm sans place visible pour l'AI HAT+ Hailo ni le ventilateur 40 mm ; utilisable pour un Pi hors serre, sinon garder le [boîtier modulaire Pi 5](https://makerworld.com/models/1020178) |
+| `E_clip/` | Plant Clip (35 × 44 × 7 mm) | à vérifier | oui | imprimer en PETG ou TPU (doc 20 E) |
+
 ## Quincaillerie à acheter
 
 Tout en **inox** (A2/A4), jamais zingué en serre (doc 20 §2.3).

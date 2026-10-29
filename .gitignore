@@ -33,3 +33,5 @@ firmware/.pio/
 
 # Pièces imprimées : STEP/STL et étiquettes générés (make hardware, make etiquettes)
 hardware/build/
+# Modèles de tiers téléchargés (licences : non versionnés, liens dans hardware/README.md)
+hardware/tiers/
