@@ -112,6 +112,9 @@ Chat en streaming ([11](11-agent-decision.md)) :
 - références cliquables (`dec-…`, `z1-A1`, `image_id`) vers les écrans correspondants ;
 - bandeau « agent indisponible » si l'API ne répond pas, le reste de l'UI restant utilisable.
 
+### 2.8 Impression 3D
+Configurateur des pièces imprimées de la serre ([21](21-configurateur-impression-3d.md)) : échelle, familles, environnement et cotes mesurées → liste des pièces avec matériau et réglages, mesures et éprouvettes, alertes de sécurité, export `params.scad` / Markdown / JSON. Calculé dans le navigateur, sans API.
+
 ## 3. API REST (FastAPI)
 
 Préfixe `/api`. Schémas pydantic partagés avec `common/` quand ils existent (`SensorReading`, `VisionResult`, `Command`…).

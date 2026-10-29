@@ -37,6 +37,8 @@ Choix structurants :
 | 17 | [Analyse du système](docs/17-analyse-systeme.md) | État des lieux du logiciel : forces, limites par domaine, synthèse des risques |
 | 18 | [Améliorations logicielles](docs/18-ameliorations-logicielles.md) | Plan d'améliorations réalisables sans matériel, par priorité et par lot (Q1–Q5) |
 | 19 | [Notebooks d'analyse des datasets](docs/19-notebooks-analyse-datasets.md) | Spécification des notebooks 06–08 : statistiques du classifieur, du jeu YOLO et des séries capteurs |
+| 20 | [Structures imprimées en 3D](docs/20-impression-3d-structures.md) | Pièces imprimables de la serre : hydroponie, structure et bâche, éclairage réglable, supports d'électronique, matériaux, sécurité |
+| 21 | [Configurateur des pièces imprimées](docs/21-configurateur-impression-3d.md) | Écran `/impression` : choix des pièces selon la serre, matériaux, cotes, `params.scad` |
 | — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
 ## État actuel (17/10/2026)
