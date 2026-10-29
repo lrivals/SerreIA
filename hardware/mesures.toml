@@ -1,0 +1,19 @@
+# Cotes mesurées sur le matériel acheté (docs/20 §5.2), en mm. Elles remplacent les valeurs
+# nominales de hardware/params.py ; une cote absente garde sa valeur nominale (le build le
+# signale). Décommenter et remplir au fur et à mesure (mode d'emploi : hardware/MESURES.md).
+
+# jeu = 0.3            # anneaux de jeu (pieces/eprouvettes.py)
+# tube_d = 20.0        # tube de structure, 3 mesures, garder la plus grande
+# tube_faitage_d = 20.0
+# film_ep = 0.2
+# cuve_hauteur = 420.0
+# cuve_niveau_max = 160.0
+# sonde_ph_d = 12.0
+# sonde_ec_d = 12.0
+# ds18b20_d = 6.0
+# jsn_d = 22.0
+# carte_l = 50.0
+# carte_w = 30.0
+# carte_h = 15.0
+# cable_d = 5.0
+# profile_cote = 20.0
