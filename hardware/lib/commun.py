@@ -65,6 +65,20 @@ def piquet(largeur: float, longueur: float, ep: float, x=0.0, y=0.0) -> Part.Sha
     return Part.Face(Part.makePolygon(pts + [pts[0]])).extrude(V(0, 0, ep))
 
 
+def molette_hex(d: float, h: float, s_hex: float, h_hex: float, d_vis: float) -> Part.Shape:
+    """Knob of Ø d with grip ribs, a hex pocket (nut or bolt head, `s_hex` across flats,
+    `h_hex` deep) on top and a through hole for the screw."""
+    m = cyl(d, h)
+    m = m.cut(
+        [
+            cyl(4, h + 2, d / 2 * math.cos(a), d / 2 * math.sin(a), -1)
+            for a in (math.radians(30 * i) for i in range(12))
+        ]
+    )
+    m = m.cut(hexagone(s_hex, h_hex + 0.01, 0, 0, h - h_hex))
+    return m.cut(cyl(d_vis, h + 2, z=-1)).removeSplitter()
+
+
 def secteur(r_ext: float, r_int: float, h: float, angle: float) -> Part.Shape:
     """Ring sector around Z, from +X counter-clockwise over `angle` degrees."""
     s = Part.makeCylinder(r_ext, h, ORIG, Z, angle)

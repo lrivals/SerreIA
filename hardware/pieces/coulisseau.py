@@ -8,9 +8,7 @@ The slider only positions the lamp: a steel safety cable holds it (docs/20 §7).
 Material: PETG-CF or ASA-CF; ASA within 5 cm of the LED driver.
 """
 
-import math
-
-from hardware.lib.commun import ORIG, V, X, Y, boite, cyl, hexagone
+from hardware.lib.commun import ORIG, V, X, Y, boite, cyl, hexagone, molette_hex
 
 H = 40.0  # sleeve height
 EP = 4.0  # sleeve wall
@@ -40,16 +38,8 @@ def coulisseau(p):
 
 
 def molette(p):
-    """Knob: the hex head of an M5 bolt pressed in a pocket, ribs for the grip."""
-    m = cyl(26, 10)
-    m = m.cut(
-        [
-            cyl(4, 12, 13 * math.cos(a), 13 * math.sin(a), -1)
-            for a in (math.radians(30 * i) for i in range(12))
-        ]
-    )
-    m = m.cut(hexagone(p.ecrou_m5_s + p.jeu, 4.01, 0, 0, 6))
-    return m.cut(cyl(p.vis_m5_d, 12, z=-1)).removeSplitter()
+    """Knob: the hex head of an M5 bolt pressed in a pocket."""
+    return molette_hex(26, 10, p.ecrou_m5_s + p.jeu, 4, p.vis_m5_d)
 
 
 def pieces(p):

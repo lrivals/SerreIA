@@ -115,3 +115,8 @@ def test_freecad_build():
     for m in PIECES:
         stl = list((out / m).glob("*.stl"))
         assert stl and all(f.stat().st_size > 0 for f in stl), m
+
+
+def test_rack_and_bulkhead_rules():
+    assert any("cran_pas" in e for e in hp.verifier(replace(hp.Params(), cran_pas=10.0)))
+    assert any("passe_trou_d" in e for e in hp.verifier(replace(hp.Params(), passe_trou_d=9.0)))

@@ -12,5 +12,8 @@ PIECES = (
     "clip_bache",
     "coulisseau",
     "crochet_faitage",
+    "support_tige",
+    "cremaillere",
+    "cables",
     "etiquette",
 )

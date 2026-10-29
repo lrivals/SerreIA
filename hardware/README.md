@@ -48,6 +48,9 @@ trancher (OrcaSlicer / Elegoo Slicer, profils ASA/PETG de la CC2).
 | P1 | B2 | [pieces/clip_bache.py](pieces/clip_bache.py) | clip (1 tous les 50–60 cm), patin_tpu | ASA, patin TPU | 4–6 parois, couché sur le flanc | rendu, non imprimé |
 | P1 | C1 | [pieces/coulisseau.py](pieces/coulisseau.py) | coulisseau, molette (× 1 par montant) | PETG-CF / ASA-CF, ASA près du driver | 5 parois, 50 % | rendu, non imprimé |
 | P1 | C2 | [pieces/crochet_faitage.py](pieces/crochet_faitage.py) | crochet, palonnier, guide_cable | ASA, palonnier PETG-CF | 5 parois, 60 % | rendu, non imprimé |
+| P1 | C1 | [pieces/support_tige.py](pieces/support_tige.py) | equerre (× 4), molette (× 8), fixation_tige (× 4) : variante tige filetée M8 | PETG-CF / ASA-CF | 5 parois, 50 % | rendu, non imprimé |
+| P1 | C1 | [pieces/cremaillere.py](pieces/cremaillere.py) | barre (× 1 par montant et par 24 cm), crochet (× 1 par montant) : variante à crans | PETG-CF / ASA-CF | 5 parois, 60 % ; crochet couché sur le flanc | rendu, non imprimé |
+| P1 | D8 | [pieces/cables.py](pieces/cables.py) | clip_cables (1 tous les 40 cm), passe_paroi + circlip + joint_plat + bague_cable par entrée | ASA (soleil) ou PETG, joints TPU | 4 parois, 40 % | rendu, non imprimé |
 | P2 | E | [pieces/etiquette.py](pieces/etiquette.py) | etiquette_<emplacement> (depuis serre.yaml) | ASA bicolore (changement de couleur à la hauteur du relief) | 3 parois, 20 % | rendu, non imprimé |
 
 ## Modèles de tiers (non recopiés)
@@ -76,7 +79,8 @@ Tout en **inox** (A2/A4), jamais zingué en serre (doc 20 §2.3).
 | Inserts laiton M3 à chaud (Ø 4,0 × 5,7) | boîtier de nœud (6), éprouvette |
 | Vis M3 (8–30 mm) + écrous | platine de cuve (4), boîtier (4), support caméra (2) |
 | Tige filetée M3 inox + écrous | abri ventilé (3 tiges) |
-| Vis M5 + écrous | raccords de tube (1 par branche), coulisseau (1 + molette), palonnier |
+| Vis M5 + écrous | raccords de tube (1 par branche), coulisseau (1 + molette), palonnier, crémaillère (2 par barre), équerres de lampe |
+| Tige filetée M8 inox + écrous M8 | variante tige (1 tige par coin, 1 écrou par molette et par fixation) |
 | Vis M2 auto-taraudeuses | caméra (4) |
 | Colliers (rilsan) 5 mm, anti-UV | clips de bâche, boîtier |
 | Verre ou PMMA 20 × 20 × 2 mm | fenêtre de caméra |

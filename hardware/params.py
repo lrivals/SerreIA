@@ -40,6 +40,8 @@ class Params:
     vis_m3_d: float = 3.4  # M3 clearance hole
     vis_m5_d: float = 5.5
     ecrou_m5_s: float = 8.0  # across flats of an M5 nut
+    tige_m8_d: float = 8.5  # M8 threaded rod clearance
+    ecrou_m8_s: float = 13.0
 
     # Tank lid plate (A4): screwed on the existing tank lid, through a cut-out
     cuve_hauteur: float = 420.0  # inner height of the tank (60 L in serre.yaml)
@@ -87,6 +89,13 @@ class Params:
     # Lamp (C1, C2)
     profile_cote: float = 20.0  # 2020 aluminium profile
     cable_secu_d: float = 3.0  # steel safety cable (docs/20 §7)
+    cran_pas: float = 25.0  # notch pitch of the lamp rack, 20–50 mm
+    cremaillere_l: float = 240.0  # one rack bar (several end to end on a tall upright)
+
+    # Cables (D8)
+    nb_cables_clip: int = 3  # cables held by one tube clip
+    passe_trou_d: float = 16.0  # hole drilled in the wall for a bulkhead
+    paroi_traversee_ep: float = 3.0  # thickness of that wall (box, lid, panel)
 
     # Labels (E)
     etiquette_l: float = 60.0
@@ -161,9 +170,13 @@ def verifier(p: Params) -> list[str]:
         err.append(f"clip wrap {p.clip_enveloppe_deg}° outside 200–220°")
     if p.arete_r < 1:
         err.append(f"edge radius {p.arete_r} mm < 1 mm (cuts the film)")
-    for nom in ("platine_l", "platine_w", "abri_d_ext", "etiquette_piquet_l"):
+    for nom in ("platine_l", "platine_w", "abri_d_ext", "etiquette_piquet_l", "cremaillere_l"):
         if getattr(p, nom) > VOLUME_IMPRESSION:
             err.append(f"{nom} {getattr(p, nom)} mm > printer volume {VOLUME_IMPRESSION:.0f} mm")
+    if not 20 <= p.cran_pas <= 50:
+        err.append(f"cran_pas {p.cran_pas} mm outside 20–50 mm")
+    if p.passe_trou_d < p.cable_d + 4 + 2 * 1.2 + p.jeu:
+        err.append(f"passe_trou_d {p.passe_trou_d} mm too small for cable_d + TPU ring")
     if p.abri_d_int >= p.abri_d_ext - 2 * p.paroi:
         err.append("abri_d_int leaves no plate width")
     err += _chevauchements(disposition_couvercle(p), p.platine_l, p.platine_w, p.paroi)
