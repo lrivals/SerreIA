@@ -4,11 +4,14 @@
 la [doc 20](20-impression-3d-structures.md). L'utilisateur indique la taille de sa serre, les
 familles de pièces voulues, son environnement et les cotes qu'il a mesurées ; l'écran en
 déduit la liste des pièces à imprimer avec leur matériau et leurs réglages, les mesures et
-éprouvettes à faire d'abord, les alertes de sécurité, et exporte un `params.scad`.
+éprouvettes à faire d'abord, les alertes de sécurité, et exporte un
+[`hardware/mesures.toml`](../hardware/mesures.toml) prêt à remplacer celui du dépôt.
 
 > Statut : **spécifié**, non implémenté. Tout est calculé dans le navigateur : pas d'API ni de
 > base, l'état est gardé dans le `localStorage` du navigateur. Les règles reprennent la doc 20
-> sans la remplacer : en cas d'écart, la doc 20 fait foi.
+> et [`hardware/params.py`](../hardware/params.py) (mêmes noms de cotes, mêmes valeurs
+> nominales, mêmes contrôles) sans les remplacer : en cas d'écart, `params.py` fait foi pour
+> les cotes, la doc 20 pour le reste.
 
 ## 1. Entrées
 
@@ -29,27 +32,40 @@ Le PLA n'est pas proposé ([20 §2.2](20-impression-3d-structures.md#22-matéria
 ### 1.2 Cotes mesurées
 
 Les cotes de [20 §5.2](20-impression-3d-structures.md#52-cotes-à-mesurer-avant-dimprimer). Chaque
-cote a une unité, une valeur typique (affichée en indication, jamais utilisée comme mesure),
-une plage plausible et la liste des pièces qui en dépendent. Une cote vide est « à mesurer ».
+cote a une unité, une valeur nominale (affichée en indication, jamais comptée comme mesurée),
+une plage plausible et la liste des pièces qui en dépendent. Une cote vide est « à mesurer » ;
+les calculs utilisent alors la valeur nominale, signalée comme telle.
 
-| Cote | Variable SCAD | Unité | Typique | Plage | Pièces |
-|---|---|---|---|---|---|
-| Ø extérieur du tube de structure | `tube_structure_d` | mm | 20 | 10–50 | B1, B2, B3, B4, C2, D4, D8 |
-| Épaisseur du film | `film_ep` | µm | 200 | 100–300 | B2 |
-| Jeu d'ajustement de la CC2 | `jeu` | mm | 0,3 | 0,1–0,5 | toutes |
-| Ø du canal NFT | `canal_nft_d` | mm | 100 | 75–110 | A2 |
-| Pente des canaux NFT | `pente_nft` | % | 2 | 1–4 | A2, E6 |
-| Ø des net-pots | `netpot_d` | mm | 50 | 25–80 | A1, A2, A3 |
-| Ø du seau ou du bac DWC | `seau_d` | mm | 300 | 150–600 | A3 |
-| Ø des sondes pH / EC | `sonde_phec_d` | mm | 12 | 8–16 | A4 |
-| Ø de la sonde DS18B20 | `ds18b20_d` | mm | 6 | 4–8 | A4 |
-| Distance JSN-SR04T → niveau haut de l'eau | `jsn_distance` | mm | 300 | 250–1000 | A4 |
-| Côté du montant de lampe (tube ou profilé) | `montant_section` | mm | 20 | 15–40 | C1 |
-| Largeur × hauteur de la rampe LED | `rampe_l`, `rampe_h` | mm | 30 × 10 | 5–300 | C1 |
-| Course de réglage de la lampe | `hauteur_max` | mm | 600 | 100–1500 | C1, C3 |
-| Masse de la lampe | `lampe_masse` | kg | 1,5 | 0,1–10 | C1, C2 |
-| Ø du tuteur | `tuteur_d` | mm | 10 | 6–16 | E1 |
-| Ø du tube goutte-à-goutte | `goutte_d` | mm | 4,6 | 4–16 | E3 |
+**Cotes de `hardware/params.py`** (champs de `A_MESURER`, exportées dans `mesures.toml`, en mm) :
+
+| Cote | Nominal | Plage | Pièces |
+|---|---|---|---|
+| `jeu` — jeu d'ajustement de la CC2 (anneaux de jeu) | 0,3 | 0,1–0,5 | toutes |
+| `tube_d` — Ø extérieur du tube de structure | 20 | 10–50 | B1, B2, B3, B4, D4, D8 |
+| `tube_faitage_d` — Ø du tube de faîtage | 20 | 10–50 | C2 |
+| `film_ep` — épaisseur du film (0,2 = 200 µm) | 0,2 | 0,1–0,3 | B2 |
+| `cuve_hauteur` — hauteur intérieure de la cuve | 420 | 100–1000 | A4 |
+| `cuve_niveau_max` — niveau d'eau le plus haut | 160 | 20–900 | A4 |
+| `sonde_ph_d`, `sonde_ec_d` — Ø des sondes pH / EC | 12 | 8–16 | A4 |
+| `ds18b20_d` — Ø du fourreau DS18B20 | 6 | 4–8 | A4 |
+| `jsn_d` — Ø de la tête JSN-SR04T | 22 | 15–30 | A4 |
+| `carte_l`, `carte_w`, `carte_h` — carte du nœud avec connecteurs | 50 × 30 × 15 | 5–120 | D2 |
+| `cable_d` — Ø des câbles de capteurs | 5 | 2–12 | D2, D8 |
+| `profile_cote` — côté du montant de lampe (profilé 2020 ou tube) | 20 | 15–40 | C1 |
+
+**Cotes propres au configurateur** (hors `params.py`, exportées en commentaire dans
+`mesures.toml` et dans le Markdown / JSON) :
+
+| Cote | Unité | Nominal | Plage | Pièces |
+|---|---|---|---|---|
+| `canal_nft_d` — Ø du canal NFT | mm | 100 | 75–110 | A2 |
+| `pente_nft` — pente des canaux | % | 2 | 1–4 | A2, E6 |
+| `netpot_d` — Ø des net-pots | mm | 50 | 25–80 | A1, A2, A3 |
+| `seau_d` — Ø du seau ou du bac DWC | mm | 300 | 150–600 | A3 |
+| `hauteur_max` — course de réglage de la lampe | mm | 600 | 100–1500 | C1, C3 |
+| `lampe_masse` — masse de la lampe | kg | 1,5 | 0,1–10 | C1, C2 |
+| `tuteur_d` — Ø du tuteur | mm | 10 | 6–16 | E1 |
+| `goutte_d` — Ø du tube goutte-à-goutte | mm | 4,6 | 4–16 | E3 |
 
 ## 2. Règles
 
@@ -78,26 +94,29 @@ type d'usage de la pièce ([20 §2.3](20-impression-3d-structures.md#23-réglage
 
 ### 2.3 Cotes dérivées et contrôles
 
-Calculées seulement quand les cotes sources sont saisies :
-
 | Cote dérivée | Formule | Pièce |
 |---|---|---|
-| `raccord_d_int` | `tube_structure_d + jeu` | B1, B3, D4, D8 |
-| `emmanchement` | `ceil(1,5 × tube_structure_d)` | B1 |
-| `clip_bache_d_int` | `tube_structure_d + 2 × film_ep / 1000 + jeu` | B2 |
-| `netpot_trou_d` | `netpot_d + jeu` | A1, A2, A3 |
-| `presse_etoupe_phec_d` | `sonde_phec_d + jeu` | A4 |
-| `presse_etoupe_ds18b20_d` | `ds18b20_d + jeu` | A4 |
-| `coulisseau_int` | `montant_section + jeu` | C1 |
+| Ø intérieur des raccords | `tube_d + jeu` | B1, B3, D4, D8 |
+| Emmanchement minimal | `1,5 × tube_d` (comparé à `emmanchement` de `params.py`, 32 mm) | B1 |
+| Ø intérieur du clip de bâche | `tube_d + 2 × film_ep + jeu` | B2 |
+| Ø intérieur du crochet de faîtage | `tube_faitage_d + jeu` | C2 |
+| Garde du JSN-SR04T | `cuve_hauteur − cuve_niveau_max + platine_ep` (= `jsn_garde` de `params.py`, `platine_ep` = 4 mm) | A4 |
+| Presse-étoupes | `sonde_ph_d`, `sonde_ec_d`, `ds18b20_d`, `cable_d` `+ jeu` | A4, D2 |
+| Ø des trous de net-pot | `netpot_d + jeu` | A1, A2, A3 |
+| Intérieur du coulisseau | `profile_cote + jeu` | C1 |
 
-Contrôles affichés à côté des cotes :
+Contrôles (ceux de `verifier()` de `params.py` qui portent sur des cotes saisies, plus ceux
+propres au configurateur) :
 
 - valeur hors de la plage plausible → avertissement (erreur de saisie ou d'unité probable) ;
+- `jeu` hors 0,1–0,5 mm → **erreur** : réimprimer les anneaux de jeu ;
+- `1,5 × tube_d` ou `1,5 × tube_faitage_d` > emmanchement de `params.py` → **erreur** ;
+- garde du JSN-SR04T < 250 mm → **erreur** : zone aveugle, rehausse à prévoir
+  (`jsn_rehausse` ≥ manque) ([20 A4](20-impression-3d-structures.md#a4--couvercle-de-cuve-et-supports-de-sondes)) ;
+- `cuve_niveau_max` ≥ `cuve_hauteur` → **erreur** ;
 - `pente_nft` hors 1–4 % → avertissement ;
-- `jsn_distance` < 250 mm → **erreur** : zone aveugle du capteur ([20 A4](20-impression-3d-structures.md#a4--couvercle-de-cuve-et-supports-de-sondes)) ;
 - `seau_d` > 256 mm → le couvercle (A3) dépasse le plateau de la CC2 : à découper en secteurs ;
-- `hauteur_max` > 256 mm → les montants imprimés (C1) sont à découper, ou à remplacer par un
-  tube / une tige filetée.
+- `hauteur_max` > 256 mm → montants imprimés (C1) à découper, ou tube / tige filetée achetés.
 
 ### 2.4 Mesures et éprouvettes
 
@@ -129,12 +148,14 @@ les concerne :
 
 - **Liste des pièces** : id, pièce, priorité, pertinence, matériau, parois / remplissage,
   cotes utiles (mesurées ou dérivées), modèles (liens), ce qu'on n'imprime pas, renvoi logiciel.
-- **`params.scad`** : une ligne par cote (`nom = valeur; // unité — libellé`), les cotes vides
-  en commentaire `// nom = ?; // À MESURER (typique …)`, puis les cotes dérivées. C'est le
-  fichier unique importé par nos pièces `.scad` ([20 §5.3](20-impression-3d-structures.md#53-où-ranger-les-sources-proposition)).
+- **`mesures.toml`** : même forme que [`hardware/mesures.toml`](../hardware/mesures.toml) ;
+  une ligne `nom = valeur  # libellé` par cote de `params.py` saisie, les cotes vides en
+  commentaire (`# nom = 20.0  # À MESURER`) pour qu'elles gardent leur valeur nominale, puis
+  les cotes propres au configurateur et les cotes dérivées en commentaire (`load()` refuse
+  les clés inconnues). Le fichier remplace celui du dépôt ; le build FreeCAD le lit.
 - **Markdown** : le plan complet (contraintes, pièces, mesures, éprouvettes, alertes), à coller
   dans `hardware/README.md` ou à archiver.
-- **JSON** : `{version, date, contraintes, cotes, derivees, pieces, mesures, eprouvettes, alertes}`.
+- **JSON** : `{version, date, contraintes, cotes, derivees, controles, pieces, mesures, eprouvettes, alertes}`.
 
 ## 4. Écran
 
@@ -147,15 +168,15 @@ les concerne :
 │ │ [ ] extérieur [x] driver<5cm  │ │     + joint TPU · presse-étoupes Ø 12,3 / Ø 6,3     │ │
 │ │ Filaments [x]PETG [x]ASA …    │ │ B2  Clips de bâche        P1   ASA          4–6     │ │
 │ ├ Cotes mesurées ──────────────┤ │     Ø int 20,7 mm · ⚠ éprouvette d'abord            │ │
-│ │ Ø tube structure [20.0] mm    │ │ …                                                   │ │
-│ │ Film            [    ] µm ⚑   │ │                                                     │ │
-│ │ Jeu CC2         [0.3 ] mm     │ │                                                     │ │
+│ │ tube_d          [20.0] mm     │ │ …                                                   │ │
+│ │ film_ep         [    ] mm ⚑   │ │                                                     │ │
+│ │ jeu             [0.3 ] mm     │ │                                                     │ │
 │ └───────────────────────────────┘ └─────────────────────────────────────────────────────┘ │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-⚑ cote à mesurer. L'onglet Export montre l'aperçu de `params.scad` et trois boutons de
-téléchargement (`.scad`, `.md`, `.json`). « Réinitialiser » revient aux contraintes par défaut
+⚑ cote à mesurer. L'onglet Export montre l'aperçu de `mesures.toml` et trois boutons de
+téléchargement (`mesures.toml`, `.md`, `.json`). « Réinitialiser » revient aux contraintes par défaut
 (tunnel, toutes familles, P1, PETG + ASA + TPU) et vide les cotes.
 
 ## 5. Code et tests
@@ -169,14 +190,16 @@ téléchargement (`.scad`, `.md`, `.json`). « Réinitialiser » revient aux con
 
 Tests : sélection par échelle et priorité, jamais de PLA, matériau près d'un driver, opacité
 au contact de l'eau, filament manquant, cotes dérivées du clip de bâche, contrôle JSN-SR04T,
-cotes manquantes dans les mesures, alerte câble de sécurité, `params.scad` sans `undefined` ni
-`NaN`.
+cotes manquantes dans les mesures, alerte câble de sécurité, `mesures.toml` sans `undefined`
+ni `NaN`. Côté Python, `tests/test_impression_ui.py` vérifie que les cotes `params.py` du
+catalogue sont bien des champs de `Params` avec la même valeur nominale et que tous les
+champs de `A_MESURER` y figurent (sinon `load()` refuserait l'export ou une cote manquerait).
 
 ## 6. Évolutions
 
 - Pré-remplir familles et échelle depuis la serre déclarée (zones `hydro_*` → famille A,
   nombre de caméras → D4, surface → échelle) via l'API de [12](12-interface-utilisateur.md).
-- Quand `hardware/` existera, générer aussi son `README.md` (pièce → modèle, licence,
-  matériau, réglages, quantité) et vérifier en CI que `params.scad` contient toutes les cotes.
+- Générer aussi `hardware/README.md` (pièce → modèle, licence, matériau, réglages, quantité).
+- Lire le `mesures.toml` du dépôt au chargement (servi par l'API) au lieu de repartir de zéro.
 - Quantités (nombre de clips d'après la longueur d'arceaux et l'espacement de 50–60 cm, nombre
   de raccords d'après le cadre).

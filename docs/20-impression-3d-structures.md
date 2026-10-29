@@ -9,7 +9,8 @@ serre n'est pas encore fixée : chaque famille de pièces indique à quelle éch
 > Statut : **sources en préparation, rien d'imprimé**. Les cotes et les règles de ce document
 > sont codées dans [hardware/params.py](../hardware/params.py) (valeurs nominales, remplacées
 > par les cotes mesurées de [hardware/mesures.toml](../hardware/mesures.toml)) et testées par
-> `tests/test_hardware.py`. Les liens renvoient à des modèles tiers trouvés en octobre 2026 :
+> `tests/test_hardware.py`. Choix des pièces selon la serre et saisie des cotes dans
+> l'interface : configurateur [21](21-configurateur-impression-3d.md). Les liens renvoient à des modèles tiers trouvés en octobre 2026 :
 > vérifier la licence (souvent CC BY-NC, usage non commercial), les cotes et le matériau
 > conseillé avant d'imprimer.
 
