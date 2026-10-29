@@ -296,8 +296,9 @@ hardware/
 ├── lib/commun.py    # pince sur tube, passe-sonde à bague TPU, inserts M3, graduations, texte
 ├── pieces/          # un module par pièce : pieces(p) -> {nom: solide}
 ├── build.py         # freecadcmd : vérifie les cotes, contrôle chaque solide, STEP + STL
-└── README.md        # pièce → priorité, matériau, réglages, quantité, statut ; modèles tiers ;
-                     #   quincaillerie à acheter
+├── tiers/           # modèles de tiers téléchargés, par fiche (non versionné : licences)
+└── README.md        # pièce → priorité, matériau, réglages, quantité, statut ; modèles tiers
+                     #   (liens, licences, tenue sur le plateau) ; quincaillerie à acheter
 ```
 
 ```bash
@@ -312,7 +313,13 @@ make hardware        # toutes les pièces -> hardware/build/ (non versionné)
 - `tests/test_hardware.py` teste les cotes, les règles et les étiquettes partout ; le rendu de
   chaque pièce seulement si FreeCAD est installé (Ubuntu 24.04 : `sudo snap install freecad`,
   commande `freecad.cmd` ; avec apt : `freecadcmd`).
-- Les STL de tiers ne sont pas recopiés (licences) : le README donne le lien.
+- Les STL de tiers ne sont pas versionnés (licences) : le README donne le lien. Une fois
+  téléchargés, ils sont rangés dans `hardware/tiers/<fiche>/` (ignoré par git) et le README
+  note leur licence, s'ils tiennent sur le plateau de la CC2 et ce qui reste à adapter.
+  Premier lot (29/10/2026) : A1 tours Creality et Printables, A2 net-pot, A3 Kratky,
+  D3 radar, D6 boîtier Pi 5, E clip. À retenir : l'adaptateur de seau de la tour Printables
+  (318 mm) ne tient pas sur la CC2, les net-pots sont des STL sans sources OpenSCAD, le
+  boîtier Pi 5 téléchargé n'a pas de place pour le Hailo.
 - Les étiquettes (E) sont générées depuis les emplacements de `serre.yaml`
   (`tools/hardware/etiquettes.py`) ; le QR contient l'id de l'emplacement (préfixe d'URL en
   option, quand l'interface aura une page par emplacement).
