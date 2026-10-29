@@ -7,7 +7,7 @@ sont générés dans `hardware/build/` (non versionné). Les modèles de tiers n
 (licences) : ce fichier donne leur lien.
 
 > Statut : **tout est rendu, rien n'est imprimé**. `make hardware` (FreeCAD 1.1, snap) produit
-> 37 solides valides, d'un seul tenant (sauf les 5 anneaux de jeu), tous dans le volume de la
+> 47 solides valides, d'un seul tenant (sauf les 5 anneaux de jeu), tous dans le volume de la
 > CC2, avec les cotes **nominales** : aucune n'est encore mesurée. Contrôle visuel des STEP à
 > faire dans FreeCAD avant d'imprimer.
 

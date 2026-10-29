@@ -6,7 +6,7 @@ avec des modèles existants, les cotes à personnaliser et le matériau à utili
 serre n'est pas encore fixée : chaque famille de pièces indique à quelle échelle elle sert
 ([§3](#3-échelles-de-serre)).
 
-> Statut : **pièces P0, P1 et étiquettes rendues par FreeCAD
+> Statut : **pièces P0, P1 (dont D8 et les variantes de lampe C1) et étiquettes rendues par FreeCAD
 > ([hardware/](../hardware/README.md), [§5.3](#53-sources--hardware)) avec les cotes nominales ;
 > rien n'est mesuré ni imprimé**. Les cotes et les règles de ce document
 > sont codées dans [hardware/params.py](../hardware/params.py) (valeurs nominales, remplacées
@@ -209,12 +209,16 @@ distance environ) ; trop basse, elle brûle les apex. La cible de PPFD vient de 
   - [Barrina T8 Plant Grow Light Stand](https://www.printables.com/model/773928-barrina-t8-plant-grow-light-stand) (support de tubes T8 réglable) ;
   - [LED support](https://makerworld.com/en/models/1741488-led-support) (réglage rapide de la hauteur) ;
   - [Adjustable grow light stand](https://makerworld.com/it/models/2544911-adjustable-grow-light-stand).
-- **Variantes à concevoir** :
-  - **coulisseau sur montant** (tube ou profilé 2020/2040) avec vis de serrage à molette :
-    simple et rigide, pour étagère ou tente ;
-  - **écrou papillon sur tige filetée M8** (une tige par coin) : réglage au millimètre, lampe
-    toujours horizontale ;
-  - **crémaillère à crans** : réglage par pas de 2–5 cm sans outil.
+- **Variantes conçues** (dans [hardware/pieces/](../hardware/README.md)) :
+  - **coulisseau sur montant** (profilé 2020 ou tube carré) avec vis M5 à molette et écrou
+    captif : simple et rigide, pour étagère ou tente — `coulisseau.py` ;
+  - **tige filetée M8** (une tige par coin, suspendue au tube par `fixation_tige`) : l'équerre
+    de la lampe repose sur une molette à écrou M8 captif, une seconde molette bloque ;
+    réglage au millimètre (1,25 mm par tour), lampe horizontale à nombre de tours égal —
+    `support_tige.py` ;
+  - **crémaillère à crans** : barre vissée au montant, fentes tous les `cran_pas`
+    (20–50 mm, 25 par défaut), crochet qui s'accroche par gravité, réglage sans outil —
+    `cremaillere.py`.
 - **À personnaliser** : section du montant, entraxe et section de la rampe LED (profilé alu,
   barre, panneau), hauteur max, pas des crans.
 - **Matériau** : PETG-CF ou ASA-CF (rigidité) ; **ASA ou ABS** à moins de 5 cm du driver ou
@@ -248,7 +252,7 @@ qui bouge faussent les données et la vision.
 | **D5 — Support de mire** (gris neutre / couleurs) | balance des blancs fixe dans le champ ([05 §3](05-edge-deploiement.md#3-service-caméra--edgecamera_servicepy)) et conversion px → cm² ([04 §5](04-detection-yolo.md#5-suivi-de-croissance)) | à concevoir | taille de la carte, distance et angle par rapport à la caméra, repères d'échelle imprimés | ASA mat |
 | **D6 — Boîtier Pi 5 + Hailo** | chaleur sous bâche, poussière | [Pi 5 AI Case (snap, AI HAT)](https://test.3dsearch.net/model/pi-5-ai-case-mw1876242) ; [boîtier modulaire Pi 5](https://makerworld.com/models/1020178) | hauteur de la pile HAT, ventilateur 40 mm, filtre à poussière ; placer le Pi **hors** de la serre si possible | ASA |
 | **D7 — Supports pompes et ventilateurs** | vibrations, débordements | à concevoir : berceau de pompe péristaltique avec bac de rétention, carénage de ventilateur 120 mm, bride de tuyau | entraxes de fixation, Ø tuyaux | PETG |
-| **D8 — Goulottes et passe-câbles** | câbles au sol mouillé, traction sur connecteurs | clips de câble sur tube, serre-câbles à vis, passe-paroi avec joint | Ø tube, nombre de câbles | ASA / TPU |
+| **D8 — Goulottes et passe-câbles** | câbles au sol mouillé, traction sur connecteurs | [hardware/pieces/cables.py](../hardware/pieces/cables.py) : clip de câbles sur tube (3 berceaux), passe-paroi à circlip avec joint plat et bague TPU | Ø tube, nombre de câbles | ASA / TPU |
 
 ### E. Culture
 
