@@ -13,6 +13,7 @@ import { FicheDecisionPage } from "./pages/FicheDecisionPage";
 
 const Arbre = lazy(() => import("./pages/Arbre")); // React Flow: loaded on demand
 const SerreJeu = lazy(() => import("./game/SerreJeu")); // Phaser and the sprites: loaded on demand
+const Impression = lazy(() => import("./pages/Impression")); // printed-parts configurator (docs/21)
 
 export function App() {
   return (
@@ -30,6 +31,7 @@ export function App() {
             <Route path="/arbre" element={<Arbre />} />
             <Route path="/agent" element={<Agent />} />
             <Route path="/jeu" element={<SerreJeu />} />
+            <Route path="/impression" element={<Impression />} />
             <Route path="*" element={<Navigate to="/tableau" replace />} />
           </Routes>
         </Suspense>

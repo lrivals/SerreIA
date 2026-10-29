@@ -154,7 +154,7 @@ export function derivees(cotes: Cotes): Derivee[] {
   ];
 }
 
-/** Checks of docs/21 §2.3; size checks only for the selected parts. */
+/** Checks of docs/21 §2.3; size checks only for measured values of the selected parts. */
 export function controles(cotes: Cotes, ids: string[] = PIECES.map((p) => p.id)): Controle[] {
   const out: Controle[] = [];
   const err = (cle: string, message: string) => out.push({ niveau: "erreur", cle, message });
@@ -178,9 +178,9 @@ export function controles(cotes: Cotes, ids: string[] = PIECES.map((p) => p.id))
   }
   if (mesuree(cotes, "pente_nft") && (v("pente_nft") < 1 || v("pente_nft") > 4))
     warn("pente_nft", `pente NFT ${fmt(v("pente_nft"))} % hors 1–4 %`);
-  if (ids.includes("A3") && v("seau_d") > VOLUME_IMPRESSION)
+  if (ids.includes("A3") && mesuree(cotes, "seau_d") && v("seau_d") > VOLUME_IMPRESSION)
     warn("seau_d", `couvercle A3 de Ø ${fmt(v("seau_d"))} mm > ${VOLUME_IMPRESSION} mm : à découper en secteurs`);
-  if (ids.includes("C1") && v("hauteur_max") > VOLUME_IMPRESSION)
+  if (ids.includes("C1") && mesuree(cotes, "hauteur_max") && v("hauteur_max") > VOLUME_IMPRESSION)
     warn("hauteur_max", `course ${fmt(v("hauteur_max"))} mm > ${VOLUME_IMPRESSION} mm : montants C1 à découper, ou tube / tige filetée achetés`);
   return out;
 }

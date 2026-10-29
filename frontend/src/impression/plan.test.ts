@@ -65,8 +65,9 @@ test("checks mirror hardware/params.py verifier()", () => {
   expect(controles({ tube_d: 25 }).some((k) => k.cle === "tube_d" && k.message.includes("emmanchement"))).toBe(true);
   expect(controles({ jeu: 0.05 }).some((k) => k.cle === "jeu" && k.niveau === "erreur")).toBe(true);
   expect(controles({ tube_d: 200 }).some((k) => k.message.includes("hors de la plage"))).toBe(true);
-  expect(controles({}, ["A3"]).some((k) => k.cle === "seau_d")).toBe(true);
-  expect(controles({}, ["D1"]).some((k) => k.cle === "seau_d")).toBe(false);
+  expect(controles({ seau_d: 300 }, ["A3"]).some((k) => k.cle === "seau_d")).toBe(true);
+  expect(controles({ seau_d: 300 }, ["D1"]).some((k) => k.cle === "seau_d")).toBe(false);
+  expect(controles({}, ["A3"]).some((k) => k.cle === "seau_d")).toBe(false);
 });
 
 test("missing measurements list the parts that need them", () => {

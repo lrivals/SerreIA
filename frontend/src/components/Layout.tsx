@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   PencilRuler,
+  Printer,
   Sprout,
   Zap,
 } from "lucide-react";
@@ -32,6 +33,7 @@ const NAV = [
   { to: "/arbre", label: "Arbre des actions", icon: GitBranch },
   { to: "/agent", label: "Agent", icon: Bot },
   { to: "/jeu", label: "Vue jeu", icon: Gamepad2 },
+  { to: "/impression", label: "Impression 3D", icon: Printer },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {

@@ -7,7 +7,8 @@ déduit la liste des pièces à imprimer avec leur matériau et leurs réglages,
 éprouvettes à faire d'abord, les alertes de sécurité, et exporte un
 [`hardware/mesures.toml`](../hardware/mesures.toml) prêt à remplacer celui du dépôt.
 
-> Statut : **règles implémentées et testées** (`frontend/src/impression/`, §5), écran à venir. Tout est calculé dans le navigateur : pas d'API ni de
+> Statut : **implémenté** : écran `/impression` (entrée « Impression 3D » du menu), règles testées
+> (`frontend/src/impression/`, §5). Tout est calculé dans le navigateur : pas d'API ni de
 > base, l'état est gardé dans le `localStorage` du navigateur. Les règles reprennent la doc 20
 > et [`hardware/params.py`](../hardware/params.py) (mêmes noms de cotes, mêmes valeurs
 > nominales, mêmes contrôles) sans les remplacer : en cas d'écart, `params.py` fait foi pour
@@ -115,8 +116,8 @@ propres au configurateur) :
   (`jsn_rehausse` ≥ manque) ([20 A4](20-impression-3d-structures.md#a4--couvercle-de-cuve-et-supports-de-sondes)) ;
 - `cuve_niveau_max` ≥ `cuve_hauteur` → **erreur** ;
 - `pente_nft` hors 1–4 % → avertissement ;
-- `seau_d` > 256 mm → le couvercle (A3) dépasse le plateau de la CC2 : à découper en secteurs ;
-- `hauteur_max` > 256 mm → montants imprimés (C1) à découper, ou tube / tige filetée achetés.
+- `seau_d` mesuré > 256 mm → le couvercle (A3) dépasse le plateau de la CC2 : à découper en secteurs ;
+- `hauteur_max` mesurée > 256 mm → montants imprimés (C1) à découper, ou tube / tige filetée achetés.
 
 ### 2.4 Mesures et éprouvettes
 
