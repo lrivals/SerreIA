@@ -9,6 +9,7 @@ must be measured on the purchased hardware and written in `hardware/mesures.toml
 overrides them; the build warns while any of them is still nominal.
 """
 
+import math
 import tomllib
 from dataclasses import dataclass, fields, replace
 from pathlib import Path
@@ -165,7 +166,57 @@ def verifier(p: Params) -> list[str]:
             err.append(f"{nom} {getattr(p, nom)} mm > printer volume {VOLUME_IMPRESSION:.0f} mm")
     if p.abri_d_int >= p.abri_d_ext - 2 * p.paroi:
         err.append("abri_d_int leaves no plate width")
-    trous = p.trappe_d + p.sonde_ph_d + p.sonde_ec_d + p.jsn_d + 3 * p.tuyau_dosage_d
-    if trous + 6 * p.paroi > p.platine_l:
-        err.append("platine_l too short for the holes of the tank lid")
+    err += _chevauchements(disposition_couvercle(p), p.platine_l, p.platine_w, p.paroi)
+    return err
+
+
+def bossage_sonde(p: Params, d: float) -> float:
+    """Outer Ø of a probe gland boss (hole + TPU ring + walls, lib/commun.passe_sonde)."""
+    return d + 4 + 2 * p.paroi
+
+
+def disposition_couvercle(p: Params) -> dict[str, tuple[float, float, float]]:
+    """Holes of the tank lid plate (A4): name -> (x, y, footprint Ø), origin at a corner.
+
+    Filling hatch on the left, pH / DS18B20 / EC in a row (the DS18B20 between them, for the
+    temperature compensation), JSN-SR04T on the right, away from the probes in its beam,
+    dosing tubes in a row along the front edge, pump tube at the back.
+    """
+    m = 15.0
+    yc = p.platine_w / 2
+    b_ph, b_ec = bossage_sonde(p, p.sonde_ph_d), bossage_sonde(p, p.sonde_ec_d)
+    x_ph = 2 * m + p.trappe_d + b_ph / 2
+    x_ec = x_ph + p.ecart_ph_ec
+    b_jsn = p.jsn_d + 2 * p.paroi
+    d = {
+        "trappe": (m + p.trappe_d / 2, yc, p.trappe_d + 2 * p.paroi),
+        "ph": (x_ph, yc + 15, b_ph),
+        "ds18b20": ((x_ph + x_ec) / 2, yc + 15, bossage_sonde(p, p.ds18b20_d)),
+        "ec": (x_ec, yc + 15, b_ec),
+        "jsn": (p.platine_l - m - b_jsn / 2, yc, b_jsn),
+        "pompe": (m + p.trappe_d / 2, p.platine_w - m, p.tuyau_pompe_d + p.jeu),
+    }
+    for i, nom in enumerate(("ph_down", "nutri_a", "nutri_b")):
+        d[nom] = (x_ph + i * 3 * p.tuyau_dosage_d, m, p.tuyau_dosage_d + p.jeu)
+    for i, (x, y) in enumerate(
+        ((8, 8), (p.platine_l - 8, 8), (8, p.platine_w - 8), (p.platine_l - 8, p.platine_w - 8))
+    ):
+        d[f"fixation_{i}"] = (x, y, p.vis_m3_d)
+    return d
+
+
+def _chevauchements(trous: dict, lo: float, w: float, marge: float) -> list[str]:
+    err = []
+    noms = sorted(trous)
+    for nom in noms:
+        x, y, d = trous[nom]
+        if x - d / 2 < marge / 2 or x + d / 2 > lo - marge / 2:
+            err.append(f"tank lid: {nom} outside the plate in X")
+        if y - d / 2 < marge / 2 or y + d / 2 > w - marge / 2:
+            err.append(f"tank lid: {nom} outside the plate in Y")
+    for i, a in enumerate(noms):
+        for b in noms[i + 1 :]:
+            (xa, ya, da), (xb, yb, db) = trous[a], trous[b]
+            if math.hypot(xa - xb, ya - yb) < (da + db) / 2 + marge:
+                err.append(f"tank lid: {a} and {b} overlap")
     return err
