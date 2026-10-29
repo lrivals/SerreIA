@@ -7,7 +7,7 @@ déduit la liste des pièces à imprimer avec leur matériau et leurs réglages,
 éprouvettes à faire d'abord, les alertes de sécurité, et exporte un
 [`hardware/mesures.toml`](../hardware/mesures.toml) prêt à remplacer celui du dépôt.
 
-> Statut : **spécifié**, non implémenté. Tout est calculé dans le navigateur : pas d'API ni de
+> Statut : **règles implémentées et testées** (`frontend/src/impression/`, §5), écran à venir. Tout est calculé dans le navigateur : pas d'API ni de
 > base, l'état est gardé dans le `localStorage` du navigateur. Les règles reprennent la doc 20
 > et [`hardware/params.py`](../hardware/params.py) (mêmes noms de cotes, mêmes valeurs
 > nominales, mêmes contrôles) sans les remplacer : en cas d'écart, `params.py` fait foi pour
