@@ -6,7 +6,9 @@ avec des modèles existants, les cotes à personnaliser et le matériau à utili
 serre n'est pas encore fixée : chaque famille de pièces indique à quelle échelle elle sert
 ([§3](#3-échelles-de-serre)).
 
-> Statut : **sources en préparation, rien d'imprimé**. Les cotes et les règles de ce document
+> Statut : **sources FreeCAD écrites pour les pièces P0, P1 et les étiquettes
+> ([hardware/](../hardware/README.md), [§5.3](#53-sources--hardware)) ; aucune n'est encore
+> rendue ni imprimée** (ni FreeCAD ni imprimante disponibles). Les cotes et les règles de ce document
 > sont codées dans [hardware/params.py](../hardware/params.py) (valeurs nominales, remplacées
 > par les cotes mesurées de [hardware/mesures.toml](../hardware/mesures.toml)) et testées par
 > `tests/test_hardware.py`. Choix des pièces selon la serre et saisie des cotes dans
@@ -255,7 +257,7 @@ qui bouge faussent les données et la vision.
 | Clips de tuteur / palissage | [Adaptable Plant Clip (tomate, tuteur 6–16 mm)](https://printables.com/model/221320-adaptable-plant-clip-tomato-clip/comments) ; [Plant clip for climbing plants](https://www.printables.com/model/1210771-plant-clip-for-climbing-plants) ; [Garden string clip](https://www.printables.com/model/232374-garden-string-clip) | Ø du tuteur ou de la ficelle, Ø de tige | PETG / TPU (souple, ne blesse pas la tige) |
 | Supports de semis | [Seedling support with auto-clip](https://www.printables.com/model/64716-seedling-support-with-auto-clip-no-wires-needed) | longueur, largeur | PETG |
 | Goutte-à-goutte (zone terre) | [porte-tubes 1/2" et 3/16"](https://www.printables.com/model/461502-12-and-316-drip-irrigation-holders-for-drip-hoses) ; [porte-tube Gardena 4,6 mm](https://3dgo.app/models/printables/490508) ; [support de câble pour arrosage automatique](https://www.printables.com/model/152059-cable-holder-for-plant-water-automation) | Ø du tube (4 / 4,6 / 6 mm), longueur du piquet | PETG / ASA ; **ne pas imprimer les raccords sous pression** (fuites signalées en PETG) |
-| Étiquettes d'emplacement | à concevoir : code `z1-A1` en relief bicolore (CANVAS) + QR vers la fiche de l'emplacement dans l'interface ([12](12-interface-utilisateur.md)) | texte, taille, piquet ou clip | ASA |
+| Étiquettes d'emplacement | [hardware/pieces/etiquette.py](../hardware/pieces/etiquette.py), générées depuis `serre.yaml` : code `z1-A1` en relief bicolore (CANVAS) + QR (id de l'emplacement, plus tard la fiche dans l'interface [12](12-interface-utilisateur.md)) | texte, taille, piquet ou clip | ASA |
 | Plateaux de semis, dômes | générateur de bac paramétrique (OpenSCAD) | nombre d'alvéoles, profondeur, drainage | PETG |
 | Cales de pente et pieds de bacs | à concevoir | pente (NFT 1–4 %), hauteur, surface d'appui | ASA |
 
@@ -265,9 +267,8 @@ qui bouge faussent les données et la vision.
 
 | Outil | Usage |
 |---|---|
-| **OpenSCAD** | pièces géométriques simples (raccords, clips, embouts, net-pots) ; tous les paramètres en tête de fichier ; le Customizer intégré génère des variantes |
-| **MakerWorld Parametric Model Maker** | modèles OpenSCAD déjà publiés, réglables dans le navigateur |
-| **FreeCAD** (feuille de calcul de paramètres) | pièces plus complexes (boîtiers, mécanismes de lampe) |
+| **FreeCAD scripté** (`Part`, sans interface via `freecadcmd`) | **toutes nos pièces** : un module Python par pièce, cotes communes dans `params.py`, export STEP + STL ([§5.3](#53-sources--hardware)) |
+| **OpenSCAD / MakerWorld Parametric Model Maker** | seulement pour régler les modèles de tiers déjà publiés en OpenSCAD (net-pots, embouts, tours) |
 | **OrcaSlicer / Elegoo Slicer** | profils matériau ASA/PETG pour la CC2 ; modificateurs de parois locales |
 
 ### 5.2 Cotes à mesurer avant d'imprimer
@@ -282,27 +283,39 @@ qui bouge faussent les données et la vision.
 | Dimensions des cartes (XIAO, LD2450, Pi + HAT) | D2, D3, D6 | fiches + mesure |
 | Jeu d'ajustement réel de la CC2 | toutes | éprouvette : anneaux de jeu 0,1 à 0,5 mm |
 
-### 5.3 Où ranger les sources (proposition)
-
-Un futur dossier `hardware/` à la racine du dépôt :
+### 5.3 Sources : `hardware/`
 
 ```
 hardware/
-├── params.scad          # cotes mesurées (tube, film, sondes, LED) : une seule source
-├── structure/           # raccords, clips de bâche, pieds (B)
-├── hydro/               # embouts NFT, couvercle de cuve, supports de sondes (A)
-├── eclairage/           # coulisseaux, crans, motorisation (C)
-├── electronique/        # abri capteur, boîtiers, supports caméra et mire (D)
-└── README.md            # pièce → modèle source, licence, matériau, réglages, quantité
+├── params.py        # toutes les cotes (nominales) + verifier() : règles de ce document
+├── mesures.toml     # cotes mesurées, remplacent les nominales (mode d'emploi : MESURES.md)
+├── lib/commun.py    # pince sur tube, passe-sonde à bague TPU, inserts M3, graduations, texte
+├── pieces/          # un module par pièce : pieces(p) -> {nom: solide}
+├── build.py         # freecadcmd : vérifie les cotes, contrôle chaque solide, STEP + STL
+└── README.md        # pièce → priorité, matériau, réglages, quantité, statut ; modèles tiers ;
+                     #   quincaillerie à acheter
 ```
 
-Les STL de tiers ne sont pas recopiés (licences) : le README donne le lien et la version.
-Seules nos pièces `.scad` sont versionnées, avec `params.scad` importé partout, pour qu'un
-changement de tube se propage à toutes les pièces.
+```bash
+make etiquettes      # hardware/build/etiquettes.json depuis serre.yaml (QR : extra hardware)
+make hardware        # toutes les pièces -> hardware/build/ (non versionné)
+```
+
+- Une cote changée dans `mesures.toml` se propage à toutes les pièces ; `make hardware`
+  refuse de rendre si une règle est violée (jeu, emmanchement ≥ 1,5 Ø, garde du JSN-SR04T
+  ≥ 250 mm, écart pH/EC, enveloppement du clip, arêtes, volume d'impression, trous de la
+  platine qui se chevauchent) et liste les cotes encore nominales.
+- `tests/test_hardware.py` teste les cotes, les règles et les étiquettes partout ; le rendu de
+  chaque pièce seulement si `freecadcmd` est installé (`sudo apt install freecad`).
+- Les STL de tiers ne sont pas recopiés (licences) : le README donne le lien.
+- Les étiquettes (E) sont générées depuis les emplacements de `serre.yaml`
+  (`tools/hardware/etiquettes.py`) ; le QR contient l'id de l'emplacement (préfixe d'URL en
+  option, quand l'interface aura une page par emplacement).
 
 ## 6. Priorités
 
-Même convention que [18 §1](18-ameliorations-logicielles.md#1-principes).
+Même convention que [18 §1](18-ameliorations-logicielles.md#1-principes). L'état de chaque
+pièce (écrite, rendue, imprimée, validée) est suivi dans [hardware/README.md](../hardware/README.md).
 
 | Priorité | Pièces | Raison |
 |---|---|---|
