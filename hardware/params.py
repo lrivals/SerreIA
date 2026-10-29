@@ -90,7 +90,7 @@ class Params:
 
     # Labels (E)
     etiquette_l: float = 60.0
-    etiquette_w: float = 22.0
+    etiquette_w: float = 26.0  # QR v1 (21 modules) at >= 0.8 mm per module
     etiquette_ep: float = 2.0
     etiquette_texte_h: float = 8.0
     etiquette_relief: float = 0.8

@@ -37,6 +37,17 @@ harvest:
 harvest-all:
 	for d in $(OUTPUTS); do rclone copy $(RUNS_REMOTE)/$$d $$d --progress; done
 
+# Printed parts (docs/20): STEP + STL of every part in hardware/build/ (FreeCAD from apt);
+# one part: make hardware PIECES=clip_bache. Labels of the emplacements from serre.yaml.
+FREECAD ?= freecadcmd
+PIECES ?=
+
+hardware:
+	SERREIA_PIECES=$(PIECES) $(FREECAD) hardware/build.py
+
+etiquettes:
+	$(PY) -m tools.hardware.etiquettes
+
 # Phase 1 notebooks, regenerated from tools/notebooks/build.py.
 notebooks:
 	python -m tools.notebooks.build
@@ -143,4 +154,4 @@ api-historique:
 sim-live:
 	$(PY) -m sim --avec-controleur
 
-.PHONY: setup check-env cuda-torch test lint mlflow harvest harvest-all notebooks stack-up stack-down db-init ingest api api-sim front-install front-dev front-build front-test openapi e2e agent-eval arbre config-export sim-demo sim-live scenario scenario-figer api-historique
+.PHONY: setup check-env cuda-torch test lint mlflow harvest harvest-all notebooks stack-up stack-down db-init ingest api api-sim front-install front-dev front-build front-test openapi e2e agent-eval arbre config-export sim-demo sim-live scenario scenario-figer api-historique hardware etiquettes

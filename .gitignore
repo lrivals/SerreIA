@@ -30,3 +30,6 @@ edge/archive/
 # Firmware : identifiants Wi-Fi / MQTT, sorties PlatformIO
 firmware/include/secrets.h
 firmware/.pio/
+
+# Pièces imprimées : STEP/STL et étiquettes générés (make hardware, make etiquettes)
+hardware/build/
