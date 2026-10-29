@@ -6,9 +6,9 @@ avec des modèles existants, les cotes à personnaliser et le matériau à utili
 serre n'est pas encore fixée : chaque famille de pièces indique à quelle échelle elle sert
 ([§3](#3-échelles-de-serre)).
 
-> Statut : **sources FreeCAD écrites pour les pièces P0, P1 et les étiquettes
-> ([hardware/](../hardware/README.md), [§5.3](#53-sources--hardware)) ; aucune n'est encore
-> rendue ni imprimée** (ni FreeCAD ni imprimante disponibles). Les cotes et les règles de ce document
+> Statut : **pièces P0, P1 et étiquettes rendues par FreeCAD
+> ([hardware/](../hardware/README.md), [§5.3](#53-sources--hardware)) avec les cotes nominales ;
+> rien n'est mesuré ni imprimé**. Les cotes et les règles de ce document
 > sont codées dans [hardware/params.py](../hardware/params.py) (valeurs nominales, remplacées
 > par les cotes mesurées de [hardware/mesures.toml](../hardware/mesures.toml)) et testées par
 > `tests/test_hardware.py`. Choix des pièces selon la serre et saisie des cotes dans
@@ -306,7 +306,8 @@ make hardware        # toutes les pièces -> hardware/build/ (non versionné)
   ≥ 250 mm, écart pH/EC, enveloppement du clip, arêtes, volume d'impression, trous de la
   platine qui se chevauchent) et liste les cotes encore nominales.
 - `tests/test_hardware.py` teste les cotes, les règles et les étiquettes partout ; le rendu de
-  chaque pièce seulement si `freecadcmd` est installé (`sudo apt install freecad`).
+  chaque pièce seulement si FreeCAD est installé (Ubuntu 24.04 : `sudo snap install freecad`,
+  commande `freecad.cmd` ; avec apt : `freecadcmd`).
 - Les STL de tiers ne sont pas recopiés (licences) : le README donne le lien.
 - Les étiquettes (E) sont générées depuis les emplacements de `serre.yaml`
   (`tools/hardware/etiquettes.py`) ; le QR contient l'id de l'emplacement (préfixe d'URL en

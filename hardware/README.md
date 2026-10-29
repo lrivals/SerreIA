@@ -6,20 +6,25 @@ cotes mesurées dans [mesures.toml](mesures.toml) ([MESURES.md](MESURES.md)). Le
 sont générés dans `hardware/build/` (non versionné). Les modèles de tiers ne sont pas recopiés
 (licences) : ce fichier donne leur lien.
 
-> Statut : **rien n'est imprimé ni rendu**. Les scripts ont été écrits sans FreeCAD ni
-> imprimante : seules les cotes et les règles sont testées pour l'instant. Le premier
-> `make hardware` validera la géométrie.
+> Statut : **tout est rendu, rien n'est imprimé**. `make hardware` (FreeCAD 1.1, snap) produit
+> 37 solides valides, d'un seul tenant (sauf les 5 anneaux de jeu), tous dans le volume de la
+> CC2, avec les cotes **nominales** : aucune n'est encore mesurée. Contrôle visuel des STEP à
+> faire dans FreeCAD avant d'imprimer.
 
 ## Mise en route
 
 ```bash
-sudo apt install freecad                 # fournit freecadcmd
+sudo snap install freecad                # Ubuntu 24.04 : fournit freecad.cmd (apt : freecadcmd)
 pip install -e '.[hardware]'             # segno : QR codes des étiquettes
 make etiquettes                          # hardware/build/etiquettes.json depuis serre.yaml
 make hardware                            # toutes les pièces -> hardware/build/<module>/*.step|stl
 make hardware PIECES=eprouvettes         # une seule famille
-python -m pytest -q tests/test_hardware.py   # le rendu est testé si freecadcmd est présent
+python -m pytest -q tests/test_hardware.py   # le rendu est testé si FreeCAD est présent
 ```
+
+`make hardware` trouve `freecadcmd` (apt) ou `freecad.cmd` (snap) ; sinon
+`make hardware FREECAD=/chemin/vers/freecadcmd` (AppImage, conda-forge). Le snap n'écrit que
+sous `$HOME` (son `/tmp` est privé) : garder la sortie dans `hardware/build/`.
 
 `make hardware` refuse de rendre si une règle de la doc 20 est violée (`params.verifier` :
 jeu, emmanchement, zone aveugle du JSN-SR04T, écart pH/EC, clip, volume d'impression,
@@ -33,17 +38,17 @@ trancher (OrcaSlicer / Elegoo Slicer, profils ASA/PETG de la CC2).
 
 | Prio | Fiche | Module | Sous-pièces (qté) | Matériau | Réglages (doc 20 §2.3) | Statut |
 |---|---|---|---|---|---|---|
-| P0 | — | [pieces/eprouvettes.py](pieces/eprouvettes.py) | anneaux_jeu, tranche_clip, inserts_m3, gabarit_sondes, bague_tpu_ph | PLA admis (gabarits), ASA pour la tranche de clip, TPU pour la bague | 3 parois, 20 % | écrit, non rendu |
-| P0 | A4 | [pieces/couvercle_cuve.py](pieces/couvercle_cuve.py) | platine, bouchon_trappe, bague_ph, bague_ec, bague_ds18b20 | PETG opaque, bagues TPU 95A | 4+ parois, 100 % autour des passages | écrit, non rendu |
-| P0 | D1 | [pieces/abri_stevenson.py](pieces/abri_stevenson.py) | assiette (× `abri_nb_assiettes`), toit, support | ASA blanc | 4 parois, 40 % | écrit, non rendu |
-| P0 | D2 | [pieces/boitier_noeud.py](pieces/boitier_noeud.py) | boite, couvercle, joint, bague_cable (× 2) par nœud | PETG ou ASA, joint et bagues TPU | 4 parois, 40 % | écrit, non rendu |
-| P0 | D4 | [pieces/support_camera.py](pieces/support_camera.py) | pince, boitier par caméra | ASA | 5 parois, 50 % gyroïde | écrit, non rendu |
-| P0 | D5 | [pieces/support_mire.py](pieces/support_mire.py) | cadre par caméra | ASA mat | 3 parois, 20 % | écrit, non rendu |
-| P1 | B1 | [pieces/raccord_tube.py](pieces/raccord_tube.py) | coude_90, te, croix, coin_3, te_poteau, faitage, pied | ASA (ASA-CF aux nœuds chargés) | 5–6 parois, 40–60 % gyroïde | écrit, non rendu |
-| P1 | B2 | [pieces/clip_bache.py](pieces/clip_bache.py) | clip (1 tous les 50–60 cm), patin_tpu | ASA, patin TPU | 4–6 parois, couché sur le flanc | écrit, non rendu |
-| P1 | C1 | [pieces/coulisseau.py](pieces/coulisseau.py) | coulisseau, molette (× 1 par montant) | PETG-CF / ASA-CF, ASA près du driver | 5 parois, 50 % | écrit, non rendu |
-| P1 | C2 | [pieces/crochet_faitage.py](pieces/crochet_faitage.py) | crochet, palonnier, guide_cable | ASA, palonnier PETG-CF | 5 parois, 60 % | écrit, non rendu |
-| P2 | E | [pieces/etiquette.py](pieces/etiquette.py) | etiquette_<emplacement> (depuis serre.yaml) | ASA bicolore (changement de couleur à la hauteur du relief) | 3 parois, 20 % | écrit, non rendu |
+| P0 | — | [pieces/eprouvettes.py](pieces/eprouvettes.py) | anneaux_jeu, tranche_clip, inserts_m3, gabarit_sondes, bague_tpu_ph | PLA admis (gabarits), ASA pour la tranche de clip, TPU pour la bague | 3 parois, 20 % | rendu, non imprimé |
+| P0 | A4 | [pieces/couvercle_cuve.py](pieces/couvercle_cuve.py) | platine, bouchon_trappe, bague_ph, bague_ec, bague_ds18b20 | PETG opaque, bagues TPU 95A | 4+ parois, 100 % autour des passages | rendu, non imprimé |
+| P0 | D1 | [pieces/abri_stevenson.py](pieces/abri_stevenson.py) | assiette (× `abri_nb_assiettes`), toit, support | ASA blanc | 4 parois, 40 % | rendu, non imprimé |
+| P0 | D2 | [pieces/boitier_noeud.py](pieces/boitier_noeud.py) | boite, couvercle, joint, bague_cable (× 2) par nœud | PETG ou ASA, joint et bagues TPU | 4 parois, 40 % | rendu, non imprimé |
+| P0 | D4 | [pieces/support_camera.py](pieces/support_camera.py) | pince, boitier par caméra | ASA | 5 parois, 50 % gyroïde | rendu, non imprimé |
+| P0 | D5 | [pieces/support_mire.py](pieces/support_mire.py) | cadre par caméra | ASA mat | 3 parois, 20 % | rendu, non imprimé |
+| P1 | B1 | [pieces/raccord_tube.py](pieces/raccord_tube.py) | coude_90, te, croix, coin_3, te_poteau, faitage, pied | ASA (ASA-CF aux nœuds chargés) | 5–6 parois, 40–60 % gyroïde | rendu, non imprimé |
+| P1 | B2 | [pieces/clip_bache.py](pieces/clip_bache.py) | clip (1 tous les 50–60 cm), patin_tpu | ASA, patin TPU | 4–6 parois, couché sur le flanc | rendu, non imprimé |
+| P1 | C1 | [pieces/coulisseau.py](pieces/coulisseau.py) | coulisseau, molette (× 1 par montant) | PETG-CF / ASA-CF, ASA près du driver | 5 parois, 50 % | rendu, non imprimé |
+| P1 | C2 | [pieces/crochet_faitage.py](pieces/crochet_faitage.py) | crochet, palonnier, guide_cable | ASA, palonnier PETG-CF | 5 parois, 60 % | rendu, non imprimé |
+| P2 | E | [pieces/etiquette.py](pieces/etiquette.py) | etiquette_<emplacement> (depuis serre.yaml) | ASA bicolore (changement de couleur à la hauteur du relief) | 3 parois, 20 % | rendu, non imprimé |
 
 ## Modèles de tiers (non recopiés)
 

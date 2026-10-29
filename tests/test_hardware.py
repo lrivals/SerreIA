@@ -95,11 +95,17 @@ def test_every_part_is_built_and_documented():
     assert all(f"pieces/{m}.py" in readme for m in PIECES)
 
 
-@pytest.mark.skipif(not shutil.which("freecadcmd"), reason="FreeCAD not installed")
-def test_freecad_build(tmp_path):
-    env = {**os.environ, "SERREIA_HW_OUT": str(tmp_path)}
+FREECAD = shutil.which("freecadcmd") or shutil.which("freecad.cmd")  # apt or snap
+
+
+@pytest.mark.skipif(not FREECAD, reason="FreeCAD not installed")
+def test_freecad_build():
+    # under the repository, not tmp_path: the FreeCAD snap has its own /tmp
+    out = HARDWARE / "build" / "_test"
+    shutil.rmtree(out, ignore_errors=True)
+    env = {**os.environ, "SERREIA_HW_OUT": str(out)}
     r = subprocess.run(
-        ["freecadcmd", str(HARDWARE / "build.py")],
+        [FREECAD, str(HARDWARE / "build.py")],
         env=env,
         capture_output=True,
         text=True,
@@ -107,5 +113,5 @@ def test_freecad_build(tmp_path):
     )
     assert r.returncode == 0, r.stdout + r.stderr
     for m in PIECES:
-        stl = list((tmp_path / m).glob("*.stl"))
+        stl = list((out / m).glob("*.stl"))
         assert stl and all(f.stat().st_size > 0 for f in stl), m

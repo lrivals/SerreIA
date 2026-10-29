@@ -37,9 +37,10 @@ harvest:
 harvest-all:
 	for d in $(OUTPUTS); do rclone copy $(RUNS_REMOTE)/$$d $$d --progress; done
 
-# Printed parts (docs/20): STEP + STL of every part in hardware/build/ (FreeCAD from apt);
-# one part: make hardware PIECES=clip_bache. Labels of the emplacements from serre.yaml.
-FREECAD ?= freecadcmd
+# Printed parts (docs/20): STEP + STL of every part in hardware/build/; one part:
+# make hardware PIECES=clip_bache. FreeCAD: apt (freecadcmd) or snap (freecad.cmd, whose /tmp
+# is private: keep the output under $$HOME). Labels of the emplacements from serre.yaml.
+FREECAD ?= $(shell command -v freecadcmd || command -v freecad.cmd || echo freecadcmd)
 PIECES ?=
 
 hardware:
