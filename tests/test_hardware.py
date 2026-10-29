@@ -1,10 +1,19 @@
 """Printed parts (docs/20): dimensions, rules, labels and, with FreeCAD, the build."""
 
+import json
+import os
+import shutil
+import subprocess
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
+from hardware import PIECES
 from hardware import params as hp
+
+HARDWARE = Path(hp.__file__).parent
+PIECES_DIR = HARDWARE / "pieces"
 
 
 def test_nominal_dimensions_follow_the_rules():
@@ -52,3 +61,51 @@ def test_unknown_measure_is_rejected(tmp_path):
 def test_repository_measures_load():
     assert hp.verifier(hp.load()) == []
     assert set(hp.A_MESURER) <= {f for f in vars(hp.Params())}
+
+
+def test_one_label_per_emplacement():
+    from tools.hardware.etiquettes import etiquettes
+
+    labels = etiquettes()
+    assert [lab["id"] for lab in labels] == ["z1-A1", "z1-A2", "z2-A1"]
+    assert labels[0]["plante"] == "tomate-1" and labels[2]["zone"] == "z2"
+
+
+def test_label_qr_code():
+    pytest.importorskip("segno")
+    from tools.hardware.etiquettes import qr_matrice
+
+    m = qr_matrice("z1-A1")
+    assert len(m) >= 21 and all(len(ligne) == len(m) for ligne in m)
+    assert {v for ligne in m for v in ligne} == {0, 1}
+
+
+def test_labels_file(tmp_path):
+    from tools.hardware.etiquettes import main
+
+    out = tmp_path / "etiquettes.json"
+    main(["--out", str(out), "--url", "https://serre.local/e/"])
+    assert len(json.loads(out.read_text())) == 3
+
+
+def test_every_part_is_built_and_documented():
+    modules = {f.stem for f in PIECES_DIR.glob("*.py")} - {"__init__"}
+    assert modules == set(PIECES)
+    readme = (HARDWARE / "README.md").read_text()
+    assert all(f"pieces/{m}.py" in readme for m in PIECES)
+
+
+@pytest.mark.skipif(not shutil.which("freecadcmd"), reason="FreeCAD not installed")
+def test_freecad_build(tmp_path):
+    env = {**os.environ, "SERREIA_HW_OUT": str(tmp_path)}
+    r = subprocess.run(
+        ["freecadcmd", str(HARDWARE / "build.py")],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=900,
+    )
+    assert r.returncode == 0, r.stdout + r.stderr
+    for m in PIECES:
+        stl = list((tmp_path / m).glob("*.stl"))
+        assert stl and all(f.stat().st_size > 0 for f in stl), m
