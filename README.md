@@ -38,7 +38,7 @@ Choix structurants :
 | 18 | [Améliorations logicielles](docs/18-ameliorations-logicielles.md) | Plan d'améliorations réalisables sans matériel, par priorité et par lot (Q1–Q5) |
 | 19 | [Notebooks d'analyse des datasets](docs/19-notebooks-analyse-datasets.md) | Spécification des notebooks 06–08 : statistiques du classifieur, du jeu YOLO et des séries capteurs |
 | 20 | [Structures imprimées en 3D](docs/20-impression-3d-structures.md) | Pièces imprimables de la serre : hydroponie, structure et bâche, éclairage réglable, supports d'électronique, matériaux, sécurité |
-| 21 | [Configurateur des pièces imprimées](docs/21-configurateur-impression-3d.md) | Écran `/impression` : choix des pièces selon la serre, matériaux, cotes, `params.scad` |
+| 21 | [Configurateur des pièces imprimées](docs/21-configurateur-impression-3d.md) | Écran `/impression` : choix des pièces selon la serre, matériaux, cotes, export de `hardware/mesures.toml` |
 | — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
 ## État actuel (17/10/2026)
@@ -58,6 +58,7 @@ Choix structurants :
 - ✅ **Vue jeu pixel art** (J1–J5, doc 13) : `/jeu` en Phaser 3, serre construite case par case depuis un inventaire, jardinier qui rejoue les événements réels, bulles de stats, rejeu 24 h / 7 j, démo hors ligne `/jeu?demo=1` ; sprites générés (planches 01 à 04 : jardinier et ses actions, 16 espèces) → atlas par `make sprites`, prompts des planches suivantes dans [`sprites-src/PROMPTS.md`](sprites-src/PROMPTS.md).
 - 🔄 **Test système simulé** (T1, doc 16) : scénarios scriptés `sim --scenario journee|mildiou` (forçages, pannes, vision factice) rejoués au plus vite et vérifiés contre leurs attendus (`make scenario`, `tests/test_scenarios.py`), historique figé pour l'UI, la vue jeu (`/jeu?demo=mildiou`) et l'agent (`make scenario-figer`, `make api-historique`) ; premier passage fait, 5 constats sur le contrôleur et la consommation à traiter, parcours UI et agent avec Claude réel restants — cf. [16 §6](docs/16-test-systeme-simule.md#6-journal-de-test).
 - 📋 **Analyse et qualité logicielle** (docs 17 et 18) : état des lieux complet (10 risques principaux, dont chauffage non borné sur sonde muette et bus MQTT sans authentification) et plan d'améliorations sans matériel en 5 lots, Q1 (sécurité et justesse) avant toute mise en serre — cf. [18 §11](docs/18-ameliorations-logicielles.md#11-ordre-proposé).
+- ✅ **Pièces imprimées** (doc 20) : scripts FreeCAD paramétriques dans `hardware/` (cotes et règles de la doc 20 dans `params.py`, cotes mesurées dans `mesures.toml`), pièces P0 (éprouvettes, platine de cuve, abri ventilé, boîtier de nœud, supports caméra et mire), P1 (raccords de tube, clips de bâche, coulisseau et crochets de lampe) et étiquettes d'emplacement générées depuis `serre.yaml` ; `make hardware` rend 37 solides valides (STEP + STL) ; cotes encore nominales, rien d'imprimé — cf. [hardware/README](hardware/README.md), [20 §5.3](docs/20-impression-3d-structures.md#53-sources--hardware).
 - ✅ **Configurateur d'impression 3D** (doc 21) : écran `/impression` de l'interface (échelle, familles, environnement, cotes mesurées → pièces A1–E6 de la doc 20 avec matériau et réglages, mesures et éprouvettes, alertes de sécurité), export de `hardware/mesures.toml` (mêmes cotes que `hardware/params.py`), Markdown et JSON ; règles testées par Vitest, cohérence avec `params.py` par `tests/test_impression_ui.py` — cf. [21](docs/21-configurateur-impression-3d.md).
 - ✅ **Notebooks d'analyse des datasets** (doc 19) écrits : `06_stats_classifieur` (déséquilibre, classes mono-source, écart de domaine, doublons), `07_stats_yolo` (boîtes : toutes de classe `feuille` aujourd'hui) et `08_stats_capteurs` (trous, profils journaliers, actionneurs), calculs testés dans `vision/datasets/stats.py` et `sim/stats.py`, rapports dans `reports/datasets/` ; à exécuter pour recouper les chiffres — cf. [19](docs/19-notebooks-analyse-datasets.md).
 
@@ -181,4 +182,12 @@ tools/get_datasets.sh check                            # état des jeux (data/ �
 tools/get_datasets.sh pull plantvillage                # récupérer un jeu depuis le Drive
 make harvest                                           # rapatrier les sorties Colab (runs/, reports/, mlruns/colab/)
 make notebooks                                         # régénérer notebooks/ (efface les sorties enregistrées)
+```
+
+Pièces imprimées (doc 20, `hardware/`) : FreeCAD par `sudo snap install freecad` (Ubuntu 24.04).
+
+```bash
+make etiquettes                                        # étiquettes des emplacements de serre.yaml (QR : extra hardware)
+make hardware                                          # toutes les pièces -> hardware/build/<pièce>/*.step|stl
+make hardware PIECES=eprouvettes                       # une seule famille ; cotes mesurées : hardware/mesures.toml
 ```

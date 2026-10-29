@@ -25,6 +25,7 @@ EXTRAS = {
     "controle": ("numpy", "pandas", "yaml", "onnxruntime"),
     "backend": ("sqlalchemy", "psycopg", "fastapi"),
     "notebook": ("ipykernel", "nbclient", "nbformat"),
+    "hardware": ("segno",),
 }
 BASE = ("pydantic", "paho")
 STATUS = {"ok": "OK  ", "warn": "WARN", "fail": "FAIL"}
