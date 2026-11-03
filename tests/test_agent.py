@@ -57,7 +57,7 @@ def published(bus):
 
 def test_definitions_are_stable_and_complete():
     names = [d["name"] for d in definitions()]
-    assert names == [s.name for s in SPECS] and len(set(names)) == 12
+    assert names == [s.name for s in SPECS] and len(set(names)) == 13
     assert json.dumps(definitions()) == json.dumps(definitions())  # prompt cache
     for d in definitions():
         assert d["input_schema"]["type"] == "object" and "title" not in d["input_schema"]
@@ -197,6 +197,59 @@ def test_proposer_consigne_refusals(env, args, motif):
     r = tools.run("proposer_consigne", base | args)
     assert r.error and motif in r.content["erreur"]
     assert decisions_agent(sessions) == []
+
+
+# --- sourced setpoints (docs/22 L16) ----------------------------------------------------
+
+
+def test_get_recette_gives_each_value_with_its_source(frozen):
+    sessions, _ = frozen
+    tools = Tools(sessions, None, AgentConfig())
+    r = tools.run("get_recette", {"recette_id": "laitue-hydro", "stade": "pepiniere"})
+    assert not r.error, r.content
+    g = r.content["stades"]["pepiniere"]["grandeurs"]
+    assert g["ec"]["valeur"] == [0.25, 0.5]
+    assert (
+        g["ec"]["source"]["force"] == "essai" and "2020-miller#003.1" in g["ec"]["source"]["refs"]
+    )
+    assert g["humidite"]["source"] == "non sourcé"
+    all_stages = tools.run("get_recette", {"recette_id": "tomate-standard"}).content["stades"]
+    assert list(all_stages) == ["semis", "croissance", "floraison", "fructification"]
+    assert all_stages["croissance"]["grandeurs"]["co2_max"]["source"]["plage"] == [600, 900]
+    assert tools.run("get_recette", {"recette_id": "cactus"}).error
+    assert tools.run("get_recette", {"recette_id": "laitue-hydro", "stade": "x"}).error
+
+
+def test_proposer_consigne_outside_the_literature_needs_the_flag(env):
+    sessions, *_, tools = env
+    base = dict(recette_id="tomate-standard", stade="floraison", grandeur="ec",
+                plage=[3.0, 3.5], justification="essai de l'utilisateur",
+                preuves_refs=[MILDIOU_ID])  # fmt: skip
+    r = tools.run("proposer_consigne", base)
+    assert r.error and "plage sourcée [1.6, 3]" in r.content["erreur"]
+    assert "2021-nikolaou#027.0" in r.content["erreur"] and decisions_agent(sessions) == []
+    r = tools.run("proposer_consigne", base | {"hors_litterature": True})
+    assert not r.error, r.content
+    card = r.proposition
+    assert "hors littérature" in card["explication"] and card["statut"] == "proposee"
+    assert card["litterature"]["force"] == "revue"
+    inside = base | {"plage": [2.3, 2.7], "hors_litterature": True}
+    assert "inutile" in tools.run("proposer_consigne", inside).content["erreur"]
+    r = tools.run("proposer_consigne", base | {"grandeur": "dli_cible", "plage": [30]})
+    assert not r.error  # not sourced: no literature check
+
+
+def test_sourced_reference_question_with_a_scripted_llm(env):
+    sessions, h, bus, clock, _ = env
+    q = next(q for q in load_questions() if q["id"] == "ec-laitue-j10")
+    llm = ScriptedLLM([
+        [("tool", "get_recette", {"recette_id": "laitue-hydro", "stade": "pepiniere"})],
+        ["Au jour 10, la laitue est au stade pépinière (11 j) : EC 0,25–0,5 mS/cm, d'après "
+         "2020-miller#003.1, un essai (programme appliqué, non comparé à d'autres)."],
+    ])  # fmt: skip
+    agent = Agent(sessions, llm, clock=lambda: clock["t"])
+    result = score(q, list(agent.chat(q["question"])), sessions, h)
+    assert result["ok"], result
 
 
 # --- proposals and their life cycle ------------------------------------------------------

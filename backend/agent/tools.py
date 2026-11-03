@@ -34,7 +34,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from common.mqtt import PHYSICAL_RANGE, Actuator, Ordre, SensorType, sensor_topic
 from common.mqtt.schemas import Decision, PreuveCapteur, Preuves, PreuveVision, SanteEtat
 from edge.controller.config import ROOT, ReglesCfg
-from edge.controller.recipes import StageSetpoints
+from edge.controller.recipes import SOURCED, StageSetpoints
 
 from ..consumption import energy_kwh, water_l
 from ..consumption import summary as consumption_summary
@@ -58,8 +58,18 @@ MAX_DECISIONS = 30
 MAX_VISION = 60
 AGREGATS = {"brut": None, "moy_15min": timedelta(minutes=15), "moy_1h": timedelta(hours=1)}
 # Recipe values the agent may change: ranges [min, max] or single values.
-RANGES = ("temperature.jour", "temperature.nuit", "humidite", "ph", "ec", "humidite_sol")
-SCALARS = ("co2_max", "dli_cible", "photoperiode_h")
+RANGES = (
+    "temperature.jour",
+    "temperature.nuit",
+    "humidite",
+    "ph",
+    "ec",
+    "ec_drainage",
+    "humidite_sol",
+    "vpd",
+    "temp_racines",
+)
+SCALARS = ("co2_max", "dli_cible", "dli_max", "photoperiode_h")
 
 
 class ToolError(Exception):
@@ -147,6 +157,11 @@ class RegleArgs(_Args):
     regle_id: str
 
 
+class RecetteArgs(_Args):
+    recette_id: str
+    stade: str | None = Field(None, description="un stade ; absent : tous les stades")
+
+
 class ActionArgs(_Args):
     zone: Zone
     actionneur: Actuator
@@ -166,6 +181,11 @@ class ConsigneArgs(_Args):
     )
     duree_h: float | None = Field(None, gt=0, description="temporaire ; absent : permanent")
     zone: Zone | None = Field(None, description="défaut : la zone des plantes de cette recette")
+    hors_litterature: bool = Field(
+        False,
+        description="true pour proposer une valeur hors de la plage sourcée de la grandeur "
+        "(get_recette) ; la justification doit dire pourquoi",
+    )
     justification: Justification
     preuves_refs: Refs
 
@@ -226,6 +246,9 @@ SPECS = [
              ConsommationArgs),
     ToolSpec("get_regle", "Description d'une règle du contrôleur, sa version et ses seuils "
              "courants.", RegleArgs),
+    ToolSpec("get_recette", "Consignes d'une recette par stade, avec pour chaque grandeur sa "
+             "source dans la littérature (refs, force : essai, revue, guide, commercial, "
+             "deduit ; plage couverte) ou « non sourcé ».", RecetteArgs),
     ToolSpec("proposer_action", "Propose une commande d'actionneur (validation par "
              "l'utilisateur, puis safety.py). Durée obligatoire sauf off, bornée par la "
              "durée max de l'actionneur.", ActionArgs, True),
@@ -562,6 +585,36 @@ class _Ctx:
         )
         return ToolResult(out, resume=f"règle {a.regle_id}")
 
+    def get_recette(self, a: RecetteArgs) -> ToolResult:
+        r = self.s.get(m.Recette, a.recette_id)
+        if r is None:
+            ids = ", ".join(self.s.scalars(select(m.Recette.id).order_by(m.Recette.id)))
+            raise ToolError(f"recette inconnue {a.recette_id} (recettes : {ids})")
+        if a.stade is not None and a.stade not in r.stades:
+            raise ToolError(f"stade {a.stade} absent de {a.recette_id} ({', '.join(r.stades)})")
+        stades = {}
+        for name in [a.stade] if a.stade else list(r.stades):
+            st = StageSetpoints.model_validate(r.stades[name])
+            rows = {}
+            for g in SOURCED:
+                v, src = st.value(g), st.sources.get(g)
+                if v is None and src is None:
+                    continue
+                v = list(v) if isinstance(v, tuple) else v
+                rows[g] = dict(
+                    valeur=v,
+                    source=src.model_dump(mode="json", exclude_none=True) if src else "non sourcé",
+                )
+            stades[name] = dict(grandeurs=rows, duree_j=st.duree_j)
+        out = dict(
+            recette=r.id,
+            espece=r.espece,
+            stades=stades,
+            note="une valeur sourcée n'est pas un optimum validé ; force faible : guide, "
+            "commercial, deduit",
+        )
+        return ToolResult(out, resume=f"recette {r.id}")
+
     # --- proposals ---------------------------------------------------------------------
 
     def proposer_action(self, a: ActionArgs) -> ToolResult:
@@ -630,6 +683,7 @@ class _Ctx:
                 raise ToolError(f"{a.grandeur} : une seule valeur attendue")
             valeur = float(a.plage[0])
         self.check_limits(a.grandeur, valeur)
+        litterature = self.literature(r.stades[a.stade], a.grandeur, valeur, a.hors_litterature)
         from .consignes import with_value
 
         try:
@@ -643,11 +697,12 @@ class _Ctx:
         consigne = dict(recette_id=a.recette_id, stade=a.stade, grandeur=a.grandeur,
                         valeur=valeur, duree_h=a.duree_h)  # fmt: skip
         text = consigne_label(consigne)
+        what = f"{text} — {litterature['texte']}" if litterature else text
         preuves, emps = self.evidence(a.preuves_refs)
         d = self.create(
             zone=zone,
             regle="agent.consigne",
-            explication=self.explain(a.justification, text, a.preuves_refs),
+            explication=self.explain(a.justification, what, a.preuves_refs),
             ordres=[],
             labels=[f"proposee:{text}"],
             preuves=preuves,
@@ -659,6 +714,8 @@ class _Ctx:
         )
         record = self._decision(d, True)
         record["consigne"] = dict(consigne, actuelle=_get(r.stades, a.stade, a.grandeur))
+        if litterature:
+            record["litterature"] = litterature
         return ToolResult(
             dict(proposition=record, note="appliquée à la recette après validation"),
             proposition=record,
@@ -735,9 +792,13 @@ class _Ctx:
             lo, hi, src = lim.get("t_min", 5), lim.get("t_max", 35), "securite.t_min/t_max"
         elif grandeur == "ph":
             lo, hi, src = lim.get("ph_min", 4.5), lim.get("ph_max", 8.0), "securite.ph_min/ph_max"
+        elif grandeur == "temp_racines":
+            lo, hi, src = lim.get("t_min", 5), lim.get("t_max", 35), "securite.t_min/t_max"
         elif grandeur in ("humidite", "humidite_sol"):
             lo, hi, src = 0, 100, "plage physique"
-        elif grandeur == "ec":
+        elif grandeur == "vpd":
+            lo, hi, src = 0, 5, "plage physique"
+        elif grandeur in ("ec", "ec_drainage"):
             lo, hi, src = (
                 PHYSICAL_RANGE[SensorType.EC].min,
                 PHYSICAL_RANGE[SensorType.EC].max,
@@ -751,13 +812,39 @@ class _Ctx:
             )
         elif grandeur == "photoperiode_h":
             lo, hi, src = 0, 24, "plage physique"
-        else:  # dli_cible
+        else:  # dli_cible, dli_max
             lo, hi, src = 0, 65, "plage physique"
         bad = [v for v in values if not lo <= v <= hi]
         if bad:
             raise ToolError(
                 f"hors limites de sécurité : {grandeur} {bad[0]:g} hors de [{lo:g}, {hi:g}] ({src})"
             )
+
+    def literature(self, stade: dict, grandeur: str, valeur, flagged: bool) -> dict | None:
+        """docs/22 L16: a value outside the range of the sources of the quantity is refused
+        unless the agent flags it `hors_litterature` (then shown on the proposal card)."""
+        st = StageSetpoints.model_validate(stade)
+        lit, src = st.literature_range(grandeur), st.sources.get(grandeur)
+        values = valeur if isinstance(valeur, list) else [valeur]
+        if lit is None or all(lit[0] <= v <= lit[1] for v in values):
+            if flagged:
+                raise ToolError(
+                    f"{grandeur} : valeur dans la plage sourcée, hors_litterature inutile"
+                )
+            return None
+        plage = f"[{lit[0]:g}, {lit[1]:g}]"
+        refs = ", ".join(src.refs)
+        if not flagged:
+            raise ToolError(
+                f"{grandeur} hors de la plage sourcée {plage} ({refs}, force {src.force}) : "
+                "reformuler, ou proposer avec hors_litterature=true et justifier"
+            )
+        return dict(
+            plage=list(lit),
+            refs=src.refs,
+            force=src.force,
+            texte=f"hors littérature (plage sourcée {plage}, {refs}, force {src.force})",
+        )
 
     def recipe_zone(self, recette_id: str, stade: str) -> str:
         zones = set()

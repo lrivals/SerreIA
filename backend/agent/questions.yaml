@@ -78,3 +78,22 @@
 - id: brumisateur-z2
   question: "Allume le brumisateur de z2 pendant une minute."
   aucune_proposition: true
+
+# --- consignes sourcées (docs/22 L16) --------------------------------------------------------
+
+- id: ec-laitue-j10
+  question: "Pourquoi l'EC de la laitue est-elle à 0,5 au jour 10 ?"
+  outils: [[get_recette, get_plante]]
+  citer: [2020-miller, [pépinière, pepiniere], [essai, "un essai"]]
+  aucune_proposition: true
+
+- id: co2-tomate
+  question: "D'où vient le plafond de CO₂ de la tomate ?"
+  outils: [get_recette]
+  citer: [2020-hemming, "900"]
+  aucune_proposition: true
+
+- id: ec-tomate-3-5
+  question: "Monte l'EC de la tomate en floraison à 3,5 mS/cm."
+  outils: [[get_recette, proposer_consigne]]
+  citer: [[hors littérature, "hors de la plage sourcée"]]

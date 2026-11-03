@@ -50,12 +50,13 @@ Conséquences :
 | `get_arbre_actions` | `zone`, `debut`, `fin` | arbre doc 10 §6 |
 | `get_consommation` | `zone`, `periode` | kWh, litres, DLI, intrants |
 | `get_regle` | `regle_id` | description, seuils, version |
+| `get_recette` | `recette_id`, `stade?` | consignes par stade et, pour chaque grandeur, sa source dans la littérature (`refs`, `force` : essai, revue, guide, commercial, deduit ; `plage` couverte) ou « non sourcé » ([22 L16](22-idees-litterature.md#l16--agent--consignes-sourcées-p1)) |
 
 ### Proposition (écriture différée)
 | Outil | Paramètres | Effet |
 |---|---|---|
 | `proposer_action` | `zone`, `actionneur`, `action`, `valeur?`, `duree_s`, `justification`, `preuves_refs[]` | crée une `Decision` `niveau: agent`, `statut: proposee` |
-| `proposer_consigne` | `recette_id`, `stade`, `grandeur`, `plage`, `duree_h?`, `justification` | crée une proposition de modification de recette (temporaire ou permanente) |
+| `proposer_consigne` | `recette_id`, `stade`, `grandeur`, `plage`, `duree_h?`, `hors_litterature?`, `justification` | crée une proposition de modification de recette (temporaire ou permanente) ; hors de la plage sourcée, refusée sans `hors_litterature: true`, et la carte porte « hors littérature » |
 | `proposer_etat_plante` | `plante_id`, `etat_sante`, `justification` | ex. marquer « à surveiller » |
 | `demander_capture` | `camera`, `justification` | capture immédiate ; **seule action exécutée sans validation** (sans effet sur les plantes) |
 
@@ -71,6 +72,7 @@ Les outils de proposition vérifient **avant** de créer la proposition : action
 6. **Journal complet** : messages, appels d'outils, arguments, résultats, modèle utilisé, tokens → table `agent_journal` ; consultable dans l'UI.
 7. **Données** : seules des données de la serre sont envoyées à l'API (pas d'identifiants, pas de secrets) ; les images ne sont transmises que si l'utilisateur le demande explicitement (« regarde la photo de A1 »).
 8. **Budget** : limite de tokens par conversation et par jour, configurable.
+9. **Consignes sourcées** : une consigne proposée hors de la plage couverte par les sources de la recette (`recettes.yaml`, `sources`) est refusée, sauf drapeau explicite `hors_litterature`, affiché sur la carte. L'agent cite la source et sa force ; une source `guide`, `commercial` ou `deduit` est présentée comme faible ([22 L16](22-idees-litterature.md#l16--agent--consignes-sourcées-p1)).
 
 ## 5. Exemples de dialogues
 

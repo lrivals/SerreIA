@@ -195,3 +195,27 @@ def test_zone_merge_of_the_new_fields():
     assert sp.dli_max == 13 and not sp.complement_led and sp.vpd == (0.4, 1.0)
     assert not sp.brumisation_nuit
     assert sp.as_evidence()["dli_max"] == 13
+
+
+def test_sources_from_anchors_and_overrides():
+    recipes = load_recipes("edge/controller/recettes.yaml")
+    assert "_sources" not in recipes  # shared anchors, not a recipe
+    tomato = recipes["tomate-standard"]
+    assert len({str(st.sources) for st in tomato.stades.values()}) == 1  # one anchor
+    lettuce = recipes["laitue-hydro"]
+    pep, fin = lettuce.stage("pepiniere"), lettuce.stage("finition")
+    assert pep.sources["ec"].plage == (0.25, 0.75) and fin.sources["ec"].plage == (0.9, 2.0)
+    assert pep.sources["ph"] == fin.sources["ph"]  # merged from the shared block
+    assert fin.literature_range("ec") == (0.9, 2.0) and fin.literature_range("humidite") is None
+    assert recipes["basilic-standard"].stage("croissance").literature_range("dli_cible") == (10, 15)
+
+
+def test_sources_are_validated():
+    src = {"refs": ["2020-miller#001.0"], "force": "essai"}
+    assert stage(sources={"temperature.jour": src}).literature_range("temperature.jour") == (20, 25)
+    with pytest.raises(ValueError, match="grandeur inconnue"):
+        stage(sources={"lumiere": src})
+    with pytest.raises(ValueError):
+        stage(sources={"ec": {"refs": [], "force": "essai"}})  # at least one reference
+    with pytest.raises(ValueError):
+        stage(sources={"ec": {"refs": ["x"], "force": "blog"}})

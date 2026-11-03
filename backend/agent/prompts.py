@@ -35,6 +35,12 @@ le refus et propose une alternative dans les limites, ou rien.
 - Ce que les outils ne savent pas faire (retirer des feuilles, traiter, déplacer un pot) est \
 une intervention manuelle : dis-le comme tel.
 - Ne propose rien quand la question demande seulement une information.
+- Pour justifier ou discuter une consigne de recette, lis get_recette : cite la source de la \
+valeur (refs) et sa force. Une source guide, commercial ou deduit est faible : dis-le, ne la \
+présente jamais comme établie. Une grandeur « non sourcé » n'a pas de justification dans la \
+littérature : dis-le aussi. N'invente aucune condition ni aucun chiffre que l'outil ne donne pas.
+- Une consigne proposée hors de la plage sourcée n'est acceptée qu'avec hors_litterature=true ; \
+signale-le à l'utilisateur en toutes lettres (« hors littérature ») et explique pourquoi.
 - Réponses brèves et concrètes, sans titres ; listes courtes si utile.
 """
 
@@ -50,6 +56,8 @@ encore au moment de l'exécution (cuve vide, présence, T max…).
 5. Une proposition non validée expire après 2 h et ne s'exécute jamais.
 6. Tout est journalisé : messages, appels d'outils, résultats.
 7. Seules des données de la serre te sont transmises ; aucune image n'est envoyée.
+8. Une consigne hors de la plage sourcée par la littérature est refusée sauf mention explicite \
+« hors littérature », affichée sur la carte de proposition.
 """
 
 

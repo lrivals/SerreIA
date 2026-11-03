@@ -904,6 +904,36 @@ Règles dont la version augmente : `climat.humidite.ventilation`, `climat.humidi
 Dans `serre.yaml`, `laitue-1` passe au stade `finition` (EC 0,9–1,5, cohérent avec l'EC de
 1,3 du simulateur). Les attendus des scénarios `journee` et `mildiou` sont inchangés.
 
-Lots suivants : L5 et L7 (`pathogenes.yaml`, incubation), L14 (baselines de prévision), L16
-(sources pour l'agent). L6, L10, L11, L12 et L13 attendent des données réelles, un GPU ou une
-calibration.
+Deuxième lot :
+
+| # | Fait | Reste à faire |
+|---|---|---|
+| L14 | `edge/controller/forecast_baselines.py` : persistance, persistance à 24 h et LightGBM (un modèle par cible et horizon, horizons +10 min, +1 h et +6 h, features passées seulement : lags, moyennes glissantes, écart intérieur-extérieur, minutes depuis le dernier changement de chaque actionneur). `forecast evaluate` : découpage chronologique par zone, MAE, RMSE et skill score face à la persistance, GRU ONNX en option (`--gru`). `forecast train --modele lgbm` produit un modèle que `load_forecaster` charge sans torch ; `Level2` accepte les cibles absentes | comparaison sur données réelles ; GRU entraînée puis évaluée (`--gru`, non testé ici faute de torch) |
+| L16 | `sources` par grandeur et par stade dans `recettes.yaml` (`refs`, `force`, `plage`, `note`), partagées par ancres YAML et validées par `recipes.py`. Outil agent `get_recette`. `proposer_consigne` refuse une valeur hors de la plage sourcée sans `hors_litterature: true`, et sinon l'affiche sur la carte. Consigne au prompt système, garde-fou 9 de [11 §4](11-agent-decision.md#4-garde-fous), trois questions de référence (`ec-laitue-j10`, `co2-tomate`, `ec-tomate-3-5`) | `make agent-eval` avec Claude réel (clé API) ; tenir les sources à jour avec la base |
+
+`python -m edge.controller.forecast evaluate --sim-jours 60` (graine 0, dernier 20 % de chaque
+zone). Le tableau donne la RMSE, avec le skill score face à la persistance entre parenthèses.
+**Simulateur seulement** : les modèles y apprennent les équations du simulateur, ce tableau
+vérifie la mécanique et n'est pas un résultat.
+
+| Cible, horizon | n | persistance | persistance 24 h | LightGBM |
+|---|---|---|---|---|
+| T° +10 min | 3454 | 0,699 °C (0) | 3,498 (−4,00) | 0,609 (+0,13) |
+| T° +1 h | 3444 | 2,330 (0) | 3,498 (−0,50) | 1,771 (+0,24) |
+| T° +6 h | 3384 | 8,102 (0) | 3,526 (+0,56) | 2,913 (+0,64) |
+| HR +10 min | 3454 | 1,722 % (0) | 9,667 (−4,61) | 1,632 (+0,05) |
+| HR +1 h | 3444 | 5,466 (0) | 9,678 (−0,77) | 4,854 (+0,11) |
+| HR +6 h | 3384 | 16,186 (0) | 9,752 (+0,40) | 10,050 (+0,38) |
+| pH +10 min | 1727 | 0,041 (0) | 0,450 (−10,03) | 0,045 (−0,10) |
+| pH +1 h | 1722 | 0,100 (0) | 0,451 (−3,51) | 0,059 (+0,41) |
+| pH +6 h | 1692 | 0,243 (0) | 0,454 (−0,87) | 0,048 (+0,80) |
+| EC +10 min | 1727 | 0,020 mS/cm (0) | 0,208 (−9,40) | 0,017 (+0,15) |
+| EC +1 h | 1722 | 0,049 (0) | 0,208 (−3,26) | 0,018 (+0,63) |
+| EC +6 h | 1692 | 0,117 (0) | 0,209 (−0,78) | 0,017 (+0,85) |
+
+À +6 h, la persistance à 24 h fait presque aussi bien que LightGBM pour l'HR : c'est la base à
+battre pour la ventilation préventive de nuit. À +10 min, LightGBM ne bat pas la persistance
+pour le pH. Une GRU ne serait déployée que si elle dépassait LightGBM sur chaque ligne utile.
+
+Lots suivants : L5 et L7 (`pathogenes.yaml`, incubation). L6, L10, L11, L12 et L13 attendent
+des données réelles, un GPU ou une calibration.

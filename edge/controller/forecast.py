@@ -2,6 +2,8 @@
 
     python -m edge.controller.forecast train --donnees historique.parquet --out edge/models/forecast
     python -m edge.controller.forecast train --sim-jours 60   # mechanics check (simulator)
+    python -m edge.controller.forecast train --modele lgbm --sim-jours 60   # no torch
+    python -m edge.controller.forecast evaluate --sim-jours 60 [--gru edge/models/forecast]
 
 - Inputs, a 24 h window at a 10 min step: sensors (with the 3 h pressure trend of the
   BMP280), actuator states, outside temperature (weather API, simulator), hour and season
@@ -12,6 +14,11 @@
 - Usage: anticipation (`prevision.humidite.ventilation_preventive`: HR forecast > 85 % at
   night → preventive ventilation against mildew) and sensor anomaly detection (measure far
   from the +1 h forecast made one hour earlier, beyond k sigma of the past residuals).
+
+Baselines (docs/22 L14, `forecast_baselines.py`): persistence, 24 h persistence and
+LightGBM, scored with `evaluate` on a chronological test block (skill score against the
+persistence). The GRU is only deployed if it beats LightGBM there; a LightGBM model saved in
+the model directory (`meta.json` `"type": "lgbm"`) is loaded instead of the ONNX GRU.
 
 Training data: a wide table (`ts` column + feature columns, missing ones allowed), exported
 from TimescaleDB or produced by `sim.dataset`. Until weeks of real data exist, train on the
@@ -336,7 +343,14 @@ class Forecaster:
         }
 
 
-def load_forecaster(path: Path | None) -> Forecaster | None:
+def load_forecaster(path: Path | None):
+    """ONNX GRU (`Forecaster`) or LightGBM (`LGBMForecaster`), from `meta.json["type"]`."""
+    if path is not None and (path / META_FILE).exists():
+        kind = json.loads((path / META_FILE).read_text()).get("type", "gru")
+        if kind == "lgbm":
+            from .forecast_baselines import LGBMForecaster
+
+            return LGBMForecaster(path)
     if path is None or not (path / MODEL_FILE).exists():
         log.info("pas de modèle de prévision (%s) : niveau 2 désactivé", path)
         return None
@@ -385,8 +399,9 @@ class Level2:
             if pred is not None:
                 self.predictions[ctx.zone] = pred
                 q = self.due.setdefault(ctx.zone, deque())
-                for t in TARGETS:
-                    q.append((ctx.now + STEP * HORIZONS["+1h"], t, pred[(t, "+1h")]))
+                for t in TARGETS:  # a LightGBM model omits the targets the zone lacks
+                    if (t, "+1h") in pred:
+                        q.append((ctx.now + STEP * HORIZONS["+1h"], t, pred[(t, "+1h")]))
         return out + self._preventive(ctx)
 
     def _anomalies(self, ctx: Ctx) -> list[Proposal]:
@@ -439,7 +454,7 @@ class Level2:
         pred = self.predictions.get(ctx.zone)
         rid = "prevision.humidite.ventilation_preventive"
         act = ctx.act(Actuator.VENTILO)
-        if pred is None or ctx.jour or act is None:
+        if pred is None or ctx.jour or act is None or ("humidite", "+6h") not in pred:
             return []
         hr6 = pred[("humidite", "+6h")]
         fired = ctx.zs.rule_fired.get(rid)
@@ -482,35 +497,61 @@ class Level2:
 # --- CLI --------------------------------------------------------------------------------
 
 
+def _load_data(args):
+    if args.donnees:
+        import pandas as pd
+
+        path = args.donnees
+        return pd.read_parquet(path) if path.suffix == ".parquet" else pd.read_csv(path)
+    from sim.dataset import generate
+
+    return generate(days=args.sim_jours, seed=args.seed)
+
+
 def main() -> None:
     from .config import ROOT
 
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="cmd", required=True)
-    t = sub.add_parser("train", help="entraîner le GRU et l'exporter en ONNX")
-    src = t.add_mutually_exclusive_group(required=True)
-    src.add_argument("--donnees", type=Path, help="table large .parquet / .csv (colonne ts)")
-    src.add_argument("--sim-jours", type=int, help="historique simulé (sim.dataset)")
+    t = sub.add_parser("train", help="entraîner le GRU (ONNX) ou LightGBM")
+    e = sub.add_parser("evaluate", help="persistance, LightGBM (et GRU) sur un bloc de test final")
+    for p in (t, e):
+        src = p.add_mutually_exclusive_group(required=True)
+        src.add_argument("--donnees", type=Path, help="table large .parquet / .csv (colonne ts)")
+        src.add_argument("--sim-jours", type=int, help="historique simulé (sim.dataset)")
+        p.add_argument("--seed", type=int, default=0)
+    t.add_argument("--modele", choices=["gru", "lgbm"], default="gru")
     t.add_argument("--out", type=Path, default=Path("edge/models/forecast"))
-    t.add_argument("--nom", default="gru-v1")
+    t.add_argument("--nom", default=None, help="défaut : gru-v1 / lgbm-v1")
     t.add_argument("--epochs", type=int, default=30)
     t.add_argument("--hidden", type=int, default=64)
     t.add_argument("--device", default="cpu")
-    t.add_argument("--seed", type=int, default=0)
+    e.add_argument("--test", type=float, default=0.2, help="part finale de chaque zone")
+    e.add_argument("--gru", type=Path, help="dossier d'un GRU ONNX à comparer")
+    e.add_argument("--out", type=Path, help="écrire les résultats en JSON")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+    df = _load_data(args)
 
-    if args.donnees:
-        import pandas as pd
+    if args.cmd == "evaluate":
+        from .forecast_baselines import evaluate, markdown
 
-        path = args.donnees
-        df = pd.read_parquet(path) if path.suffix == ".parquet" else pd.read_csv(path)
-    else:
-        from sim.dataset import generate
+        res = evaluate(df, args.test, args.gru)
+        print(markdown(res))
+        if args.out:
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            args.out.write_text(json.dumps(res, indent=2, ensure_ascii=False))
+        return
 
-        df = generate(days=args.sim_jours, seed=args.seed)
     out = args.out if args.out.is_absolute() else ROOT / args.out
-    mae = train(df, out, args.nom, args.epochs, args.hidden, device=args.device)
+    if args.modele == "lgbm":
+        from .forecast_baselines import LGBMModel
+
+        frames, _ = _split(df, 0.0)
+        LGBMModel(args.nom or "lgbm-v1").fit(frames).save(out)
+        print(f"modèle : {out / META_FILE}")
+        return
+    mae = train(df, out, args.nom or "gru-v1", args.epochs, args.hidden, device=args.device)
     for k, v in mae.items():
         print(f"MAE {k} : {v:.3f}")
     print(f"modèle : {out / MODEL_FILE}")

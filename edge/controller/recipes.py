@@ -9,10 +9,17 @@ Fields from the literature (docs/22): `vpd` (L4, constrains the humidity actuato
 `dli_max` (L1, tipburn), `temp_racines` (L3, nutrient solution), `duree_j` (L1, stage
 computed from the sowing date), `complement_led` (L15, no LED complement on young
 plants) and `brumisation_nuit` (L8, no misting at night unless the recipe allows it).
+
+`sources` (docs/22 L16): per quantity of the stage, the literature behind its value (aliases
+`auteur-année#chunk` of lrivals/PaperDatabase), its strength and the range the literature
+covers (`plage`, default: the setpoint itself). The agent reads them (`get_recette`) and a
+proposal outside `plage` has to be flagged "hors littérature". A quantity without source
+is "non sourcée".
 """
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
@@ -28,6 +35,30 @@ class _Cfg(BaseModel):
 class DayNight(_Cfg):
     jour: Range
     nuit: Range
+
+
+Force = Literal["essai", "revue", "guide", "commercial", "deduit"]
+# Quantities a source can be attached to (and the agent may propose, backend/agent/tools.py).
+SOURCED = (
+    "temperature.jour",
+    "temperature.nuit",
+    *_RANGES,
+    "co2_max",
+    "photoperiode_h",
+    "dli_cible",
+    "dli_max",
+)
+
+
+class Source(_Cfg):
+    """Literature behind one setpoint. `essai`: measured in a peer-reviewed trial; `revue`:
+    a review or a value cited second-hand; `guide`: extension or grower guide; `commercial`:
+    vendor material or slides; `deduit`: derived by docs/22 from other values."""
+
+    refs: list[str] = Field(min_length=1)
+    force: Force
+    plage: Range | None = None  # what the literature supports; None: the setpoint itself
+    note: str | None = None
 
 
 class StageSetpoints(_Cfg):
@@ -47,6 +78,7 @@ class StageSetpoints(_Cfg):
     duree_j: float | None = Field(default=None, gt=0)  # days, automatic stage (docs/22 L1)
     complement_led: bool = True  # False: plain photoperiod, no DLI complement
     brumisation_nuit: bool = False  # misting outside the photoperiod
+    sources: dict[str, Source] = Field(default_factory=dict)  # quantity -> literature
 
     @model_validator(mode="after")
     def _ordered(self) -> "StageSetpoints":
@@ -54,7 +86,30 @@ class StageSetpoints(_Cfg):
             r = getattr(self, name)
             if r is not None and r[0] > r[1]:
                 raise ValueError(f"{name}: min > max")
+        for name, src in self.sources.items():
+            if name not in SOURCED:
+                raise ValueError(f"sources : grandeur inconnue {name!r}")
+            if src.plage is not None and src.plage[0] > src.plage[1]:
+                raise ValueError(f"sources.{name} : min > max")
         return self
+
+    def value(self, grandeur: str):
+        """Value of a quantity ("humidite", "temperature.jour"…), None when unset."""
+        if grandeur.startswith("temperature."):
+            return getattr(self.temperature, grandeur.split(".", 1)[1])
+        return getattr(self, grandeur)
+
+    def literature_range(self, grandeur: str) -> Range | None:
+        """Range covered by the sources of a quantity; None when it is not sourced."""
+        src = self.sources.get(grandeur)
+        if src is None:
+            return None
+        if src.plage is not None:
+            return src.plage
+        v = self.value(grandeur)
+        if v is None:
+            return None
+        return (float(v[0]), float(v[1])) if isinstance(v, tuple | list) else (v, v)
 
 
 class Recipe(_Cfg):
@@ -87,9 +142,15 @@ class Recipe(_Cfg):
             ) from None
 
 
+def recipes_only(raw: dict) -> dict:
+    """Recipes of a parsed recettes.yaml: keys starting with "_" hold shared YAML anchors
+    (`_sources`), not recipes."""
+    return {k: v for k, v in raw.items() if not str(k).startswith("_")}
+
+
 def load_recipes(path: Path) -> dict[str, Recipe]:
     raw = yaml.safe_load(Path(path).read_text()) or {}
-    return {name: Recipe.model_validate(r) for name, r in raw.items()}
+    return {name: Recipe.model_validate(r) for name, r in recipes_only(raw).items()}
 
 
 def intersect(a: Range | None, b: Range | None) -> Range | None:

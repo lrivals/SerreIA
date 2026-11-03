@@ -16,11 +16,18 @@ from typing import Literal
 from zoneinfo import ZoneInfo
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from common.mqtt import Actuator, SensorType
 
-from .recipes import PlantStage, Recipe, Setpoints, load_recipes, zone_setpoints
+from .recipes import (
+    PlantStage,
+    Recipe,
+    Setpoints,
+    load_recipes,
+    recipes_only,
+    zone_setpoints,
+)
 
 log = logging.getLogger(__name__)
 
@@ -250,6 +257,11 @@ class SerreCfg(_Cfg):
     risque: RisqueCfg = Field(default_factory=RisqueCfg)
     lumiere: LumiereCfg = Field(default_factory=LumiereCfg)
     prevision: PrevisionCfg = Field(default_factory=PrevisionCfg)
+
+    @field_validator("recettes", mode="before")
+    @classmethod
+    def _drop_anchors(cls, v):
+        return recipes_only(v) if isinstance(v, dict) else v
 
     @model_validator(mode="after")
     def _check(self) -> "SerreCfg":
