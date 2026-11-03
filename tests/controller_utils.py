@@ -25,6 +25,8 @@ UNITS = {
     "humidite": "%",
     "ph": "pH",
     "ec": "mS/cm",
+    "ec_drainage": "mS/cm",
+    "temp_eau": "°C",
     "lux": "lx",
     "niveau_cuve": "%",
     "presence": "cibles",

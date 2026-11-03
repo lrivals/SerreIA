@@ -1,6 +1,16 @@
 # Recettes de culture : consignes par espèce et par stade (docs/09 §6), lues par
 # edge/controller/recipes.py. Plages [min, max] ; ph / ec : zones hydro uniquement ;
 # humidite_sol : emplacements en terre / substrat (sondes capacitives, %).
+# Valeurs confrontées à la littérature dans docs/22 (§11) : alias `auteur-année#chunk` de la
+# base lrivals/PaperDatabase (bases/serre/). « non sourcé » : valeur d'origine sans source.
+#   ec           : EC de la solution apportée, mS/cm (clé `ec_apport` acceptée aussi, L9)
+#   ec_drainage  : EC de la solution drainée (sonde facultative, L9)
+#   vpd          : kPa, contraint la brumisation et la ventilation, ne les pilote pas (L4)
+#   temp_racines : T° de la solution nutritive, alerte seule (L3)
+#   dli_max      : au-delà, aucun complément LED et alerte info (L1, tipburn)
+#   duree_j      : durée du stade, pour `stade: auto` calculé depuis date_semis (L1)
+#   complement_led : false = photopériode simple, sans complément de DLI (L15)
+#   brumisation_nuit : true = brumisation permise hors photopériode (L8, défaut false)
 
 tomate-standard:
   espece: tomate
@@ -9,53 +19,98 @@ tomate-standard:
       temperature: {jour: [20, 25], nuit: [18, 20]}
       humidite: [65, 80]
       photoperiode_h: 16
-      dli_cible: 12
+      dli_cible: 12                 # non sourcé
+      complement_led: false         # pas de gain d'appoint sur plante jeune (2020-hemming#030.2)
       humidite_sol: [55, 75]
     croissance:
       temperature: {jour: [20, 26], nuit: [16, 18]}
       humidite: [60, 75]
-      co2_max: 1200
+      vpd: [0.5, 1.2]               # 2018-shamshiri#006.0 ; 0,6–1,0 2026-fanourakis#035.0
+      co2_max: 900                  # 600–900 réalisé, gain négligeable au-delà (2020-hemming#012.0)
       photoperiode_h: 16
-      dli_cible: 20
-      ph: [5.8, 6.3]
-      ec: [2.0, 3.0]
+      dli_cible: 20                 # non sourcé
+      ph: [5.6, 6.2]                # 5,6 (2021-nikolaou#027.0) ; 5,5–6,5 (2018-savvas#026.2)
+      ec: [2.5, 3.0]                # apport 2,80 → 2,30 décroissant par stade (2021-nikolaou#027.0)
+      ec_drainage: [2.2, 3.8]       # 3 ± 0,8 (2021-nikolaou#002.1)
+      temp_racines: [22, 25]        # déduit : 23–27 (2018-shamshiri#004.0), < 25 Fusarium (2026-fanourakis#027.1)
       humidite_sol: [45, 70]
     floraison:
       temperature: {jour: [21, 27], nuit: [16, 19]}
       humidite: [55, 70]
+      vpd: [0.5, 1.2]
       photoperiode_h: 14
-      dli_cible: 25
-      ph: [5.8, 6.3]
-      ec: [2.5, 3.5]
+      dli_cible: 25                 # non sourcé
+      ph: [5.6, 6.2]
+      ec: [2.2, 2.8]                # 2,50–2,40 (2021-nikolaou#027.0)
+      ec_drainage: [2.2, 3.8]
+      temp_racines: [22, 25]
       humidite_sol: [45, 70]
     fructification:
       temperature: {jour: [21, 27], nuit: [16, 19]}
       humidite: [55, 70]
+      vpd: [0.5, 1.2]
       photoperiode_h: 14
-      dli_cible: 25
-      ph: [5.8, 6.3]
-      ec: [2.5, 3.5]
+      dli_cible: 25                 # non sourcé
+      ph: [5.6, 6.2]
+      ec: [2.0, 2.6]                # 2,40–2,30 (2021-nikolaou#027.0)
+      ec_drainage: [2.2, 3.8]
+      temp_racines: [22, 25]
       humidite_sol: [40, 65]
 
 laitue-hydro:
   espece: laitue
   stades:
-    croissance:
+    pepiniere:
+      duree_j: 11                   # 11 j en pépinière (2013-brechner#007)
       temperature: {jour: [16, 22], nuit: [12, 16]}
       humidite: [50, 70]
+      photoperiode_h: 16            # Brechner : 24 h à 250 µmol/m²/s, non repris (tipburn)
+      complement_led: false
+      ph: [5.6, 6.0]
+      ec: [0.25, 0.5]               # 0,25 en pépinière (2020-miller#003.1), borne haute déduite
+      temp_racines: [18, 22]
+    croissance:
+      duree_j: 19                   # jusqu'à J30 : 0,5–0,75 puis 0,75–1,0 (2020-miller#006.0)
+      temperature: {jour: [16, 22], nuit: [12, 16]}
+      humidite: [50, 70]
+      vpd: [0.5, 0.9]               # provisoire : 0,87 consigne, 0,50–0,75 mesuré (2023-ertle#013.0)
       photoperiode_h: 16
-      dli_cible: 14
-      ph: [5.6, 6.2]
-      ec: [1.0, 1.6]
+      dli_cible: 12                 # 12–15 (2020-miller#001.0)
+      dli_max: 13                   # tipburn > 13 en continu, > 15 en 16 h (2023-ertle#000.2)
+      ph: [5.6, 6.0]                # 5,6–6,0 (2013-brechner#023, 1990-hochmuth#002.0)
+      ec: [0.5, 1.0]
+      temp_racines: [18, 22]        # 18,8 °C mieux que 13,2 (2020-miller#004.3) ; déduit
+    finition:
+      temperature: {jour: [16, 22], nuit: [12, 16]}
+      humidite: [50, 70]
+      vpd: [0.5, 0.9]
+      photoperiode_h: 16
+      dli_cible: 12
+      dli_max: 13
+      ph: [5.6, 6.0]
+      ec: [0.9, 1.5]                # optimum 0,9, plage 0,9–1,5 (2021-hosseini#010.0)
+      temp_racines: [18, 22]
 
 basilic-standard:
   espece: basilic
   stades:
     croissance:
       temperature: {jour: [20, 27], nuit: [16, 20]}
-      humidite: [50, 70]
+      humidite: [50, 70]            # non sourcé
       photoperiode_h: 16
-      dli_cible: 15
-      ph: [5.8, 6.5]
-      ec: [1.0, 1.6]
+      dli_cible: 13                 # optimum 11,8–13,2 (2023-walters#011.3) ; > 10 (2018-walters#006.3)
+      ph: [5.8, 6.2]                # 6,0 (2018-walters#002.3) ; 5,8–6,2 (2022-johnnys#008.0)
+      ec: [1.0, 1.6]                # 0,9–1,5 (2021-hosseini#010.0) ; pas d'effet 0,5–4,0 (2018-walters#000.0)
+      temp_racines: [20, 24]        # 22,1 ± 0,5, un seul niveau (2018-walters#002.4) ; déduit
       humidite_sol: [40, 65]
+
+fraise-substrat:                    # docs/22 L2 : recette assemblée, consignes d'essai non optimisées
+  espece: fraise
+  stades:
+    production:
+      temperature: {jour: [19, 23], nuit: [12, 17]}   # 2016-depardieu#006.0, #006.3
+      humidite: [50, 60]            # 50 ; 60 en hiver (2016-depardieu#006.0, #006.3)
+      photoperiode_h: 16            # non sourcé (n/r dans les quatre fiches)
+      dli_cible: 17                 # 17–20 en serre (2026-garcia#001.0, diapositives)
+      ph: [5.5, 6.2]                # 5,5 (2020-preciado-rangel#011.0) ; borne haute déduite
+      ec: [1.0, 1.5]                # 1,0–1,5 (2016-depardieu#016.1) ; Garcia : ≤ 1, prudence > 1,2 (source faible)

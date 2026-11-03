@@ -3,15 +3,22 @@
 A recipe gives setpoints per species and growth stage. When a zone holds plants of
 several recipes, the zone setpoint is the intersection of their ranges; when it is empty
 the range of the plant marked `prioritaire` wins (the UI reports the incompatibility).
+
+Fields from the literature (docs/22): `vpd` (L4, constrains the humidity actuators),
+`ec` = EC of the applied solution, also accepted as `ec_apport`, and `ec_drainage` (L9),
+`dli_max` (L1, tipburn), `temp_racines` (L3, nutrient solution), `duree_j` (L1, stage
+computed from the sowing date), `complement_led` (L15, no LED complement on young
+plants) and `brumisation_nuit` (L8, no misting at night unless the recipe allows it).
 """
 
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 
 Range = tuple[float, float]
+_RANGES = ("humidite", "ph", "ec", "ec_drainage", "humidite_sol", "vpd", "temp_racines")
 
 
 class _Cfg(BaseModel):
@@ -29,13 +36,21 @@ class StageSetpoints(_Cfg):
     co2_max: float | None = None
     photoperiode_h: float = Field(ge=0, le=24)
     dli_cible: float | None = None  # mol/m²/day
+    dli_max: float | None = None  # mol/m²/day, no LED complement above (tipburn)
     ph: Range | None = None
-    ec: Range | None = None  # mS/cm
+    # mS/cm, applied solution (tank); `ec_apport` is accepted as well (docs/22 L9)
+    ec: Range | None = Field(default=None, validation_alias=AliasChoices("ec", "ec_apport"))
+    ec_drainage: Range | None = None  # mS/cm, drained solution (optional sensor)
     humidite_sol: Range | None = None  # %
+    vpd: Range | None = None  # kPa, constrains misting and ventilation (docs/22 L4)
+    temp_racines: Range | None = None  # °C, nutrient solution (docs/22 L3)
+    duree_j: float | None = Field(default=None, gt=0)  # days, automatic stage (docs/22 L1)
+    complement_led: bool = True  # False: plain photoperiod, no DLI complement
+    brumisation_nuit: bool = False  # misting outside the photoperiod
 
     @model_validator(mode="after")
     def _ordered(self) -> "StageSetpoints":
-        for name in ("humidite", "ph", "ec", "humidite_sol"):
+        for name in _RANGES:
             r = getattr(self, name)
             if r is not None and r[0] > r[1]:
                 raise ValueError(f"{name}: min > max")
@@ -45,6 +60,23 @@ class StageSetpoints(_Cfg):
 class Recipe(_Cfg):
     espece: str
     stades: dict[str, StageSetpoints] = Field(min_length=1)
+
+    def stage_for_age(self, jours: float) -> str | None:
+        """Stage of a plant sown `jours` days ago, from the `duree_j` of the stages in
+        order; the last stage (or the first one without `duree_j`) lasts forever. None
+        when the recipe gives no duration (the stage stays manual)."""
+        names = list(self.stades)
+        if self.stades[names[0]].duree_j is None:
+            return None
+        end = 0.0
+        for name in names:
+            d = self.stades[name].duree_j
+            if d is None:
+                return name
+            end += d
+            if jours < end:
+                return name
+        return names[-1]
 
     def stage(self, stade: str) -> StageSetpoints:
         try:
@@ -87,9 +119,15 @@ class Setpoints:
     photoperiode_h: float
     co2_max: float | None = None
     dli_cible: float | None = None
+    dli_max: float | None = None
     ph: Range | None = None
-    ec: Range | None = None
+    ec: Range | None = None  # applied solution
+    ec_drainage: Range | None = None
     humidite_sol: Range | None = None
+    vpd: Range | None = None
+    temp_racines: Range | None = None
+    complement_led: bool = True
+    brumisation_nuit: bool = False
     sources: list[str] = field(default_factory=list)  # "recette/stade"
     incompatibles: list[str] = field(default_factory=list)  # ranges with empty intersection
 
@@ -103,14 +141,21 @@ class Setpoints:
             "temperature": {"jour": self.temperature_jour, "nuit": self.temperature_nuit},
             "humidite": self.humidite,
         }
-        for name in ("ph", "ec", "humidite_sol", "dli_cible", "co2_max"):
+        for name in (
+            "ph",
+            "ec",
+            "ec_drainage",
+            "humidite_sol",
+            "vpd",
+            "temp_racines",
+            "dli_cible",
+            "dli_max",
+            "co2_max",
+        ):
             if getattr(self, name) is not None:
                 out[name] = getattr(self, name)
         out["photoperiode_h"] = self.photoperiode_h
         return out
-
-
-_RANGES = ("humidite", "ph", "ec", "humidite_sol")
 
 
 def zone_setpoints(
@@ -131,7 +176,10 @@ def zone_setpoints(
         dli_cible=prio.dli_cible,
         ph=prio.ph,
         ec=prio.ec,
+        ec_drainage=prio.ec_drainage,
         humidite_sol=prio.humidite_sol,
+        vpd=prio.vpd,
+        temp_racines=prio.temp_racines,
         sources=[f"{p.recette}/{p.stade}" for p, _ in stages],
     )
 
@@ -153,10 +201,14 @@ def zone_setpoints(
     sp.temperature_nuit = merge(
         "temperature_nuit", [s.temperature.nuit for _, s in stages], prio.temperature.nuit
     )
-    for name in _RANGES if hydro else ("humidite", "humidite_sol"):
+    for name in _RANGES if hydro else tuple(r for r in _RANGES if r not in ("ph", "ec")):
         setattr(sp, name, merge(name, [getattr(s, name) for _, s in stages], getattr(prio, name)))
     if not hydro:
         sp.ph = sp.ec = None
     caps = [s.co2_max for _, s in stages if s.co2_max is not None]
     sp.co2_max = min(caps) if caps else None
+    dli_caps = [s.dli_max for _, s in stages if s.dli_max is not None]
+    sp.dli_max = min(dli_caps) if dli_caps else None  # the most sensitive plant
+    sp.complement_led = all(s.complement_led for _, s in stages)
+    sp.brumisation_nuit = all(s.brumisation_nuit for _, s in stages)
     return sp

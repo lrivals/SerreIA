@@ -65,7 +65,7 @@ def mildew_risk(ctx: Ctx) -> RiskIndex:
     vision = confirmed(ctx.zs, "mildiou", allowed=ctx.gh.vision_auto)
     t_ok = t12 is not None and cfg.t_min <= t12 <= cfg.t_max
     hr = ctx.value(SensorType.HUMIDITE)
-    conditions = t_ok and (wet >= cfg.humectation_h or (bool(vision) and (hr or 0) > 85))
+    conditions = t_ok and (wet >= cfg.humectation_h or (bool(vision) and (hr or 0) > cfg.hr_vision))
     score = min(1.0, wet / cfg.humectation_h) * (1.0 if t_ok else 0.3)
     if vision:
         score = min(1.0, score + 0.5)
