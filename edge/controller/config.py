@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from common.mqtt import Actuator, SensorType
 
+from .pathogenes import PathogenesCfg, load_pathogenes
 from .recipes import (
     PlantStage,
     Recipe,
@@ -247,6 +248,7 @@ class SerreCfg(_Cfg):
     tarif_kwh: float | None = None  # €/kWh, cost of the estimated consumption (docs/09 §5)
     recettes: Path | dict[str, Recipe] = Path("edge/controller/recettes.yaml")  # or inline
     regles: Path | ReglesCfg = Path("edge/controller/regles.yaml")  # or inline
+    pathogenes: Path | PathogenesCfg = Path("edge/controller/pathogenes.yaml")  # or inline
     zones: list[ZoneCfg] = Field(min_length=1)
     cuves: list[CuveCfg] = Field(default_factory=list)
     actionneurs: list[ActionneurCfg] = Field(default_factory=list)
@@ -345,6 +347,11 @@ class SerreCfg(_Cfg):
     def resolve(self, path: Path) -> Path:
         return path if path.is_absolute() else ROOT / path
 
+    def load_pathogenes(self) -> PathogenesCfg:
+        if isinstance(self.pathogenes, PathogenesCfg):
+            return self.pathogenes
+        return load_pathogenes(self.resolve(self.pathogenes))
+
     def load_regles(self) -> ReglesCfg:
         if isinstance(self.regles, ReglesCfg):
             return self.regles
@@ -374,6 +381,7 @@ class Greenhouse:
 
         self.cfg, self.recipes = cfg, recipes
         self.regles = cfg.load_regles()
+        self.pathogenes = cfg.load_pathogenes()
         self.especes = known_species() if especes is None else especes
         self.today = today or datetime.now(ZoneInfo(cfg.fuseau)).date()
         self.stades: dict[str, str] = {}  # plant id -> current stage (resolved "auto")

@@ -89,7 +89,7 @@ def test_parse_scenario_and_faults():
 
 
 def test_scenario_files_load():
-    for nom in ("journee", "mildiou"):
+    for nom in ("journee", "mildiou", "botrytis_nuit"):
         sc = Scenario.load(nom)
         assert sc.nom == nom and sc.attendus_path is not None and not sc.cameras
 
@@ -411,3 +411,13 @@ def test_validated_proposals_go_through_the_controller(hist):
     assert any(isinstance(s, ActuatorState) and s.action == "pwm" for s in states)
     assert sum(1 for d in after.decisions if d.id == pompe and d.statut == "bloquee_securite") == 1
     assert out_of_limits(sessions) == []
+
+
+# --- scenario 3 (docs/22 L7) ---------------------------------------------------------------
+
+
+def test_botrytis_night_meets_its_expected_outcome():
+    sc = Scenario.load("botrytis_nuit")
+    _, sessions = seeded_db("sqlite://", sc.debut)
+    res = verifier(run_fast(sc, sessions))
+    assert res.ok, "\n".join(res.ecarts)

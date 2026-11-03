@@ -221,3 +221,20 @@ def test_validation_is_configurable_per_rule():
     feed_captures(state, "z1", "tomate/virus/mosaique", NOON, n=2)
     (p,) = evaluate(state, gh, now=NOON + minutes(10))
     assert p.regle.id == "virus.isolement" and not p.validation
+
+
+def test_powdery_mildew_thresholds_come_from_pathogenes_yaml():
+    raw = yaml.safe_load(DEFAULT_CONFIG.read_text())
+    raw["zones"][0]["emplacements"][0]["plante"]["espece"] = "courge"
+    raw["pathogenes"] = {"oidium": {"hr": [40, 50], "t": [20, 28], "amplitude_hr_24h": 10}}
+    cfg = SerreCfg.model_validate(raw)
+    gh = Greenhouse(cfg, cfg.load_recipes())
+    state = GreenhouseState()
+    feed(state, "z1", "humidite", 75, LAST - minutes(600))  # a humid night before
+    air(state, 45, 24)
+    feed_captures(state, "z1", "courge/maladie/oidium", NOON)
+    (p,) = evaluate(state, gh)
+    assert p.regle.id == "maladie.oidium.surveillance" and "très variable" in p.explication
+    assert "amplitude_24h" in {c.agregat for c in p.preuves.capteurs}
+    default = ids(evaluate(state, greenhouse_with("courge")))  # default file: 60–80 %
+    assert default == ["vision.anormal.surveillance"]

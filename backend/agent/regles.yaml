@@ -49,8 +49,11 @@ presence.intrusion: {version: 1, niveau: 1, description: "alerte de présence ho
 
 # --- niveau 1 : risque et vision (risk.py, vision_rules.py) -------------------------------
 maladie.mildiou.ventilation:
-  {version: 1, niveau: 1, description: "humectation longue (HR élevée, T modérée) ou mildiou confirmé par la vision → ventilation et alerte",
-   parametres: [risque.hr_humectation, risque.humectation_h, risque.t_min, risque.t_max, risque.ventilation_s, regles.confirmations, regles.classe_conf_min]}
+  {version: 2, niveau: 1, description: "infection mildiou (humectation assez longue à une T° pendant l'humectation favorable, degrés-heures selon l'espèce, pathogenes.yaml) ou mildiou confirmé par la vision → ventilation et alerte ; incubation suivie quand l'espèce a un taux sourcé (date de symptômes attendus)",
+   parametres: [risque.hr_humectation, risque.humectation_h, risque.t_min, risque.t_max, risque.hr_vision, risque.ventilation_s, risque.periode_s, regles.confirmations, regles.classe_conf_min]}
+maladie.botrytis.chauffage_ventilation:
+  {version: 1, niveau: 1, description: "nuit à 15–22 °C avec HR > 90 % et VPD < 0,5 kPa (moyennes sur 1 h, pathogenes.yaml) → alerte Botrytis ; dans les 2 h avant le jour, chauffage et ventilation 15 min",
+   parametres: [risque.periode_s]}
 maladie.mildiou.plante:
   {version: 1, niveau: 1, description: "mildiou confirmé → plante malade et consigne HR max abaissée temporairement, sans descendre sous le plancher",
    parametres: [regles.confirmations, regles.classe_conf_min, regles.hr_abaissement, regles.hr_abaissement_h, regles.hr_min_abaissement, risque.hr_vision]}
@@ -77,6 +80,9 @@ croissance.surface.arrosage:
 prevision.humidite.ventilation_preventive:
   {version: 1, niveau: 2, description: "HR prévue à +6 h au-dessus du maximum de nuit → ventilation préventive",
    parametres: [prevision.hr_max_nuit, prevision.ventilation_s]}
+prevision.maladie.preavis:
+  {version: 1, niveau: 2, description: "zone humide maintenant et HR prévue à +6 h au-dessus du seuil d'humectation : le critère d'infection mildiou appliqué à l'humectation projetée → préavis (alerte seule)",
+   parametres: [risque.hr_humectation]}
 prevision.anomalie_capteur:
   {version: 1, niveau: 2, description: "mesure trop loin de la prévision → capteur suspect, alerte",
    parametres: [prevision.ecart_sigma]}

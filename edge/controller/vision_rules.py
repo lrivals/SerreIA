@@ -50,7 +50,6 @@ from .psychro import vpd
 from .risk import mildew_risk
 
 TACHES = ("septoriose", "alternariose", "tache_bacterienne")
-OIDIUM_HR, OIDIUM_T = (60.0, 80.0), (20.0, 28.0)  # `2026-fanourakis#027.0`
 ACARIEN_HR_MAX, ACARIEN_VPD_MIN = 50.0, 1.2  # spider mite favoured (`2026-fanourakis#032.0`)
 ACARIEN_HR_CIBLE = 65.0  # misting stops at the moderate HR target 60–70 %
 DEPISTAGE = (
@@ -294,10 +293,15 @@ class VisionRules:
         hr, t = ctx.value(SensorType.HUMIDITE), ctx.value(SensorType.TEMPERATURE)
         if hr is None or t is None:
             return []
-        if not (OIDIUM_HR[0] <= hr <= OIDIUM_HR[1] and OIDIUM_T[0] <= t <= OIDIUM_T[1]):
+        oid = ctx.gh.pathogenes.oidium  # pathogenes.yaml (docs/22 L7)
+        if not (oid.hr[0] <= hr <= oid.hr[1] and oid.t[0] <= t <= oid.t[1]):
             return []
         rid = "maladie.oidium.surveillance"
         why = f"{self._what(c)}, HR {fmt(hr)} % et {fmt(t)} °C favorables"
+        day = ctx.zs.recent(SensorType.HUMIDITE, ctx.now, timedelta(hours=24))
+        amplitude = max(day) - min(day) if day else None
+        if amplitude is not None and amplitude >= oid.amplitude_hr_24h:
+            why += f", HR très variable ({fmt(amplitude, 0)} points en 24 h)"
         return [
             self._p(
                 ctx,
@@ -312,6 +316,20 @@ class VisionRules:
                 capteurs=[
                     evidence(ctx.zone, SensorType.HUMIDITE, ctx.reading(SensorType.HUMIDITE)),
                     evidence(ctx.zone, SensorType.TEMPERATURE, ctx.reading(SensorType.TEMPERATURE)),
+                    *(
+                        [
+                            evidence(
+                                ctx.zone,
+                                SensorType.HUMIDITE,
+                                valeur=amplitude,
+                                unite="%",
+                                agregat="amplitude_24h",
+                                seuil=oid.amplitude_hr_24h,
+                            )
+                        ]
+                        if amplitude is not None
+                        else []
+                    ),
                 ],
                 version=2,
             )

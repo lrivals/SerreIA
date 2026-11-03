@@ -1,0 +1,16 @@
+# Scénario 3 « Nuit à Botrytis » (docs/22 L7) : une nuit saturée en z1 (18 °C, dans la plage
+# de nuit de la recette : pas de chauffage de régulation ; HR 95 % de 22 h à 6 h 30), sans
+# images ni pannes. La ventilation d'humidité tourne déjà (HR > max) : le cycle Botrytis
+# n'ajoute que le chauffage. J0 = 10 octobre, heure locale ; fin J1
+# 08:00. Attendus : botrytis_nuit.attendus.yaml.
+#   python -m sim --scenario botrytis_nuit --mqtt none --accel 0
+nom: botrytis_nuit
+debut: 2026-10-10T20:00+02:00
+duree_h: 12
+seed: 3
+meteo: {}
+pannes: []
+forcages:
+  - {grandeur: humidite, zone: z1, valeur: 95, de: J0 22:00, a: J1 06:30}
+  - {grandeur: temperature, zone: z1, valeur: 18, de: J0 22:00, a: J1 06:30}
+vision: []

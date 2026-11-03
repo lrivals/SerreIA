@@ -1,0 +1,11 @@
+# Attendus du scénario 3 « Nuit à Botrytis » (docs/22 L7), vérifiés par sim/attendus.py
+# (tests/test_scenarios.py). J0 = 10 octobre, heure locale.
+attendus:
+  - {nom: nuit saturée → alerte Botrytis, regle: maladie.botrytis.chauffage_ventilation,
+     zone: z1, de: J0 22:00, a: J0 23:30, alerte: risque Botrytis}
+  - {nom: fin de nuit → chauffage, regle: maladie.botrytis.chauffage_ventilation, zone: z1,
+     de: J1 04:00, a: J1 06:00, actionneur: chauffage, action: "on", min: 1, max: 2}
+interdits:
+  - {nom: cycle Botrytis avant la fin de nuit, regle: maladie.botrytis.chauffage_ventilation,
+     actionneur: chauffage, a: J1 04:00}
+  - {nom: brumisation de nuit, actionneur: brumisateur, action: "on"}

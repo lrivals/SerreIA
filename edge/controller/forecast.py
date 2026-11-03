@@ -402,7 +402,7 @@ class Level2:
                 for t in TARGETS:  # a LightGBM model omits the targets the zone lacks
                     if (t, "+1h") in pred:
                         q.append((ctx.now + STEP * HORIZONS["+1h"], t, pred[(t, "+1h")]))
-        return out + self._preventive(ctx)
+        return out + self._preventive(ctx) + self._preavis(ctx)
 
     def _anomalies(self, ctx: Ctx) -> list[Proposal]:
         out, q, k = [], self.due.get(ctx.zone, deque()), ctx.gh.cfg.prevision.ecart_sigma
@@ -448,6 +448,71 @@ class Level2:
             else:
                 res.update(r)
         return out
+
+    def _preavis(self, ctx: Ctx) -> list[Proposal]:
+        """`prevision.maladie.preavis` (docs/22 L5): the zone is wet now and the forecast
+        keeps it wet at +6 h → the mildew infection criterion is run on the projected
+        wetness (current spell + 6 h, assumed continuous: only the +6 h point is known) at
+        the mean of the current and forecast T°. Alert only, before the infection."""
+        from .risk import mildew_risk
+
+        pred, cfg = self.predictions.get(ctx.zone), ctx.gh.cfg.risque
+        if pred is None:
+            return []
+        hr6, t6 = pred.get(("humidite", "+6h")), pred.get(("temperature", "+6h"))
+        hr = ctx.value(SensorType.HUMIDITE)
+        if None in (hr6, t6, hr) or hr <= cfg.hr_humectation or hr6 <= cfg.hr_humectation:
+            return []
+        risk = mildew_risk(ctx)
+        t_now = risk.t_humectation
+        if t_now is None:
+            t_now = ctx.value(SensorType.TEMPERATURE)
+        if risk.conditions or t_now is None:
+            return []
+        lwd, t_proj = risk.humectation_h + 6, (t_now + t6) / 2
+        start = ctx.now - timedelta(hours=risk.humectation_h)
+        at = {}
+        for s in risk.especes:
+            if s.params.infected(lwd, t_proj):
+                dh = s.params.degres_heures_min
+                need = max(s.params.lwd_min_h, dh / t_proj if dh and t_proj > 0 else 0.0)
+                at[s.espece] = max(ctx.now, start + timedelta(hours=need))
+        if not at:
+            return []
+        when = min(at.values()).astimezone(ctx.local.tzinfo)
+        msg = (
+            f"HR {fmt(hr)} % depuis {fmt(risk.humectation_h)} h, prévue {fmt(hr6)} % à +6 h "
+            f"→ préavis mildiou ({', '.join(sorted(at))}) : infection attendue vers "
+            f"{when:%H:%M} si l'humidité se maintient"
+        )
+        rid = "prevision.maladie.preavis"
+        return [
+            Proposal(
+                zone=ctx.zone,
+                regle=rule(rid),
+                niveau=2,
+                type="exceptionnelle",
+                explication=msg,
+                alerte=AlertSpec(
+                    "warning",
+                    f"{ctx.zone} : {msg}",
+                    f"{ctx.zone}/{rid}",
+                    f"{ctx.zone} : préavis mildiou levé",
+                ),
+                preuves=Preuves(
+                    capteurs=[
+                        evidence(ctx.zone, SensorType.HUMIDITE, ctx.reading(SensorType.HUMIDITE)),
+                        evidence(ctx.zone, SensorType.HUMIDITE, valeur=risk.humectation_h,
+                                 unite="h", agregat="duree_au_dessus", seuil=cfg.hr_humectation),
+                    ],
+                    prevision=[
+                        PreuvePrevision(grandeur=g, horizon="+6h", valeur=round(v, 2),
+                                        modele=self.forecaster.name)
+                        for g, v in (("humidite", hr6), ("temperature", t6))
+                    ],
+                ),
+            )
+        ]  # fmt: skip
 
     def _preventive(self, ctx: Ctx) -> list[Proposal]:
         cfg = ctx.gh.cfg.prevision

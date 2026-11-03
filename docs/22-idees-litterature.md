@@ -935,5 +935,27 @@ vérifie la mécanique et n'est pas un résultat.
 battre pour la ventilation préventive de nuit. À +10 min, LightGBM ne bat pas la persistance
 pour le pH. Une GRU ne serait déployée que si elle dépassait LightGBM sur chaque ligne utile.
 
-Lots suivants : L5 et L7 (`pathogenes.yaml`, incubation). L6, L10, L11, L12 et L13 attendent
-des données réelles, un GPU ou une calibration.
+Troisième lot :
+
+| # | Fait | Reste à faire |
+|---|---|---|
+| L5 | `edge/controller/pathogenes.yaml` (+ `pathogenes.py`) : paramètres de mildiou par espèce, chacun avec ses sources et sa force. `concombre` reprend `2022-liu#004.0` (LWD ≥ 2 h, 5–30 °C, 40 h·°C, incubation de 0,015 h⁻¹ à 20 °C). Toute autre espèce, tomate comprise, garde les 10 h à 10–25 °C de `serre.yaml`, marqués `non_source`. `risk.py` : T° prise **pendant** l'humectation, degrés-heures, machine à états `infection → incubation → symptomes_attendus` dans `ZoneState.infections`, date des symptômes dans l'explication et les preuves, alerte info tant qu'une incubation court par temps sec. `maladie.mildiou.ventilation` passe en v2. Préavis `prevision.maladie.preavis` (niveau 2) : le même critère appliqué à l'humectation projetée à +6 h | taux d'incubation à d'autres T° (seul 20 °C est sourcé) ; durée d'humectation pour la tomate (n/r) ; état d'infection persistant entre redémarrages ; préavis au-delà de +6 h (L14) |
+| L7 | `maladie.botrytis.chauffage_ventilation` : de nuit, T° moyenne sur 1 h dans 15–22 °C avec HR > 90 % **et** VPD < 0,5 kPa → alerte ; dans les 2 h avant le jour, chauffage et ventilation de 15 min, une fois par `risque.periode_s`. L'oïdium (vision) lit ses seuils dans `pathogenes.yaml` et cite l'amplitude d'HR sur 24 h. Scénario `botrytis_nuit` | proxy de condensation sur la paroi (T° de paroi, L13) ; durée d'humectation de Botrytis (n/r) |
+
+Écarts à la proposition, et pourquoi :
+- **Chemin vision du mildiou conservé.** Un mildiou confirmé par la vision en air humide
+  (HR > `risque.hr_vision`) donne toujours les conditions. Il ne fait pas que confirmer un état,
+  car le supprimer casserait l'attendu J2 02:00 du scénario `mildiou`.
+- **Botrytis : HR > 90 % *et* VPD < 0,5 kPa.** Un « ou » aurait été trop large : à 18 °C, un VPD
+  de 0,5 kPa correspond à une HR de 76 %. L'écart au point de rosée n'est qu'une preuve, faute de
+  T° de feuille ou de paroi.
+- **« Chauffage puis ventilation » envoyés en même temps.** Il n'existe pas d'ordre différé. Si
+  un actionneur tourne déjà, sa commande n'est pas renvoyée. Dans `botrytis_nuit`, la ventilation
+  d'humidité tourne déjà, donc seul le chauffage est ajouté.
+- **Brumisation acarien.** Je n'ai pas ajouté de garde Botrytis : elle n'a lieu que de jour, et
+  l'indice Botrytis seulement la nuit.
+
+Sur les scénarios : Botrytis ajoute 4 décisions à `journee` et 11 à `mildiou`, sans oscillation.
+Les attendus de ces deux scénarios sont inchangés.
+
+L6, L10, L11, L12 et L13 attendent des données réelles, un GPU ou une calibration.

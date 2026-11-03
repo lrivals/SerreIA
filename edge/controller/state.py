@@ -45,6 +45,17 @@ class Spell:
 
 
 @dataclass
+class Infection:
+    """Mildew infection of one species of a zone (docs/22 L5): declared at `debut`, then
+    incubation progress 0 → 1 (symptoms expected) when the parameters give a rate."""
+
+    debut: datetime
+    progression: float = 0.0
+    maj: datetime | None = None  # last integration time
+    atteinte: datetime | None = None  # when the progress reached 1 (symptoms expected)
+
+
+@dataclass
 class Pending:
     """Last command sent to an actuator, until `etat/` confirms it."""
 
@@ -67,6 +78,7 @@ class ZoneState:
     consignes: dict[str, tuple[float, datetime]] = field(default_factory=dict)
     vision: deque[VisionResult] = field(default_factory=deque)
     spells: dict[float, Spell] = field(default_factory=dict)  # humidity threshold -> spell
+    infections: dict[str, Infection] = field(default_factory=dict)  # "mildiou/<espece>"
     dli: float = 0.0  # mol/m², measured light of the current local day
     dli_day: object = None
     _last_lux: tuple[datetime, float] | None = None

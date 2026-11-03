@@ -115,3 +115,33 @@ def test_sensor_anomaly_against_forecast():
         t += minutes(10)
     assert alerts and "suspect" in alerts[0].alerte.message
     assert alerts[0].regle.id == "prevision.anomalie_capteur"
+
+
+def wet_zone(s, hours, hr=93.0, t=17.0):
+    start = NIGHT - timedelta(hours=hours)
+    for i in range(int(hours * 6) + 1):
+        ts = start + minutes(10 * i)
+        feed(s, "z1", "humidite", hr, ts)
+        feed(s, "z1", "temperature", t, ts)
+
+
+def preavis(lvl, gh, s, now=NIGHT):
+    return [
+        p for p in lvl.evaluate(ctx(gh, s, "z1", now)) if p.regle.id == "prevision.maladie.preavis"
+    ]
+
+
+def test_mildew_early_warning_from_the_forecast():
+    gh, s = greenhouse(), GreenhouseState()
+    wet_zone(s, 6)  # wet for 6 h: tomato needs 10 h (unsourced default)
+    (p,) = preavis(F.Level2(Stub(hr6=95, t1=18.0)), gh, s)
+    assert p.niveau == 2 and not p.orders and p.alerte.niveau == "warning"
+    assert "infection attendue vers 07:00" in p.explication  # 6 h ago + 10 h, local time
+    assert {e.grandeur for e in p.preuves.prevision} == {"humidite", "temperature"}
+    assert preavis(F.Level2(Stub(hr6=80, t1=18.0)), gh, s) == []  # dries out
+    infected = GreenhouseState()
+    wet_zone(infected, 11)  # infection already declared: the level 1 rule speaks
+    assert preavis(F.Level2(Stub(hr6=95, t1=18.0)), gh, infected) == []
+    dry = GreenhouseState()
+    wet_zone(dry, 6, hr=80)
+    assert preavis(F.Level2(Stub(hr6=95, t1=18.0)), gh, dry) == []

@@ -122,7 +122,7 @@ class Controller:
             ctxs = {z.id: make_ctx(gh, self.state.zone(z.id), now) for z in gh.cfg.zones}
             proposals = safety.watch(self.state, ctxs)
             for ctx in ctxs.values():
-                proposals += risk.mildew(ctx)
+                proposals += risk.diseases(ctx)
                 proposals += self.level2.evaluate(ctx)
                 proposals += self.rules.evaluate(ctx)
                 proposals += self.vision_rules.evaluate(ctx)

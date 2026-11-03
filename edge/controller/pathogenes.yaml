@@ -1,0 +1,44 @@
+# Paramètres des indices de risque maladie (docs/22 L5, L7), lus par edge/controller/pathogenes.py.
+# Un bloc par pathogène (et par espèce pour le mildiou), chaque valeur avec ses sources (alias
+# `auteur-année#chunk` de lrivals/PaperDatabase, bases/serre/) et une force : essai | revue |
+# guide | commercial | deduit | non_source. Ne pas appliquer un bloc à une autre culture sans
+# source : les paramètres de Liu 2022 sont ceux du mildiou du concombre.
+
+mildiou:
+  # Toute espèce sans bloc (tomate, basilic…) : seuils de serre.yaml (`risque.humectation_h`,
+  # `risque.t_min`, `risque.t_max`), conservés faute de source. Aucune incubation.
+  defaut:
+    force: non_source
+    sources: [2026-fanourakis#027.1]
+    note: >-
+      seuil de 10 h retrouvé dans aucune fiche ; Phytophthora infestans (tomate) : 18–24 °C,
+      HR > 90 %, VPD < 0,4 kPa, eau libre nécessaire, durée n/r
+  concombre:  # Pseudoperonospora cubensis, modèle en deux étages
+    force: essai
+    sources: [2022-liu#004.0, 2022-liu#007.0, 2022-liu#009.0]
+    lwd_min_h: 2                  # humectation d'au moins 2 h…
+    t_humectation: [5, 30]        # … à une T° comprise dans cette plage pendant l'humectation…
+    degres_heures_min: 40         # … et LWD × TLWD ≥ 40 h·°C
+    incubation:
+      taux_h: {20: 0.015}         # h⁻¹ : 67 h jusqu'aux symptômes à 20 °C ; seul point sourcé
+    note: "un seul événement validé, deux faux positifs ; serre de Beijing"
+
+botrytis:  # pourriture grise, indice de nuit (condensation après le refroidissement nocturne)
+  force: revue
+  sources: [2026-fanourakis#027.0, 2026-fanourakis#013.2, 2026-fanourakis#035.2]
+  t: [15, 22]                     # °C, moyenne sur 1 h
+  hr_min: 90                      # %, moyenne sur 1 h…
+  vpd_max: 0.5                    # … ou VPD sous ce seuil (kPa)…
+  ecart_rosee_max: 1.0            # … ou point de rosée à moins de 1 °C de l'air (déduit : condensation)
+  fenetre_fin_nuit_h: 2           # cycle chauffage puis ventilation dans les 2 h avant le jour
+  chauffage_s: 900
+  ventilation_s: 900
+  note: "durée d'humectation n/r ; cible HR < 85 % et VPD 0,6–0,8 ; irrigation de nuit = facteur de risque"
+
+oidium:  # surveillance vision seulement (vision_rules.py), pas d'alerte climatique seule
+  force: revue
+  sources: [2026-fanourakis#027.0, 2026-fanourakis#003.1]
+  hr: [60, 80]                    # %
+  t: [20, 28]                     # °C
+  amplitude_hr_24h: 20            # points d'HR, déduit : « fortes variations d'HR » sans seuil chiffré
+  note: "sans eau libre ; favorisé par les fortes variations d'HR et le manque d'UV"
