@@ -39,6 +39,7 @@ Choix structurants :
 | 19 | [Notebooks d'analyse des datasets](docs/19-notebooks-analyse-datasets.md) | Spécification des notebooks 06–08 : statistiques du classifieur, du jeu YOLO et des séries capteurs |
 | 20 | [Structures imprimées en 3D](docs/20-impression-3d-structures.md) | Pièces imprimables de la serre : hydroponie, structure et bâche, éclairage réglable, supports d'électronique, matériaux, sécurité |
 | 21 | [Configurateur des pièces imprimées](docs/21-configurateur-impression-3d.md) | Écran `/impression` : choix des pièces selon la serre, matériaux, cotes, export de `hardware/mesures.toml` |
+| 22 | [Idées tirées de la littérature](docs/22-idees-litterature.md) | 16 idées sourcées (consignes, VPD, risque maladie, nutrition, vision, simulateur, prévision, agent) et tableau `recettes.yaml` contre littérature |
 | — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
 ## État actuel (17/10/2026)
