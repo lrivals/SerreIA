@@ -882,3 +882,28 @@ diffèrent). Une valeur sourcée n'est pas un optimum validé : voir la nature d
 5. **Modèles** : L14 avant tout entraînement de la GRU sur données réelles ; L13 avec
    [18 S3](18-ameliorations-logicielles.md#s3--modèle-physique-plus-réaliste-p2).
 6. **Au fil de l'eau** : L2, L3, L10, L15, L16.
+
+## 14. État d'implémentation
+
+Premier lot (branche `claude/quirky-mccarthy-xphaib`), d'après l'ordre du §13 :
+
+| # | Fait | Reste à faire |
+|---|---|---|
+| L8 | `nuisible.brumisation` v2 : brumisation pour un acarien seulement (`tetranyque`, `acarien*`), de jour, HR < 50 % ou VPD > 1,2, arrêt à 65 % d'HR, jamais avec un risque mildiou actif ; conseil de dépistage pour les autres nuisibles. `climat.humidite.brumisation` v2 : jamais la nuit, sauf `brumisation_nuit: true` | — |
+| L4 | `edge/controller/psychro.py` (VPD, point de rosée, humidité absolue), testé sur la Table 5. Champ `vpd` des stades : il bloque la brumisation sous le min et la permet seulement au-dessus du max ; la ventilation d'humidité démarre sous le min et reste en marche jusqu'à min + 0,1 kPa ; le VPD figure dans les preuves (`agregat: "vpd"`) | VPD dans l'ingestion, Grafana et `get_mesures` |
+| L9 | `ec` = solution apportée (clé `ec_apport` acceptée), `ec_drainage`, capteur `ec_drainage` (contrat Python + firmware), règle `ec.drainage` (alerte au-dessus du max, ou écart avec l'apport de plus de ± 1). Tomate : EC décroissante par stade, pH [5.6, 6.2] | sonde réelle ; version du contrat (18 M1) |
+| L1 | Laitue en trois stades `pepiniere` / `croissance` / `finition` avec `duree_j`. `stade: auto` calcule le stade depuis `date_semis` (contrôleur, API, export) et le recalcule chaque jour. `dli_max` : aucun complément LED au-delà, alerte info | changement de stade tracé comme décision ; scénario `laitue_cycle` |
+| L3 | `temp_racines` + règle `hydro.temperature_solution` (alerte seule, hystérésis 0,5 °C) | actionneur de chauffe ; cuve dans le simulateur (L13) |
+| L2 | Recette `fraise-substrat` (stade `production`) | arbitrage EC Depardieu / Garcia ; photopériode (n/r) |
+| L7 | Oïdium v2 : HR 60–80 %, 20–28 °C. Plancher `hr_min_abaissement: 60` pour l'abaissement mildiou. Seuil vision 85 % lu depuis `risque.hr_vision` | `pathogenes.yaml`, Botrytis (avec L5) |
+| L15 | `complement_led: false` au semis de la tomate ; `co2_max` 900 | table `recolte`, alarme d'irrigation absente |
+| §11 | pH laitue [5.6, 6.0], pH basilic [5.8, 6.2], DLI basilic 13 ; sources en commentaire dans `recettes.yaml` | bloc `sources` structuré (L16) |
+
+Règles dont la version augmente : `climat.humidite.ventilation`, `climat.humidite.brumisation`,
+`lumiere.photoperiode`, `maladie.oidium.surveillance`, `nuisible.brumisation` (toutes en v2).
+Dans `serre.yaml`, `laitue-1` passe au stade `finition` (EC 0,9–1,5, cohérent avec l'EC de
+1,3 du simulateur). Les attendus des scénarios `journee` et `mildiou` sont inchangés.
+
+Lots suivants : L5 et L7 (`pathogenes.yaml`, incubation), L14 (baselines de prévision), L16
+(sources pour l'agent). L6, L10, L11, L12 et L13 attendent des données réelles, un GPU ou une
+calibration.

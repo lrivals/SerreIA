@@ -149,3 +149,112 @@ def test_no_circulation_cycles_in_dwc(gh):
     raw["zones"][1]["emplacements"][0]["mode_culture"] = "hydro_dwc"
     dwc = Greenhouse(type(gh.cfg).model_validate(raw), gh.recipes, gh.especes)
     assert rules.circulation(ctx(dwc, GreenhouseState(), "z2", NOON)) == []  # immersed roots
+
+
+# --- docs/22: VPD, night misting, drainage EC, solution T°, DLI cap ------------------------
+
+
+def air(s, zone, hr, t, at):
+    node = "esp32-01" if zone == "z1" else "esp32-05"
+    feed(s, zone, "humidite", hr, at, node=node)
+    feed(s, zone, "temperature", t, at, node=node)
+
+
+def test_misting_needs_a_high_vpd_when_the_recipe_has_one(gh):
+    s = GreenhouseState()
+    air(s, "z1", 50, 20, NOON)  # HR < 55 % but VPD 1.17 kPa ≤ 1.2: no misting
+    assert "climat.humidite.brumisation" not in ids(rules.humidity(ctx(gh, s, "z1", NOON)))
+    air(s, "z1", 50, 26, NOON)  # VPD 1.68 kPa
+    p = ids(rules.humidity(ctx(gh, s, "z1", NOON)))["climat.humidite.brumisation"]
+    assert p.regle.version == 2 and "VPD" in p.explication
+    assert [c.agregat for c in p.preuves.capteurs] == ["derniere", "vpd"]
+
+
+def test_no_misting_at_night(gh):
+    s = GreenhouseState()
+    air(s, "z1", 40, 26, NIGHT)
+    assert "climat.humidite.brumisation" not in ids(rules.humidity(ctx(gh, s, "z1", NIGHT)))
+
+
+def test_low_vpd_starts_the_fan_and_holds_it(gh):
+    s = GreenhouseState()
+    air(s, "z1", 68, 16, NOON)  # HR under the 70 % max, but VPD 0.58 → fine
+    assert rules.humidity(ctx(gh, s, "z1", NOON)) == []
+    air(s, "z1", 69, 12, NOON)  # cold and damp: VPD 0.43 < 0.5, T° below min: no fan
+    assert rules.humidity(ctx(gh, s, "z1", NOON)) == []
+    air(s, "z1", 69.5, 21.5, NOON)  # VPD 0.78: fine
+    assert rules.humidity(ctx(gh, s, "z1", NOON)) == []
+    gh2 = greenhouse()
+    sp = gh2.setpoints["z1"]
+    sp.vpd = (0.9, 1.2)  # a stricter recipe
+    p = ids(rules.humidity(ctx(gh2, s, "z1", NOON)))["climat.humidite.ventilation"]
+    assert p.orders[0].action == "pwm" and "VPD" in p.explication and p.regle.version == 2
+    set_actuator(s, "z1", "ventilo", "pwm", NOON, 100)
+    z = s.zone("z1")
+    z.owner["ventilo"], z.last_on["ventilo"] = "climat.humidite.ventilation", NOON
+    t = NOON + minutes(10)
+    air(s, "z1", 50, 21.5, t)  # HR well under max − hysteresis, VPD 1.28 > 0.9 + 0.1
+    assert (
+        ids(rules.humidity(ctx(gh2, s, "z1", t)))["climat.humidite.ventilation"].orders[0].action
+        == "off"
+    )
+    air(s, "z1", 62, 21.5, t)  # HR under max − hysteresis but VPD 0.97 < 0.9 + 0.1: held
+    assert "climat.humidite.ventilation" not in ids(rules.humidity(ctx(gh2, s, "z1", t)))
+
+
+def test_drainage_ec_alerts(gh):
+    s = GreenhouseState()
+    feed(s, "z1", "ec_drainage", 4.2, NOON, node="esp32-02")  # tomato: [2.2, 3.8]
+    (p,) = rules.ec_drainage(ctx(gh, s, "z1", NOON))
+    assert p.regle.id == "ec.drainage" and not p.orders and "lessiver" in p.explication
+    feed(s, "z1", "ec_drainage", 3.0, NOON, node="esp32-02")
+    assert rules.ec_drainage(ctx(gh, s, "z1", NOON)) == []
+    feed(s, "z2", "ec", 1.2, NOON, node="esp32-03")
+    feed(s, "z2", "ec_drainage", 2.5, NOON, node="esp32-03")  # lettuce: no drainage range
+    (p,) = rules.ec_drainage(ctx(gh, s, "z2", NOON))
+    assert "± 1,0" in p.explication and len(p.preuves.capteurs) == 2
+
+
+def test_solution_temperature_alert_with_hysteresis(gh):
+    s, rule = GreenhouseState(), rules.SolutionTemperature()
+    feed(s, "z2", "temp_eau", 20, NOON, node="esp32-03")  # lettuce: [18, 22]
+    assert rule(ctx(gh, s, "z2", NOON)) == []
+    feed(s, "z2", "temp_eau", 22.1, NOON, node="esp32-03")
+    (p,) = rule(ctx(gh, s, "z2", NOON))
+    assert p.regle.id == "hydro.temperature_solution" and not p.orders
+    assert p.alerte.key == "z2/hydro.solution_chaude"
+    feed(s, "z2", "temp_eau", 21.8, NOON, node="esp32-03")  # back by less than 0.5 °C: held
+    assert rule(ctx(gh, s, "z2", NOON))[0].alerte.key == "z2/hydro.solution_chaude"
+    feed(s, "z2", "temp_eau", 21.4, NOON, node="esp32-03")
+    assert rule(ctx(gh, s, "z2", NOON)) == []
+    feed(s, "z2", "temp_eau", 14, NOON, node="esp32-03")
+    (p,) = rule(ctx(gh, s, "z2", NOON))
+    assert p.alerte.key == "z2/hydro.solution_froide"
+
+
+def test_dli_cap_stops_the_led_complement(gh):
+    s = GreenhouseState()
+    feed(s, "z2", "lux", 2000, NOON, node="esp32-05")  # overcast: complement wanted
+    assert rules.light(ctx(gh, s, "z2", NOON))[0].orders[0].action == "pwm"
+    s.zone("z2").dli = 14.0  # above the lettuce dli_max of 13
+    (p,) = rules.light(ctx(gh, s, "z2", NOON))
+    assert p.orders == [] and p.alerte.niveau == "info" and "max" in p.explication
+    set_actuator(s, "z2", "led", "pwm", NOON - minutes(60), 100)
+    feed(s, "z2", "lux", 2000, NOON, node="esp32-05")
+    (p,) = rules.light(ctx(gh, s, "z2", NOON))
+    assert p.orders[0].action == "off"
+
+
+def test_no_led_complement_for_young_plants(gh):
+    s = GreenhouseState()
+    feed(s, "z1", "lux", 60000, NOON)  # bright: no complement in flower…
+    assert rules.light(ctx(gh, s, "z1", NOON)) == []
+    gh.setpoints["z1"].complement_led = False  # …a seedling only follows the photoperiod
+    p = rules.light(ctx(gh, s, "z1", NOON))[0]
+    assert p.orders[0].action == "pwm" and "juvénile" in p.explication
+
+
+def test_lowered_hr_max_has_a_floor(gh):
+    s = GreenhouseState()
+    s.zone("z1").consignes["humidite_max"] = (-30.0, NOON + minutes(60))
+    assert ctx(gh, s, "z1", NOON).sp.humidite == (55, 60)  # 70 − 30 floored at 60

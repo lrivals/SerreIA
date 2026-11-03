@@ -35,6 +35,7 @@ PHYSICAL_BOUNDS: dict[str, tuple[float, float]] = {
     "pression": (800.0, 1100.0),  # hPa
     "ph": (0.0, 14.0),
     "ec": (0.0, 10.0),  # mS/cm
+    "ec_drainage": (0.0, 10.0),  # mS/cm
     "niveau_cuve": (0.0, 100.0),  # %
     "presence": (0.0, 3.0),  # radar targets
 }

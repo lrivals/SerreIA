@@ -7,15 +7,17 @@ of the plant (otherwise: an "incohérence espèce" alert only). Cameras that onl
 species outside the taxonomy (`Greenhouse.vision_auto`) never trigger these rules.
 
 Rules (class of the taxonomy, sensor condition → decision):
-- `maladie.mildiou.plante`: `*/maladie/mildiou`, HR > 85 % or wet > 10 h, 10–25 °C → plant
-  `malade`, HR max −10 pts for 72 h, warning; `maladie.mildiou.isolement`: plant `isolee`
-  (proposed);
-- `maladie.oidium.surveillance`: `*/maladie/oidium`, HR 40–70 %, 20–27 °C → warning, capture
-  every hour, plant `a_surveiller`;
+- `maladie.mildiou.plante`: `*/maladie/mildiou`, HR > 85 % (`risque.hr_vision`) or wet
+  > 10 h, 10–25 °C → plant `malade`, HR max −10 pts for 72 h (never below
+  `hr_min_abaissement`), warning; `maladie.mildiou.isolement`: plant `isolee` (proposed);
+- `maladie.oidium.surveillance`: `*/maladie/oidium`, HR 60–80 %, 20–28 °C, no free water
+  (`2026-fanourakis#027.0`) → warning, capture every hour, plant `a_surveiller`;
 - `maladie.taches.arrosage`: septoriose, alternariose, tache_bacterienne with misting used →
   misting off, watering at the foot, manual inspection (proposed);
-- `nuisible.brumisation`: `*/nuisible/*` → light misting if HR < 50 %, inspection, capture
-  (proposed);
+- `nuisible.brumisation`: `*/nuisible/*` → inspection, capture, scouting advice; light
+  misting **only** for a spider mite (`tetranyque`, `acarien*`), by day, with HR < 50 % or
+  VPD > 1.2 kPa, up to the HR target 60–70 % (docs/22 L8: misting is useless against
+  thrips, whiteflies and aphids, and night wetness favours Botrytis) (proposed);
 - `virus.isolement`: `*/virus/*` → critical alert, plant `isolee` (proposed);
 - `vision.anomalie.recapture`: `sain` but `score_anomalie` > threshold → info + capture;
 - `vision.anormal.surveillance`: any other abnormal class, or its condition not met → plant
@@ -44,8 +46,22 @@ from common.mqtt import (
 
 from .context import Ctx
 from .decisions import AlertSpec, Consigne, Order, Proposal, evidence, fmt, rule
+from .psychro import vpd
+from .risk import mildew_risk
 
 TACHES = ("septoriose", "alternariose", "tache_bacterienne")
+OIDIUM_HR, OIDIUM_T = (60.0, 80.0), (20.0, 28.0)  # `2026-fanourakis#027.0`
+ACARIEN_HR_MAX, ACARIEN_VPD_MIN = 50.0, 1.2  # spider mite favoured (`2026-fanourakis#032.0`)
+ACARIEN_HR_CIBLE = 65.0  # misting stops at the moderate HR target 60–70 %
+DEPISTAGE = (
+    "dépistage : cartes jaunes (aleurodes) ou bleues (thrips), une carte par 3 à 5 m² ; "
+    "lutte biologique à 0,25–0,5 adulte/cm² (`2019-santiago#008.0`)"
+)
+
+
+def is_mite(classe: str) -> bool:
+    nom = classe.split("/")[-1]
+    return nom == "tetranyque" or nom.startswith("acarien")
 
 
 @dataclass(frozen=True)
@@ -144,11 +160,12 @@ class VisionRules:
         consigne: Consigne | None = None,
         capteurs=(),
         emplacements=None,
+        version: int = 1,
     ) -> Proposal:
         key = f"{ctx.zone}/{rule_id}/{emp}"
         return Proposal(
             zone=ctx.zone,
-            regle=rule(rule_id),
+            regle=rule(rule_id, version),
             niveau=1,
             type="exceptionnelle",
             explication=explication,
@@ -235,11 +252,12 @@ class VisionRules:
         hr = ctx.value(SensorType.HUMIDITE)
         t = ctx.zs.mean(SensorType.TEMPERATURE, ctx.now, timedelta(hours=12))
         wet = ctx.zs.spell(risque.hr_humectation).hours(ctx.now)
-        humid = (hr is not None and hr > 85) or wet >= risque.humectation_h
+        humid = (hr is not None and hr > risque.hr_vision) or wet >= risque.humectation_h
         if not humid or t is None or not risque.t_min <= t <= risque.t_max:
             return []
         capteurs = [
-            evidence(ctx.zone, SensorType.HUMIDITE, ctx.reading(SensorType.HUMIDITE), seuil=85),
+            evidence(ctx.zone, SensorType.HUMIDITE, ctx.reading(SensorType.HUMIDITE),
+                     seuil=risque.hr_vision),
             evidence(ctx.zone, SensorType.HUMIDITE, valeur=wet, unite="h",
                      agregat="duree_au_dessus", seuil=risque.hr_humectation),
             evidence(ctx.zone, SensorType.TEMPERATURE, valeur=t, unite="°C",
@@ -274,7 +292,9 @@ class VisionRules:
 
     def _powdery(self, ctx: Ctx, emp: str, c: list[Observation], cam: str) -> list[Proposal]:
         hr, t = ctx.value(SensorType.HUMIDITE), ctx.value(SensorType.TEMPERATURE)
-        if hr is None or t is None or not (40 <= hr <= 70 and 20 <= t <= 27):
+        if hr is None or t is None:
+            return []
+        if not (OIDIUM_HR[0] <= hr <= OIDIUM_HR[1] and OIDIUM_T[0] <= t <= OIDIUM_T[1]):
             return []
         rid = "maladie.oidium.surveillance"
         why = f"{self._what(c)}, HR {fmt(hr)} % et {fmt(t)} °C favorables"
@@ -293,6 +313,7 @@ class VisionRules:
                     evidence(ctx.zone, SensorType.HUMIDITE, ctx.reading(SensorType.HUMIDITE)),
                     evidence(ctx.zone, SensorType.TEMPERATURE, ctx.reading(SensorType.TEMPERATURE)),
                 ],
+                version=2,
             )
         ]
 
@@ -316,25 +337,52 @@ class VisionRules:
 
     def _pest(self, ctx: Ctx, emp: str, c: list[Observation], cam: str) -> list[Proposal]:
         rid = "nuisible.brumisation"
-        hr = ctx.value(SensorType.HUMIDITE)
         orders, capteurs = [], []
-        msg = f"{self._what(c)} → inspection, recapture"
-        cfg = ctx.act(Actuator.BRUMISATEUR)
-        hr_max = ctx.sp.humidite[1] if ctx.sp else 0
-        if cfg is not None and hr is not None and hr < 50 and hr < hr_max:
-            duree = ctx.gh.regles.brumisation_s
-            orders = [Order(Actuator.BRUMISATEUR, "on", None, duree, "nuisible : air sec")]
-            capteurs = [
-                evidence(ctx.zone, SensorType.HUMIDITE, ctx.reading(SensorType.HUMIDITE), seuil=50)
-            ]
-            msg = f"{self._what(c)}, HR {fmt(hr)} % < 50 % → brumisation {duree:g} s, " + (
-                "inspection, recapture"
-            )
+        msg = f"{self._what(c)} → inspection, recapture ; {DEPISTAGE}"
+        if is_mite(c[0].det.classe):
+            orders, capteurs, why = self._mite_misting(ctx)
+            if orders:
+                msg = f"{self._what(c)}, {why} → brumisation {orders[0].duree_s:g} s, " + (
+                    "inspection, recapture"
+                )
+            elif why:
+                msg = f"{self._what(c)} → inspection, recapture (pas de brumisation : {why})"
         return [
             self._p(ctx, rid, emp, msg, c, default_validation=True,
                     alerte=("warning", f"{ctx.zone} : {msg}"), orders=orders,
-                    captures=[cam], capteurs=capteurs)
+                    captures=[cam], capteurs=capteurs, version=2)
         ]  # fmt: skip
+
+    def _mite_misting(self, ctx: Ctx) -> tuple[list[Order], list, str]:
+        """Light misting against a spider mite: by day, dry air (HR < 50 % or VPD > 1.2 kPa),
+        below the moderate HR target, never when a wet-disease index is active."""
+        cfg = ctx.act(Actuator.BRUMISATEUR)
+        hr, t = ctx.value(SensorType.HUMIDITE), ctx.value(SensorType.TEMPERATURE)
+        if cfg is None or hr is None:
+            return [], [], ""
+        if not ctx.jour:
+            return [], [], "nuit"
+        if mildew_risk(ctx).conditions:
+            return [], [], "risque mildiou actif"
+        v = vpd(t, hr) if t is not None else None
+        hr_max = min(ACARIEN_HR_CIBLE, ctx.sp.humidite[1] if ctx.sp else ACARIEN_HR_CIBLE)
+        dry = hr < ACARIEN_HR_MAX or (v is not None and v > ACARIEN_VPD_MIN)
+        if not dry or hr >= hr_max:
+            return [], [], ""
+        duree = ctx.gh.regles.brumisation_s
+        capteurs = [
+            evidence(ctx.zone, SensorType.HUMIDITE, ctx.reading(SensorType.HUMIDITE),
+                     seuil=ACARIEN_HR_MAX)
+        ]  # fmt: skip
+        why = f"HR {fmt(hr)} %"
+        if v is not None:
+            capteurs.append(
+                evidence(ctx.zone, SensorType.HUMIDITE, valeur=v, unite="kPa", agregat="vpd",
+                         seuil=ACARIEN_VPD_MIN)
+            )  # fmt: skip
+            why += f", VPD {fmt(v, 2)} kPa"
+        orders = [Order(Actuator.BRUMISATEUR, "on", None, duree, "acarien : air sec")]
+        return orders, capteurs, why + " (acarien favorisé par l'air sec)"
 
     def _virus(self, ctx: Ctx, emp: str, c: list[Observation]) -> list[Proposal]:
         msg = f"{self._what(c)} → isoler la plante (pas de remède, risque de propagation)"

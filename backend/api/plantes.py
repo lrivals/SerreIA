@@ -13,6 +13,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import and_, or_, select
 
 from common.mqtt.schemas import SanteEtat
+from edge.controller.config import STADE_AUTO
+from edge.controller.recipes import Recipe
 
 from ..db import models as m
 from ..db.seed import _assign
@@ -59,6 +61,10 @@ def _check_stage(s, recette_id: str | None, stade: str) -> None:
     if recette_id is None:
         return
     r = get(s, m.Recette, recette_id, "recette")
+    if stade == STADE_AUTO:  # docs/22 L1: the recipe must give stage durations
+        if Recipe.model_validate({"espece": r.espece, "stades": r.stades}).stage_for_age(0):
+            return
+        raise HTTPException(422, f"stade auto : la recette {recette_id} n'a pas de duree_j")
     if stade not in r.stades:
         raise HTTPException(
             422, f"stade {stade!r} absent de la recette {recette_id} ({', '.join(r.stades)})"

@@ -17,6 +17,7 @@ class SensorType(StrEnum):
     LUX = "lux"
     PH = "ph"
     EC = "ec"
+    EC_DRAINAGE = "ec_drainage"  # mS/cm, optional probe in the drainage tray (docs/22 L9)
     TEMP_EAU = "temp_eau"
     NIVEAU_CUVE = "niveau_cuve"
     PRESSION = "pression"  # hPa, BMP280

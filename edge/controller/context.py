@@ -63,19 +63,24 @@ class Ctx:
 def make_ctx(gh: Greenhouse, zs: ZoneState, now: datetime) -> Ctx:
     zcfg = gh.cfg.zone(zs.zone)
     local = now.astimezone(ZoneInfo(gh.cfg.fuseau))
-    sp = _with_consignes(gh.setpoints.get(zcfg.id), zs, now)
+    sp = _with_consignes(gh.setpoints.get(zcfg.id), zs, now, gh.regles.hr_min_abaissement)
     ctx = Ctx(gh, zcfg, zs, sp, now, local, False)
     start, end = ctx.window()
     ctx.jour = sp is not None and start <= local < end
     return ctx
 
 
-def _with_consignes(sp: Setpoints | None, zs: ZoneState, now: datetime) -> Setpoints | None:
-    """Setpoints with the temporary changes still running (expired ones are forgotten)."""
+def _with_consignes(
+    sp: Setpoints | None, zs: ZoneState, now: datetime, plancher: float = 0.0
+) -> Setpoints | None:
+    """Setpoints with the temporary changes still running (expired ones are forgotten).
+    A lowered HR max never goes below `plancher` (docs/22 L7: under 55–60 % mites, thrips
+    and Tuta are favoured, `2026-fanourakis#035.0`), nor below the HR min."""
     for name, (_, until) in list(zs.consignes.items()):
         if now >= until:
             del zs.consignes[name]
     if sp is None or "humidite_max" not in zs.consignes:
         return sp
     lo, hi = sp.humidite
-    return replace(sp, humidite=(lo, max(lo, hi + zs.consignes["humidite_max"][0])))
+    lowered = hi + zs.consignes["humidite_max"][0]
+    return replace(sp, humidite=(lo, max(lo, lowered, min(hi, plancher))))

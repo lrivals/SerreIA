@@ -24,6 +24,7 @@ PHYSICAL_RANGE: dict[SensorType, PhysicalRange] = {
     SensorType.LUX: PhysicalRange(0, 65535, "lx"),  # BH1750
     SensorType.PH: PhysicalRange(0, 14, "pH"),
     SensorType.EC: PhysicalRange(0, 20, "mS/cm"),
+    SensorType.EC_DRAINAGE: PhysicalRange(0, 20, "mS/cm"),
     SensorType.TEMP_EAU: PhysicalRange(-10, 85, "°C"),  # DS18B20 (waterproof probe)
     SensorType.NIVEAU_CUVE: PhysicalRange(0, 100, "%"),
     SensorType.PRESSION: PhysicalRange(300, 1100, "hPa"),  # BMP280

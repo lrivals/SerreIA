@@ -23,6 +23,7 @@ constexpr SensorRange kRanges[] = {
     {"lux",            0.0f, 65535.0f, "lx"},
     {"ph",             0.0f,    14.0f, "pH"},
     {"ec",             0.0f,    20.0f, "mS/cm"},
+    {"ec_drainage",    0.0f,    20.0f, "mS/cm"},
     {"temp_eau",     -10.0f,    85.0f, "°C"},
     {"niveau_cuve",    0.0f,   100.0f, "%"},
     {"pression",     300.0f,  1100.0f, "hPa"},

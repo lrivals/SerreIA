@@ -8,6 +8,7 @@ from edge.controller.state import GreenhouseState
 from edge.controller.vision_rules import VisionRules
 
 from .controller_utils import (
+    NIGHT,
     NOON,
     RIGHT,
     ctx,
@@ -104,16 +105,19 @@ def test_camera_seeing_only_species_outside_the_taxonomy_triggers_nothing():
 def test_powdery_mildew_watch_and_recapture():
     gh = greenhouse_with("courge")
     state = GreenhouseState()
-    air(state, 55, 24)
+    air(state, 75, 24)  # HR 60–80 %, 20–28 °C (docs/22 L7)
     feed_captures(state, "z1", "courge/maladie/oidium", NOON)
     (p,) = evaluate(state, gh)
     assert p.regle.id == "maladie.oidium.surveillance" and not p.validation
+    assert p.regle.version == 2
     assert p.captures == ["cam-z1-a"] and p.plantes == [("z1-A1", "a_surveiller")]
     state.zone("z1").rule_fired[p.regle.id] = LAST  # captured: wait for the period
     (p,) = evaluate(state, gh, now=LAST + minutes(30))
     assert p.captures == []
-    air(state, 85, 24, at=LAST + minutes(31))  # too humid for powdery mildew: only watched
+    air(state, 45, 24, at=LAST + minutes(31))  # too dry for powdery mildew: only watched
     assert ids(evaluate(state, gh, now=LAST + minutes(31))) == ["vision.anormal.surveillance"]
+    air(state, 85, 24, at=LAST + minutes(32))  # too humid (free water): only watched
+    assert ids(evaluate(state, gh, now=LAST + minutes(32))) == ["vision.anormal.surveillance"]
 
 
 def test_leaf_spots_with_misting_propose_to_stop_it():
@@ -128,17 +132,48 @@ def test_leaf_spots_with_misting_propose_to_stop_it():
     assert "inspection" in p.explication
 
 
-def test_pest_in_dry_air_proposes_light_misting():
+def test_spider_mite_in_dry_air_proposes_light_misting():
     state = GreenhouseState()
     air(state, 45, 24)
     feed_captures(state, "z1", "tomate/nuisible/tetranyque", NOON)
     (p,) = evaluate(state)
-    assert p.regle.id == "nuisible.brumisation" and p.validation
+    assert p.regle.id == "nuisible.brumisation" and p.validation and p.regle.version == 2
     assert [(o.actuator, o.action, o.duree_s) for o in p.orders] == [("brumisateur", "on", 30)]
     assert p.captures == ["cam-z1-a"]
+    assert {c.agregat for c in p.preuves.capteurs} == {"derniere", "vpd"}
     air(state, 65, 24, at=LAST + minutes(1))
     (p,) = evaluate(state, now=LAST + minutes(1))
     assert p.orders == [] and p.captures == ["cam-z1-a"]  # humid enough: inspection only
+
+
+def test_spider_mite_misting_by_vpd_stops_at_the_hr_target():
+    state = GreenhouseState()
+    air(state, 55, 30)  # HR ≥ 50 % but VPD 1.9 kPa > 1.2: misting
+    feed_captures(state, "z1", "tomate/nuisible/tetranyque", NOON)
+    (p,) = evaluate(state)
+    assert [o.actuator for o in p.orders] == ["brumisateur"]
+    air(state, 66, 30, at=LAST + minutes(1))  # VPD still high, HR at the 60–70 % target
+    (p,) = evaluate(state, now=LAST + minutes(1))
+    assert p.orders == []
+
+
+def test_spider_mite_never_misted_at_night():
+    state = GreenhouseState()
+    night = NIGHT + minutes(20)
+    air(state, 40, 20, at=night)
+    feed_captures(state, "z1", "tomate/nuisible/tetranyque", NIGHT)
+    (p,) = evaluate(state, now=night)
+    assert p.regle.id == "nuisible.brumisation" and p.orders == []
+    assert "nuit" in p.explication
+
+
+def test_other_pests_get_no_misting_but_scouting_advice():
+    state = GreenhouseState()
+    air(state, 40, 24)
+    feed_captures(state, "z1", "tomate/nuisible/thrips", NOON)
+    (p,) = evaluate(state)
+    assert p.regle.id == "nuisible.brumisation" and p.orders == []
+    assert "cartes jaunes" in p.explication and p.captures == ["cam-z1-a"]
 
 
 def test_virus_proposes_isolation_with_a_critical_alert():

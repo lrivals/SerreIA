@@ -4,18 +4,29 @@
 |---|---|
 | `climat.temperature.ventilation` | T > max of the recipe → fan on; off below max − hysteresis |
 | `climat.temperature.chauffage` | T < min → heating on; off above min + hysteresis |
-| `climat.humidite.ventilation` | HR > max → fan on (not when T < min); off below max − hysteresis |
-| `climat.humidite.brumisation` | HR < min → misting `duree_s`, at most every `delai_min_s` |
+| `climat.humidite.ventilation` | HR > max or VPD < min → fan on (not when T < min) ¹ |
+| `climat.humidite.brumisation` | HR < min → misting `duree_s`, every `delai_min_s` at most ² |
 | `ph.dosage` | pH > max → one pH− pulse, wait `melange_s`, re-measure, never continuous |
 | `ec.nutriments` | EC < min → one pulse of A and of B, same logic; EC > max → alert |
-| `lumiere.photoperiode` | LEDs only inside the photoperiod; with lux + DLI target: complement |
+| `ec.drainage` | drainage EC > max, or drainage − applied EC beyond ± 1 mS/cm → alert |
+| `hydro.temperature_solution` | nutrient solution outside `temp_racines` → alert (no actuator) |
+| `lumiere.photoperiode` | LEDs only inside the photoperiod; with lux + DLI target: complement ³ |
 | `sol.arrosage` | soil of an emplacement < min of its recipe → watering, every `delai_min_s` |
 | `hydro.circulation` | hydro zone, except DWC: pump cycles of `duree_s` every `delai_min_s` |
 | `presence.intrusion` | presence outside the declared ranges (night) → alert; inside: logged |
 
+¹ off below max − hysteresis, once the VPD is back above its min + 0.1 kPa.
+² only when the VPD is above the max of the recipe (when it has one), never below its min,
+never at night unless the recipe sets `brumisation_nuit`.
+³ none when the stage sets `complement_led: false`, or when the measured DLI is above
+`dli_max` (info alert, docs/22 L1).
+
 Rules are stateless and evaluated at every tick: they return what they want and the
 controller only publishes what differs from the real actuator state (`etat/`). An "off"
 is only proposed by the rule that switched the actuator on (`ZoneState.owner`).
+
+The VPD (docs/22 L4, `psychro.py`) constrains the humidity actuators but never drives
+them alone: the same VPD is 15 °C at 50 % or 34 °C at 84 % (`2018-shamshiri#008.0`).
 """
 
 import logging
@@ -26,8 +37,25 @@ from common.mqtt import Actuator, Preuves, SensorType
 from .config import HYDRO
 from .context import Ctx
 from .decisions import AlertSpec, Order, Proposal, evidence, fmt, rule
+from .psychro import vpd
 
 log = logging.getLogger(__name__)
+
+VPD_HYSTERESIS = 0.1  # kPa
+EC_ECART_MAX = 1.0  # mS/cm, drainage − applied (`1990-hochmuth#014.1`)
+TEMP_RACINES_HYSTERESIS = 0.5  # °C
+
+
+def zone_vpd(ctx: Ctx) -> float | None:
+    """VPD (kPa) of the zone air, from the fresh T° and HR; None when one is missing."""
+    t, hr = ctx.value(SensorType.TEMPERATURE), ctx.value(SensorType.HUMIDITE)
+    return None if t is None or hr is None else vpd(t, hr)
+
+
+def vpd_evidence(ctx: Ctx, v: float, seuil: float | None = None):
+    return evidence(
+        ctx.zone, SensorType.HUMIDITE, valeur=v, unite="kPa", agregat="vpd", seuil=seuil
+    )
 
 
 def _on(ctx: Ctx, actuator: Actuator, texte: str, duree_s: float | None = None) -> Order:
@@ -84,6 +112,7 @@ def _hysteresis(
     off_if_below: float | None,
     unit: str,
     label: str,
+    version: int = 1,
 ) -> list[Proposal]:
     """High (or low with the signs flipped) threshold with hysteresis."""
     if ctx.act(actuator) is None:
@@ -91,10 +120,11 @@ def _hysteresis(
     ev = evidence(ctx.zone, sensor, ctx.reading(sensor))
     if on_if_above is not None and value > on_if_above:
         msg = f"{label} {fmt(value)} {unit} > {fmt(on_if_above)} {unit} → {actuator} on"
-        return [_proposal(ctx, rule_id, msg, [_on(ctx, actuator, msg)], [ev])]
+        return [_proposal(ctx, rule_id, msg, [_on(ctx, actuator, msg)], [ev], version=version)]
     if off_if_below is not None and value < off_if_below and _owned(ctx, actuator, rule_id):
         msg = f"{label} {fmt(value)} {unit} < {fmt(off_if_below)} {unit} → {actuator} off"
-        return [_proposal(ctx, rule_id, msg, [Order(actuator, "off", texte=msg)], [ev])]
+        orders = [Order(actuator, "off", texte=msg)]
+        return [_proposal(ctx, rule_id, msg, orders, [ev], version=version)]
     return []
 
 
@@ -147,27 +177,63 @@ def humidity(ctx: Ctx) -> list[Proposal]:
         stop = t_lo - ctx.gh.cfg.hysteresis.temperature
         msg = f"T° {fmt(t)} °C < {fmt(stop)} °C → ventilation d'humidité arrêtée"
         ev = evidence(ctx.zone, SensorType.TEMPERATURE, ctx.reading(SensorType.TEMPERATURE))
-        out.append(_proposal(ctx, rid, msg, [Order(Actuator.VENTILO, "off", texte=msg)], [ev]))
+        orders = [Order(Actuator.VENTILO, "off", texte=msg)]
+        out.append(_proposal(ctx, rid, msg, orders, [ev], version=2))
     elif t is None or t >= t_lo or (not cold_stop and _owned(ctx, Actuator.VENTILO, rid)):
-        out += _hysteresis(
-            ctx, rid, Actuator.VENTILO, SensorType.HUMIDITE, hr, hi, hi - h, "%", "HR"
+        props = _hysteresis(
+            ctx, rid, Actuator.VENTILO, SensorType.HUMIDITE, hr, hi, hi - h, "%", "HR", version=2
         )
-
-    cfg = ctx.act(Actuator.BRUMISATEUR)
-    if cfg is not None and hr < lo and ctx.since_on(Actuator.BRUMISATEUR) >= cfg.delai_min_s:
-        ev = evidence(ctx.zone, SensorType.HUMIDITE, ctx.reading(SensorType.HUMIDITE), seuil=lo)
-        duree = cfg.duree_s or 60.0
-        msg = f"HR {fmt(hr)} % < {fmt(lo)} % → brumisation {duree:g} s"
-        out.append(
-            _proposal(
-                ctx,
-                "climat.humidite.brumisation",
-                msg,
-                [_on(ctx, Actuator.BRUMISATEUR, msg, duree)],
-                [ev],
-            )
-        )
+        v, vlo = zone_vpd(ctx), (ctx.sp.vpd or (None, None))[0]
+        if v is not None and vlo is not None:
+            if v < vlo + VPD_HYSTERESIS:  # still too humid by the VPD: keep the fan on
+                props = [p for p in props if p.orders[0].action != "off"]
+            if v < vlo and not props and ctx.act(Actuator.VENTILO) is not None:
+                if not ctx.zs.actuator_on(Actuator.VENTILO):
+                    msg = f"VPD {fmt(v, 2)} kPa < {fmt(vlo, 2)} kPa → ventilo on"
+                    ev = [
+                        evidence(ctx.zone, SensorType.HUMIDITE, ctx.reading(SensorType.HUMIDITE)),
+                        vpd_evidence(ctx, v, vlo),
+                    ]
+                    props = [
+                        _proposal(ctx, rid, msg, [_on(ctx, Actuator.VENTILO, msg)], ev, version=2)
+                    ]
+        out += props
+    out += _misting(ctx, hr, lo)
     return out
+
+
+def _misting(ctx: Ctx, hr: float, lo: float) -> list[Proposal]:
+    """Misting under the HR min, constrained by the VPD (docs/22 L4) and never at night
+    unless the recipe allows it (docs/22 L8: night wetness favours Botrytis)."""
+    cfg = ctx.act(Actuator.BRUMISATEUR)
+    if cfg is None or hr >= lo or ctx.since_on(Actuator.BRUMISATEUR) < cfg.delai_min_s:
+        return []
+    if not ctx.jour and not ctx.sp.brumisation_nuit:
+        return []
+    capteurs = [evidence(ctx.zone, SensorType.HUMIDITE, ctx.reading(SensorType.HUMIDITE), seuil=lo)]
+    v, (vlo, vhi) = zone_vpd(ctx), ctx.sp.vpd or (None, None)
+    if v is not None and vhi is not None:
+        if v <= vhi:  # dry by the HR, not by the VPD: the plants do not need water vapour
+            return []
+        capteurs.append(vpd_evidence(ctx, v, vhi))
+    elif v is not None and vlo is not None and v < vlo:
+        return []
+    duree = cfg.duree_s or 60.0
+    msg = f"HR {fmt(hr)} % < {fmt(lo)} % → brumisation {duree:g} s"
+    if v is not None and vhi is not None:
+        msg = f"HR {fmt(hr)} % < {fmt(lo)} %, VPD {fmt(v, 2)} kPa > {fmt(vhi, 2)} kPa → " + (
+            f"brumisation {duree:g} s"
+        )
+    return [
+        _proposal(
+            ctx,
+            "climat.humidite.brumisation",
+            msg,
+            [_on(ctx, Actuator.BRUMISATEUR, msg, duree)],
+            capteurs,
+            version=2,
+        )
+    ]
 
 
 def _dose_ready(ctx: Ctx, actuator: Actuator, sensor: SensorType) -> bool:
@@ -250,6 +316,95 @@ def ec(ctx: Ctx) -> list[Proposal]:
     return []
 
 
+def ec_drainage(ctx: Ctx) -> list[Proposal]:
+    """Drainage EC (docs/22 L9): the root zone is judged by the drained solution, the
+    applied one is only a means (`2018-savvas#025.0`). Alerts only."""
+    v = ctx.value(SensorType.EC_DRAINAGE)
+    if v is None or ctx.sp is None:
+        return []
+    ev = [evidence(ctx.zone, SensorType.EC_DRAINAGE, ctx.reading(SensorType.EC_DRAINAGE))]
+    applied = ctx.value(SensorType.EC)
+    if ctx.sp.ec_drainage is not None and v > ctx.sp.ec_drainage[1]:
+        hi = ctx.sp.ec_drainage[1]
+        msg = (
+            f"EC drainage {fmt(v, 2)} > {fmt(hi, 2)} mS/cm : lessiver ou augmenter la "
+            "fraction drainée"
+        )
+        key = "ec_drainage.haute"
+    elif applied is not None and abs(v - applied) > EC_ECART_MAX:
+        ev.append(evidence(ctx.zone, SensorType.EC, ctx.reading(SensorType.EC)))
+        msg = (
+            f"EC drainage {fmt(v, 2)} − EC apport {fmt(applied, 2)} mS/cm hors de "
+            f"± {fmt(EC_ECART_MAX)} : vérifier la solution et la fraction drainée"
+        )
+        key = "ec_drainage.ecart"
+    else:
+        return []
+    return [
+        _proposal(
+            ctx,
+            "ec.drainage",
+            msg,
+            [],
+            ev,
+            alerte=AlertSpec(
+                "warning",
+                f"{ctx.zone} : {msg}",
+                f"{ctx.zone}/{key}",
+                f"{ctx.zone} : EC de drainage revenue dans la plage",
+            ),
+        )
+    ]
+
+
+class SolutionTemperature:
+    """Nutrient solution temperature against `temp_racines` (docs/22 L3). No actuator heats
+    or cools the tank: alert only. Warm solution: less dissolved O₂, Fusarium favoured
+    above ~25 °C; cold: growth slowed, Pythium favoured at 15–20 °C. The alert holds until
+    the solution is back inside the range by `TEMP_RACINES_HYSTERESIS` (no flapping)."""
+
+    def __init__(self):
+        self.side: dict[str, str] = {}  # zone -> "froide" / "chaude" while the alert holds
+
+    def __call__(self, ctx: Ctx) -> list[Proposal]:
+        v = ctx.value(SensorType.TEMP_EAU)
+        if v is None or ctx.sp is None or ctx.sp.temp_racines is None:
+            self.side.pop(ctx.zone, None)
+            return []
+        lo, hi = ctx.sp.temp_racines
+        h = TEMP_RACINES_HYSTERESIS if ctx.zone in self.side else 0.0
+        if v < lo + h:
+            key, sens, seuil = "froide", "<", lo
+        elif v > hi - h:
+            key, sens, seuil = "chaude", ">", hi
+        else:
+            self.side.pop(ctx.zone, None)
+            return []
+        if ctx.zone in self.side and self.side[ctx.zone] != key:
+            key = self.side[ctx.zone]  # narrow range: keep the side of the open alert
+            sens, seuil = ("<", lo) if key == "froide" else (">", hi)
+        self.side[ctx.zone] = key
+        msg = f"solution {fmt(v)} °C {sens} {fmt(seuil)} °C (consigne racines)"
+        if (v >= lo and key == "froide") or (v <= hi and key == "chaude"):
+            msg = f"solution {fmt(v)} °C, pas encore revenue dans {fmt(lo)}–{fmt(hi)} °C"
+        ev = evidence(ctx.zone, SensorType.TEMP_EAU, ctx.reading(SensorType.TEMP_EAU))
+        return [
+            _proposal(
+                ctx,
+                "hydro.temperature_solution",
+                msg,
+                [],
+                [ev],
+                alerte=AlertSpec(
+                    "warning",
+                    f"{ctx.zone} : solution {key} ({msg})",
+                    f"{ctx.zone}/hydro.solution_{key}",
+                    f"{ctx.zone} : T° de la solution revenue dans la plage",
+                ),
+            )
+        ]
+
+
 def light(ctx: Ctx) -> list[Proposal]:
     cfg = ctx.act(Actuator.LED)
     if cfg is None or ctx.sp is None:
@@ -259,7 +414,8 @@ def light(ctx: Ctx) -> list[Proposal]:
     if not ctx.jour:
         if on:
             msg = f"hors photopériode ({ctx.sp.photoperiode_h:g} h) → LED off"
-            return [_proposal(ctx, rid, msg, [Order(Actuator.LED, "off", texte=msg)])]
+            off = [Order(Actuator.LED, "off", texte=msg)]
+            return [_proposal(ctx, rid, msg, off, version=2)]
         return []
 
     lux = ctx.value(SensorType.LUX)
@@ -271,8 +427,25 @@ def light(ctx: Ctx) -> list[Proposal]:
         # complement decision (sensor noise, clouds), and never use a lux measured before
         # the last LED change.
         return []
-    if lux is None or ctx.sp.dli_cible is None:  # no measurement: plain photoperiod
+    alerte, dli_max = None, ctx.sp.dli_max
+    if lux is None or ctx.sp.dli_cible is None or not ctx.sp.complement_led:
+        # no measurement, or no complement for this stage (docs/22 L15): plain photoperiod
         want, msg, capteurs = True, f"photopériode {ctx.sp.photoperiode_h:g} h → LED on", []
+        if not ctx.sp.complement_led:
+            msg += " (sans complément au stade juvénile)"
+    elif dli_max is not None and ctx.zs.dli > dli_max:
+        # docs/22 L1: above the tipburn threshold, no LED complement at all
+        want = False
+        msg = f"DLI mesuré {fmt(ctx.zs.dli, 2)} > max {fmt(dli_max)} mol/m² → aucun complément LED"
+        capteurs = [
+            evidence(ctx.zone, SensorType.LUX, valeur=ctx.zs.dli, unite="mol/m²",
+                     agregat="dli_jour", seuil=dli_max)
+        ]  # fmt: skip
+        alerte = AlertSpec(
+            "info",
+            f"{ctx.zone} : DLI {fmt(ctx.zs.dli, 2)} mol/m² au-dessus du maximum {fmt(dli_max)}",
+            f"{ctx.zone}/lumiere.dli_max",
+        )
     else:
         led_ppfd = (cfg.ppfd_max or 0) * ctx.zs.actuator_level(Actuator.LED)
         natural = max(0.0, lux * k - led_ppfd)
@@ -303,9 +476,12 @@ def light(ctx: Ctx) -> list[Proposal]:
             if cfg.commande == "pwm"
             else Order(Actuator.LED, "on", texte=msg)
         )
-        return [_proposal(ctx, rid, msg, [order], capteurs)]
+        return [_proposal(ctx, rid, msg, [order], capteurs, version=2)]
     if on:
-        return [_proposal(ctx, rid, msg, [Order(Actuator.LED, "off", texte=msg)], capteurs)]
+        off = [Order(Actuator.LED, "off", texte=msg)]
+        return [_proposal(ctx, rid, msg, off, capteurs, alerte=alerte, version=2)]
+    if alerte is not None:
+        return [_proposal(ctx, rid, msg, [], capteurs, alerte=alerte, version=2)]
     return []
 
 
@@ -401,7 +577,18 @@ class Rules:
     """All level 1 rules of a zone, in evaluation order."""
 
     def __init__(self):
-        self.rules = [temperature, humidity, ph, ec, light, soil, circulation, Presence()]
+        self.rules = [
+            temperature,
+            humidity,
+            ph,
+            ec,
+            ec_drainage,
+            SolutionTemperature(),
+            light,
+            soil,
+            circulation,
+            Presence(),
+        ]
 
     def evaluate(self, ctx: Ctx) -> list[Proposal]:
         out = []

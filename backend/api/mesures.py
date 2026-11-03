@@ -18,7 +18,7 @@ from pydantic import BaseModel, ValidationError
 from sqlalchemy import select
 
 from common.mqtt import SensorType, VisionResult
-from edge.controller.config import HYDRO
+from edge.controller.config import HYDRO, STADE_AUTO
 from edge.controller.recipes import PlantStage, Recipe, Setpoints, zone_setpoints
 
 from ..agent.tools import AGREGATS, _resample
@@ -113,6 +113,14 @@ def mesures(
 # --- tableau de bord -----------------------------------------------------------------
 
 
+def _stage(p: m.Plante, recipes: dict[str, Recipe]) -> str:
+    """Declared stage, or the stage of the plant's age for "auto" (docs/22 L1)."""
+    r = recipes.get(p.recette_id)
+    if p.stade != STADE_AUTO or r is None or p.date_semis is None:
+        return p.stade
+    return r.stage_for_age((datetime.now().date() - p.date_semis).days) or p.stade
+
+
 def zone_setpoints_db(s, zid: str) -> Setpoints | None:
     """Setpoints of a zone from the database (the controller computes the same from the
     published serre.yaml): intersection of the recipes of its current plants."""
@@ -122,10 +130,11 @@ def zone_setpoints_db(s, zid: str) -> Setpoints | None:
         .join(m.Emplacement, m.Emplacement.id == m.Affectation.emplacement_id)
         .where(m.Affectation.fin.is_(None), m.Emplacement.zone_id == zid)
     ).scalars()
-    plants = [PlantStage(p.recette_id, p.stade, p.prioritaire) for p in rows if p.recette_id]
+    rows = [p for p in rows if p.recette_id]
     recipes = {}
-    for r in s.scalars(select(m.Recette).where(m.Recette.id.in_({p.recette for p in plants}))):
+    for r in s.scalars(select(m.Recette).where(m.Recette.id.in_({p.recette_id for p in rows}))):
         recipes[r.id] = Recipe.model_validate({"espece": r.espece, "stades": r.stades})
+    plants = [PlantStage(p.recette_id, _stage(p, recipes), p.prioritaire) for p in rows]
     plants = [p for p in plants if p.recette in recipes and p.stade in recipes[p.recette].stades]
     hydro = any(
         mode in HYDRO

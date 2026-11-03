@@ -10,9 +10,10 @@ it into the database and `backend/config/export.py` writes it back.
 """
 
 import logging
-from datetime import date, time
+from datetime import date, datetime, time
 from pathlib import Path
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -28,6 +29,7 @@ DEFAULT_CONFIG = Path(__file__).with_name("serre.yaml")
 
 ModeCulture = Literal["terre", "substrat", "hydro_nft", "hydro_dwc", "ebb_flow", "aeroponie"]
 HYDRO = ("hydro_nft", "hydro_dwc", "ebb_flow", "aeroponie")
+STADE_AUTO = "auto"  # stage computed from `date_semis` and the `duree_j` of the recipe
 
 
 class _Cfg(BaseModel):
@@ -43,7 +45,7 @@ class PlanteCfg(_Cfg):
     id: str
     espece: str  # key of vision/datasets/taxonomy.yaml, or any other species
     recette: str
-    stade: str
+    stade: str  # a stage of the recipe, or "auto" (docs/22 L1: needs date_semis)
     prioritaire: bool = False
     variete: str | None = None
     date_semis: date | None = None
@@ -193,6 +195,7 @@ class RisqueCfg(_Cfg):
     humectation_h: float = 10.0
     t_min: float = 10.0
     t_max: float = 25.0
+    hr_vision: float = 85.0  # % above which a disease confirmed by vision is acted upon
     ventilation_s: float = 900.0
     periode_s: float = 3600.0  # preventive ventilation at most once per period
 
@@ -220,6 +223,7 @@ class ReglesCfg(_Cfg):
     expiration_s: float = 7200.0
     hr_abaissement: float = 10.0
     hr_abaissement_h: float = 72.0
+    hr_min_abaissement: float = 60.0  # the lowered HR max never goes below (docs/22 L7)
     surface_baisse: float = Field(default=0.15, gt=0, lt=1)
     surface_fenetre_h: float = 48.0
     brumisation_s: float = 30.0
@@ -347,20 +351,31 @@ class SerreCfg(_Cfg):
 class Greenhouse:
     """Loaded configuration + recipes, with the setpoints of each zone."""
 
-    def __init__(self, cfg: SerreCfg, recipes: dict[str, Recipe], especes: set[str] | None = None):
+    def __init__(
+        self,
+        cfg: SerreCfg,
+        recipes: dict[str, Recipe],
+        especes: set[str] | None = None,
+        today: date | None = None,
+    ):
         from .coherence import check, known_species
 
         self.cfg, self.recipes = cfg, recipes
         self.regles = cfg.load_regles()
         self.especes = known_species() if especes is None else especes
+        self.today = today or datetime.now(ZoneInfo(cfg.fuseau)).date()
+        self.stades: dict[str, str] = {}  # plant id -> current stage (resolved "auto")
         for z in cfg.zones:
             for p in z.plants:
                 if p.recette not in recipes:
                     raise ValueError(f"plante {p.id}: recette inconnue {p.recette}")
-                recipes[p.recette].stage(p.stade)
+                self.stades[p.id] = self._resolve_stage(p)
+                recipes[p.recette].stage(self.stades[p.id])
         self.setpoints: dict[str, Setpoints | None] = {
             z.id: zone_setpoints(
-                [PlantStage(p.recette, p.stade, p.prioritaire) for p in z.plants], recipes, z.hydro
+                [PlantStage(p.recette, self.stades[p.id], p.prioritaire) for p in z.plants],
+                recipes,
+                z.hydro,
             )
             for z in cfg.zones
         }
@@ -370,6 +385,21 @@ class Greenhouse:
         self.warnings = check(cfg, self.especes)  # configuration warnings (docs/09 §3)
         for w in self.warnings:
             log.warning("configuration : %s", w)
+
+    def _resolve_stage(self, p: PlanteCfg) -> str:
+        """The declared stage, or for "auto" the stage of the plant's age (docs/22 L1)."""
+        if p.stade != STADE_AUTO:
+            return p.stade  # a manual stage always wins
+        if p.date_semis is None:
+            raise ValueError(f"plante {p.id}: stade auto sans date_semis")
+        stade = self.recipes[p.recette].stage_for_age((self.today - p.date_semis).days)
+        if stade is None:
+            raise ValueError(f"plante {p.id}: stade auto mais {p.recette} n'a pas de duree_j")
+        return stade
+
+    @property
+    def auto_stages(self) -> bool:
+        return any(p.stade == STADE_AUTO for z in self.cfg.zones for p in z.plants)
 
     @property
     def version(self) -> int:
@@ -381,7 +411,7 @@ class Greenhouse:
         if e is None or e.plante is None:
             return self.setpoints.get(zone)
         p = e.plante
-        return zone_setpoints([PlantStage(p.recette, p.stade)], self.recipes, False)
+        return zone_setpoints([PlantStage(p.recette, self.stades[p.id])], self.recipes, False)
 
     def vision_auto(self, camera: str) -> bool:
         """May the vision results of this camera trigger automatic decisions? Not when it
@@ -413,14 +443,15 @@ def resolve_emplacement(
     return regions[0][0] if len(regions) == 1 else None
 
 
-def load_greenhouse(path: Path = DEFAULT_CONFIG) -> Greenhouse:
+def load_greenhouse(path: Path = DEFAULT_CONFIG, today: date | None = None) -> Greenhouse:
     cfg = SerreCfg.model_validate(yaml.safe_load(Path(path).read_text()))
-    return Greenhouse(cfg, cfg.load_recipes())
+    return Greenhouse(cfg, cfg.load_recipes(), today=today)
 
 
 class ConfigWatcher:
-    """Hot reload: `get()` reloads the file when its mtime changed; a broken file keeps the
-    previous configuration (logged)."""
+    """Hot reload: `get()` reloads the file when its mtime changed, or when the day changed
+    and a plant has an automatic stage; a broken file keeps the previous configuration
+    (logged)."""
 
     def __init__(self, path: Path = DEFAULT_CONFIG):
         self.path = Path(path)
@@ -433,7 +464,9 @@ class ConfigWatcher:
             mtime = self.path.stat().st_mtime
         except OSError:
             return self.greenhouse
-        if mtime != self.mtime:
+        gh = self.greenhouse
+        new_day = gh.auto_stages and datetime.now(ZoneInfo(gh.cfg.fuseau)).date() != gh.today
+        if mtime != self.mtime or new_day:
             self.mtime = mtime
             try:
                 self.greenhouse = load_greenhouse(self.path)

@@ -34,7 +34,7 @@ zones:
       - id: z2-A1
         mode_culture: hydro_nft
         contenant: {type: canal_NFT}
-        plante: {id: laitue-1, espece: laitue, recette: laitue-hydro, stade: croissance}
+        plante: {id: laitue-1, espece: laitue, recette: laitue-hydro, stade: finition}
 
 cuves:
   - {id: cuve-z2, volume_l: 60}
@@ -93,6 +93,7 @@ cameras:
 hysteresis: {temperature: 1.0, humidite: 5.0, humidite_sol: 5.0}
 securite: {t_max: 35, t_min: 5, ph_min: 4.5, ph_max: 8.0, niveau_cuve_min: 10, capteur_muet_s: 300,
            capteur_fige_s: 1800}
-risque: {hr_humectation: 90, humectation_h: 10, t_min: 10, t_max: 25, ventilation_s: 900, periode_s: 3600}
+risque: {hr_humectation: 90, humectation_h: 10, t_min: 10, t_max: 25, hr_vision: 85, ventilation_s: 900,
+         periode_s: 3600}
 lumiere: {lux_vers_ppfd: 0.0185, pwm_complement: 100, maintien_s: 1800}
 prevision: {modele: edge/models/forecast, hr_max_nuit: 85, ventilation_s: 900, ecart_sigma: 4}

@@ -1,12 +1,20 @@
 """Recipes, zone setpoints and greenhouse configuration (docs/09 §6, §8)."""
 
 import shutil
+from datetime import date
 
 import pytest
 import yaml
 
 from edge.controller.config import ConfigWatcher, Greenhouse, SerreCfg, load_greenhouse
-from edge.controller.recipes import PlantStage, Recipe, intersect, load_recipes, zone_setpoints
+from edge.controller.recipes import (
+    PlantStage,
+    Recipe,
+    StageSetpoints,
+    intersect,
+    load_recipes,
+    zone_setpoints,
+)
 
 
 def recipe(t_jour, hr, ph=None):
@@ -50,7 +58,9 @@ def test_sample_files_load():
     gh = load_greenhouse()
     z1, z2 = gh.setpoints["z1"], gh.setpoints["z2"]
     assert z1.ph is None and z1.humidite_sol == (45, 65)  # soil zone: no pH / EC
-    assert z2.ec == (1.0, 1.6)
+    assert z2.ec == (0.9, 1.5)  # lettuce, finishing stage (docs/22 L1)
+    assert z1.vpd == (0.5, 1.2) and z1.ec_drainage == (2.2, 3.8)  # tomato in flower
+    assert recipes["fraise-substrat"].stage("production").ec == (1.0, 1.5)  # docs/22 L2
     assert gh.cfg.zone("z2").hydro and gh.cfg.zone("z2").cuve
     assert gh.emplacement_setpoints("z1", "z1-A2").humidite_sol == (40, 65)  # basil
 
@@ -124,3 +134,64 @@ def test_inline_recipes_and_vision_auto():
     assert gh.vision_auto("cam-z1-a")  # sees a tomato
     assert not gh.vision_auto("cam-z2-a")  # only a lettuce, out of taxonomy
     assert gh.vision_auto("cam-inconnue")  # undeclared: default behaviour
+
+
+# --- docs/22: fields from the literature ----------------------------------------------------
+
+
+def stage(**kw):
+    return StageSetpoints.model_validate(
+        {"temperature": {"jour": [20, 25], "nuit": [15, 18]}, "humidite": [50, 70],
+         "photoperiode_h": 16, **kw}
+    )  # fmt: skip
+
+
+def test_ec_apport_is_an_alias_of_ec():
+    assert stage(ec_apport=[2.0, 2.5]).ec == (2.0, 2.5)
+    assert stage(ec=[2.0, 2.5]).ec == (2.0, 2.5)
+    with pytest.raises(ValueError, match="min > max"):
+        stage(vpd=[1.2, 0.5])
+
+
+def test_lettuce_stage_from_its_age():
+    lettuce = load_recipes("edge/controller/recettes.yaml")["laitue-hydro"]
+    assert [lettuce.stage_for_age(d) for d in (5, 25, 35, 400)] == [
+        "pepiniere",
+        "croissance",
+        "finition",
+        "finition",
+    ]
+    assert lettuce.stage("pepiniere").ec[1] <= 0.5  # no 1.0 mS/cm on young lettuce
+    assert load_recipes("edge/controller/recettes.yaml")["tomate-standard"].stage_for_age(5) is None
+
+
+def auto_lettuce(semis):
+    raw = yaml.safe_load(open("edge/controller/serre.yaml"))
+    raw["zones"][1]["emplacements"][0]["plante"].update(stade="auto", date_semis=semis)
+    return SerreCfg.model_validate(raw)
+
+
+def test_auto_stage_in_the_greenhouse():
+    cfg = auto_lettuce("2026-07-01")
+    gh = Greenhouse(cfg, cfg.load_recipes(), today=date(2026, 7, 6))
+    assert gh.stades["laitue-1"] == "pepiniere" and gh.setpoints["z2"].ec == (0.25, 0.5)
+    assert not gh.setpoints["z2"].complement_led
+    gh = Greenhouse(cfg, cfg.load_recipes(), today=date(2026, 8, 5))
+    assert gh.stades["laitue-1"] == "finition" and gh.auto_stages
+    assert gh.stades["tomate-1"] == "floraison"  # manual stage kept
+    raw = yaml.safe_load(open("edge/controller/serre.yaml"))
+    raw["zones"][1]["emplacements"][0]["plante"]["stade"] = "auto"  # no date_semis
+    cfg = SerreCfg.model_validate(raw)
+    with pytest.raises(ValueError, match="date_semis"):
+        Greenhouse(cfg, cfg.load_recipes())
+
+
+def test_zone_merge_of_the_new_fields():
+    recipes = {
+        "a": Recipe(espece="a", stades={"s": stage(dli_max=15, vpd=[0.4, 1.0])}),
+        "b": Recipe(espece="b", stades={"s": stage(dli_max=13, complement_led=False)}),
+    }
+    sp = zone_setpoints([PlantStage("a", "s"), PlantStage("b", "s")], recipes)
+    assert sp.dli_max == 13 and not sp.complement_led and sp.vpd == (0.4, 1.0)
+    assert not sp.brumisation_nuit
+    assert sp.as_evidence()["dli_max"] == 13
