@@ -8,6 +8,8 @@ chiffre l'intérêt de panneaux solaires ([§9](#9-énergie-et-panneaux-solaires
 > Statut : **audit initial (13/11/2026)**. Les prix sont des **ordres de grandeur** (TTC,
 > France, fin 2026) tirés de la connaissance générale des catalogues, **pas relevés en ligne** :
 > les vérifier avant de commander (le Raspberry Pi 5 a notamment augmenté avec la mémoire).
+> Des liens d'achat et des prix relevés chez les vendeurs sont rassemblés au
+> [§15](#15-liens-dachat-et-premiers-prix-vérifiés-13112026).
 > Les quantités suivent `edge/controller/serre.yaml` (z1 terre, z2 hydro NFT) et les
 > puissances qui y sont déclarées.
 
@@ -305,3 +307,64 @@ Avant de commander :
 - Culture d'hiver visée, ou saison d'avril à octobre seulement ? (décide l'achat des LED et du chauffage)
 - Eau : robinet à proximité ou récupération d'eau de pluie ?
 - Atlas Scientific (précis, ≈ 500 €) ou DFRobot (≈ 150 €) pour pH/EC ?
+
+---
+
+## 15. Liens d'achat et premiers prix vérifiés (13/11/2026)
+
+> Cette sélection complète les fournisseurs génériques du §12 avec des références consultables.
+> Les prix sont ceux affichés lors de la recherche, TTC lorsqu'indiqué, hors livraison. Ils peuvent
+> varier selon le stock, la variante et le vendeur. Un lien vers une famille de produits n'est pas
+> une validation de compatibilité : vérifier la référence exacte avant commande.
+
+### 15.1 Phase A — démarrage de la serre réelle
+
+| Article du BOM | Référence / vendeur | Prix relevé | Lien | Commentaire |
+|---|---|---:|---|---|
+| Raspberry Pi 5 8 Go | MonRaspberry | 216 € affichés | https://monraspberry.com/produits/?product_brand=raspberry-pi&source_id=393&source_tax=product_brand | Prix élevé : comparer avec Kubii, Reichelt et RS avant achat. Ne pas acheter un kit complet si les accessoires ne sont pas nécessaires. |
+| XIAO ESP32-C6 | Reichelt, version avec broches | 7,65 € | https://www.reichelt.com/fr/fr/shop/produit/xiao_esp32c6_wifi_6_bt5_0_zigbee_thread_avec_en-tete-406831 | Correspond à la carte déjà prévue dans le projet. Vérifier si les broches soudées sont utiles pour les cartes porteuses. |
+| XIAO ESP32-C6 | DigiKey | 5,53 € TTC affichés | https://www.digikey.fr/fr/products/detail/seeed-technology-co-ltd/113991254/24613066 | Version sans broches ; délai fabricant indiqué de 4 semaines. |
+| Capteur CO₂ SCD41 nu | DigiKey | 23,86 € affichés | https://www.digikey.fr/fr/products/detail/sensirion-ag/SCD41-D-R1/ | Composant nu : prévoir une carte/module de raccordement et vérifier le format exact. |
+| Capteur CO₂ SCD41 | RS France | 43,50 € affichés | https://fr.rs-online.com/ | Rechercher « SCD41 » ; à privilégier si le produit proposé est bien un module prêt à câbler. |
+| Prise extérieure avec mesure | Shelly Outdoor Plug S Gen3 | 31,90 € | https://www.shelly.com/fr/products/shelly-outdoor-plug-s-gen3 | IP44, mesure de puissance ; vérifier la charge admissible et l'exposition réelle aux intempéries. |
+| Ouvre-fenêtre thermique | Leroy Merlin (vendeur marketplace) | 38,99 € | https://www.leroymerlin.fr/produits/ouvre-fenetre-automatique-pour-serre-ouverture-thermique-sans-electricite-double-ressort-charge-max-14-kg-71732256.html | Vérifier la géométrie de la fenêtre et la charge avant achat. |
+| Serre tunnel 6 m² | France Serres | 259 à 299 € | https://www.france-serres.com/145-serres-tunnel-6m2 | Option de structure si aucune serre n'est déjà disponible. |
+| Kit goutte-à-goutte 16 mm, 25 m | Leroy Merlin | Prix selon variante | https://www.leroymerlin.fr/produits/16mm-tuyau-goutte-a-goutte-2-0-l-h-33cm-kit-25m-marron-avec-accessoires-watermil-drip-irrigation-jardin-70056446.html | Goutteurs espacés de 33 cm, débit annoncé 2 L/h par goutteur ; vérifier que cet espacement convient aux pots/bacs. |
+
+### 15.2 Phase B — hydroponie et mesure de la solution
+
+| Article du BOM | Référence / vendeur | Prix relevé | Lien | Commentaire |
+|---|---|---:|---|---|
+| Circuit Atlas EZO-pH (carte seule) | RobotShop Europe | 50,59 € | https://eu.robotshop.com/fr/products/circuit-ph-ezo%E2%84%A2 | Sonde pH vendue séparément. Stock indiqué en réapprovisionnement lors de la recherche. |
+| Circuit Atlas EZO-EC (carte seule) | RobotShop Europe | 74,79 € | https://eu.robotshop.com/fr/products/circuit-conductivite-ezo | Sonde EC vendue séparément. Stock indiqué en réapprovisionnement lors de la recherche. |
+| Kit Atlas EC K=1.0 | RobotShop Europe | 252,99 € | https://eu.robotshop.com/fr/products/kit-capteur-conductivite-k-10-atlas-scientific | Kit incluant sonde, circuit et solutions d'étalonnage ; à comparer au coût de la carte seule + sonde. |
+| Pompe péristaltique 12 V | Kamoer, via Leroy Merlin | 23,50 € | https://www.leroymerlin.fr/produits/pompe-peristaltique-kamoer-pour-aquarium-debit-reglable-de-5-2-a-90-mlmin-12-v-pompe-doseuse-pour-aquarium-diy-laboratoire-analyse-72595751.html | Débit annoncé 5,2 à 90 mL/min : compatible avec l'ordre de grandeur prévu (60 mL/min). Vérifier le matériau du tube avec les solutions acides et nutritives. |
+| Sonde EC K=1.0 | Atlas Scientific / RobotShop | Voir kit ci-dessus | https://eu.robotshop.com/fr/products/kit-capteur-conductivite-k-10-atlas-scientific | Confirmer que la sonde fournie est bien K=1.0 et adaptée à la plage de conductivité de la solution nutritive. |
+
+### 15.3 Phase C — éclairage et hiver
+
+| Article du BOM | Référence / vendeur | Prix relevé | Lien | Commentaire |
+|---|---|---:|---|---|
+| Panneau horticole 240 W | PURELED Q240, GrowLED | Prix à vérifier sur la fiche | https://www.growled.fr/2917-pureled-q240-panneau-led-horticole-pour-croissance-et-floraison-8435405310263.html | Caractéristiques affichées : 240 W, 2,7 µmol/J, gradation 0–10 V, surface annoncée 0,8 × 0,8 à 1 × 1 m. Candidat cohérent avec le cahier des charges ; vérifier disponibilité et prix. |
+| Kit solaire plug & play | Beem On Solo 500 W | 429 € | https://beemenergy.fr/collections/panneaux-solaires-plug-and-play-400w | Prix affiché ; précommande signalée. Ne pas dimensionner ce kit pour alimenter le chauffage ou les LED de la serre en autonomie. |
+| Kit solaire plug & play | Beem On Duo 1 000 W | 858 € | https://beemenergy.fr/collections/panneaux-solaires-plug-and-play-400w | Option pour compenser une partie de la consommation du logement ; vérifier règles de raccordement et conditions Enedis. |
+
+### 15.4 Références fournisseurs à garder sous la main
+
+- Raspberry Pi et accessoires : https://www.kubii.com/ ; https://www.pimoroni.com/ ; https://www.reichelt.com/fr/fr/
+- Cartes et composants électroniques : https://www.digikey.fr/ ; https://www.mouser.fr/ ; https://www.gotronic.fr/ ; https://www.rs-online.com/
+- Capteurs et instrumentation : https://www.adafruit.com/ ; https://www.sparkfun.com/ ; https://eu.robotshop.com/fr/
+- Domotique et prises pilotées : https://www.shelly.com/fr/
+- Irrigation et structure : https://www.leroymerlin.fr/ ; https://www.france-serres.com/
+- Éclairage horticole : https://www.growled.fr/
+- Solaire : https://beemenergy.fr/
+
+### 15.5 Points à corriger/valider avant de figer le panier
+
+1. **Raspberry Pi 5 :** le prix relevé à 216 € pour la carte 8 Go seule est élevé. Comparer plusieurs revendeurs et ne retenir le prix qu'après vérification du stock.
+2. **SCD41 :** distinguer le composant nu (moins cher, mais à intégrer) du module breakout prêt à raccorder. Le prix du composant seul ne doit pas être utilisé comme prix d'un module.
+3. **Shelly :** le modèle extérieur IP44 est plus adapté à proximité de la serre qu'une prise intérieure, mais il doit rester protégé de la pluie directe et des projections.
+4. **pH/EC :** les prix des circuits seuls n'incluent pas nécessairement les sondes, les isolateurs, les câbles ni les solutions d'étalonnage. Comparer le coût du système complet, pas celui de la carte seule.
+5. **LED :** la référence Q240 correspond aux caractéristiques électriques et optiques visées dans le BOM ; confirmer que deux panneaux sont nécessaires après fixation des dimensions et de la surface cultivée.
+6. **Solaire :** un kit plug & play raccordé au logement ne rend pas la serre autonome. L'autonomie hors réseau exige batterie, régulateur et dimensionnement saisonnier distincts.
+7. **Sécurité 230 V :** les prises connectées ne remplacent ni les protections différentielles, ni un coffret adapté, ni une installation conforme. Faire valider le circuit extérieur par un électricien.
