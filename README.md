@@ -40,6 +40,7 @@ Choix structurants :
 | 20 | [Structures imprimées en 3D](docs/20-impression-3d-structures.md) | Pièces imprimables de la serre : hydroponie, structure et bâche, éclairage réglable, supports d'électronique, matériaux, sécurité |
 | 21 | [Configurateur des pièces imprimées](docs/21-configurateur-impression-3d.md) | Écran `/impression` : choix des pièces selon la serre, matériaux, cotes, export de `hardware/mesures.toml` |
 | 22 | [Idées tirées de la littérature](docs/22-idees-litterature.md) | 16 idées sourcées (consignes, VPD, risque maladie, nutrition, vision, simulateur, prévision, agent) et tableau `recettes.yaml` contre littérature |
+| 23 | [Audit du matériel](docs/23-audit-materiel.md) | Matériel à acheter (calcul, nœuds, capteurs, arrosage, hydroponie, climat, LED), fournisseurs, budget par phase, bilan énergétique et intérêt du solaire |
 | — | [Données sur Google Drive](docs/data-drive.md) | Archives des datasets, rclone, Colab, rapatriement des sorties |
 
 ## État actuel (17/10/2026)
